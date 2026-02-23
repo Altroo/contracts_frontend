@@ -1,0 +1,71 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="DuplicatedCode" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
+    <inspection_tool class="Eslint" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="HttpUrlsUsage" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredUrls">
+        <list>
+          <option value="http://0.0.0.0" />
+          <option value="http://127.0.0.1" />
+          <option value="http://activemq.apache.org/schema/" />
+          <option value="http://cxf.apache.org/schemas/" />
+          <option value="http://java.sun.com/" />
+          <option value="http://javafx.com/fxml" />
+          <option value="http://javafx.com/javafx/" />
+          <option value="http://json-schema.org/draft" />
+          <option value="http://localhost" />
+          <option value="http://maven.apache.org/POM/" />
+          <option value="http://maven.apache.org/xsd/" />
+          <option value="http://primefaces.org/ui" />
+          <option value="http://schema.cloudfoundry.org/spring/" />
+          <option value="http://schemas.xmlsoap.org/" />
+          <option value="http://tiles.apache.org/" />
+          <option value="http://www.ibm.com/webservices/xsd" />
+          <option value="http://www.jboss.com/xml/ns/" />
+          <option value="http://www.jboss.org/j2ee/schema/" />
+          <option value="http://www.promostandards.org" />
+          <option value="http://www.springframework.org/schema/" />
+          <option value="http://www.springframework.org/security/tags" />
+          <option value="http://www.springframework.org/tags" />
+          <option value="http://www.thymeleaf.org" />
+          <option value="http://www.w3.org/" />
+          <option value="http://xmlns.jcp.org/" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="19">
+            <item index="0" class="java.lang.String" itemvalue="dfg6mvxpan4ptl" />
+            <item index="1" class="java.lang.String" itemvalue="ubuntu" />
+            <item index="2" class="java.lang.String" itemvalue="m4pu-a1jg" />
+            <item index="3" class="java.lang.String" itemvalue="MNusqnYBB85vVecn" />
+            <item index="4" class="java.lang.String" itemvalue="QBrpwFQFpyc5Lmy7oaiDl6HL02dSskC" />
+            <item index="5" class="java.lang.String" itemvalue="41f40ad54955d7" />
+            <item index="6" class="java.lang.String" itemvalue="git" />
+            <item index="7" class="java.lang.String" itemvalue="osmuser" />
+            <item index="8" class="java.lang.String" itemvalue="osmnames" />
+            <item index="9" class="java.lang.String" itemvalue="8Myan63h6zDEtH8" />
+            <item index="10" class="java.lang.String" itemvalue="ljzxbltkkdtapz" />
+            <item index="11" class="java.lang.String" itemvalue="ArFpl2K8FeV5h9gt" />
+            <item index="12" class="java.lang.String" itemvalue="Altroo" />
+            <item index="13" class="java.lang.String" itemvalue="RDZsxwVT2i" />
+            <item index="14" class="java.lang.String" itemvalue="EQuthHN6YF5yDYYF" />
+            <item index="15" class="java.lang.String" itemvalue="9orbQXwuvvArKYLz" />
+            <item index="16" class="java.lang.String" itemvalue="xFcBhqj01oF3ud93" />
+            <item index="17" class="java.lang.String" itemvalue="84b4a62flf60f4179532bc6441f40ed54955d7905919z10b8039404f9az2736f" />
+            <item index="18" class="java.lang.String" itemvalue="DoFgl3L5FpA8h4ab" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPep8Inspection" enabled="true" level="WARNING" enabled_by_default="true" editorAttributes="WARNING_ATTRIBUTES" />
+    <inspection_tool class="SpellCheckingInspection" enabled="false" level="TYPO" enabled_by_default="false">
+      <option name="processCode" value="true" />
+      <option name="processLiterals" value="true" />
+      <option name="processComments" value="true" />
+    </inspection_tool>
+  </profile>
+</component>
