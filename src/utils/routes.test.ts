@@ -1,0 +1,56 @@
+describe('routes', () => {
+	const OLD_ENV = process.env;
+
+	beforeEach(() => {
+		jest.resetModules();
+		process.env = { ...OLD_ENV };
+	});
+
+	afterAll(() => {
+		process.env = OLD_ENV;
+	});
+
+	it('builds routes with a prefix', () => {
+		process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX = 'https://app.example.com';
+		const routes = require('./routes');
+
+		expect(routes.SITE_ROOT).toBe('https://app.example.com/');
+		expect(routes.AUTH_LOGIN).toBe('https://app.example.com//login');
+		expect(routes.AUTH_RESET_PASSWORD).toBe('https://app.example.com//reset-password');
+		expect(routes.AUTH_RESET_PASSWORD_ENTER_CODE).toBe('https://app.example.com//reset-password/enter-code');
+		expect(routes.AUTH_RESET_PASSWORD_SET_PASSWORD).toBe('https://app.example.com//reset-password/set-password');
+		expect(routes.AUTH_RESET_PASSWORD_COMPLETE).toBe('https://app.example.com//reset-password/set-password-complete');
+		expect(routes.AUTH_RESET_PASSWORD_SET_PASSWORD_COMPLETE).toBe(routes.AUTH_RESET_PASSWORD_COMPLETE);
+		expect(routes.DASHBOARD).toBe('https://app.example.com/dashboard');
+		expect(routes.DASHBOARD_EDIT_PROFILE).toBe('https://app.example.com/dashboard/settings/edit-profile');
+		expect(routes.DASHBOARD_PASSWORD).toBe('https://app.example.com/dashboard/settings/password');
+	});
+
+	it('builds CONTRACTS routes with a prefix', () => {
+		process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX = 'https://app.example.com';
+		const routes = require('./routes');
+
+		expect(routes.CONTRACTS_LIST).toBe('https://app.example.com/dashboard/contracts');
+		expect(routes.CONTRACTS_ADD).toBe('https://app.example.com/dashboard/contracts/new');
+		expect(routes.CONTRACTS_VIEW(42)).toBe('https://app.example.com/dashboard/contracts/42');
+		expect(routes.CONTRACTS_EDIT(42)).toBe('https://app.example.com/dashboard/contracts/42/edit');
+	});
+
+	it('builds USERS routes with a prefix', () => {
+		process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX = 'https://app.example.com';
+		const routes = require('./routes');
+
+		expect(routes.USERS_LIST).toBe('https://app.example.com/dashboard/users');
+		expect(routes.USERS_ADD).toBe('https://app.example.com/dashboard/users/new');
+		expect(routes.USERS_VIEW(7)).toBe('https://app.example.com/dashboard/users/7');
+		expect(routes.USERS_EDIT(7)).toBe('https://app.example.com/dashboard/users/7/edit');
+	});
+
+	it('builds routes without prefix (undefined)', () => {
+		delete process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX;
+		const routes = require('./routes');
+
+		expect(routes.SITE_ROOT).toBe('undefined/');
+		expect(routes.AUTH_LOGIN).toContain('/login');
+	});
+});

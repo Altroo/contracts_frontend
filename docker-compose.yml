@@ -1,4 +1,5 @@
 # Production docker-compose configuration
+# NOTE: SSL termination is handled by facturation_frontend nginx (single reverse proxy)
 services:
   web:
     build: .
@@ -8,25 +9,9 @@ services:
     environment:
       - NODE_ENV=production
     extra_hosts:
-      - "api-contracts.elbouazzatiholding.ma:host-gateway"
-    networks:
-      - webnet
-    expose:
-      - '3001'
-
-  nginx:
-    image: nginx:1.25-alpine
-    restart: always
+      - "contrats-api.elbouazzatiholding.ma:host-gateway"
     ports:
-      - '80:80'
-      - '443:443'
-    volumes:
-      - /etc/contracts_frontend/nginx/conf.d:/etc/nginx/conf.d:ro
-      - /etc/contracts_frontend/nginx/certs:/etc/ssl/certs:ro
-    depends_on:
-      - web
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - '3001:3001'
     networks:
       - webnet
 
