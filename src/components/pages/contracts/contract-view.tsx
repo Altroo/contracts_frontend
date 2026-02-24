@@ -20,17 +20,9 @@ import { useRouter } from 'next/navigation';
 import { CONTRACTS_LIST, CONTRACTS_EDIT } from '@/utils/routes';
 import { useGetContractQuery } from '@/store/services/contract';
 import { getAccessTokenFromSession } from '@/store/session';
+import { normalizeStatut } from '@/utils/helpers';
+import { contractStatusColors } from '@/utils/rawData';
 import type { SessionProps } from '@/types/_initTypes';
-
-const statusColors: Record<string, 'default' | 'warning' | 'success' | 'error' | 'info' | 'primary' | 'secondary'> = {
-	Brouillon: 'default',
-	Envoyé: 'info',
-	Signé: 'primary',
-	'En cours': 'warning',
-	Terminé: 'success',
-	Annulé: 'error',
-	Expiré: 'error',
-};
 
 interface Props extends SessionProps {
 	id: number;
@@ -56,7 +48,7 @@ const ContractViewClient = ({ id, session }: Props) => {
 		);
 	}
 
-	const status = statusColors[contract.statut] ?? 'default';
+	const status = contractStatusColors[normalizeStatut(contract.statut)] ?? 'default';
 
 	return (
 		<Box sx={{ p: 3 }}>

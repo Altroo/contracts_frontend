@@ -194,3 +194,6 @@ export const parseNumber = (value: string | number): number | null => {
 
 export const getLabelForKey = (fieldLabels: Record<string, string>, key: string): string =>
 	fieldLabels[key] ?? key;
+
+export const normalizeStatut = (s: string): string =>
+	s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');

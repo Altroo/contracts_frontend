@@ -46,7 +46,7 @@ const EnterCodeClient = () => {
 						onChange={(e) => setCode(e.target.value)}
 						required
 						fullWidth
-						inputProps={{ maxLength: 6, pattern: '[0-9]*' }}
+						slotProps={{ htmlInput: { maxLength: 6, pattern: '[0-9]*' } }}
 					/>
 					<Button type="submit" variant="contained" fullWidth disabled={loading}
 						startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}>

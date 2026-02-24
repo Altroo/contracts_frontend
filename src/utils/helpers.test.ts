@@ -225,3 +225,20 @@ describe('allowAnyInstance', () => {
 		expect(typeof instance.interceptors).toBe('object');
 	});
 });
+
+describe('normalizeStatut', () => {
+	it('strips diacritics from French status strings', async () => {
+		const { normalizeStatut } = await import('./helpers');
+		expect(normalizeStatut('Envoyé')).toBe('Envoye');
+		expect(normalizeStatut('Signé')).toBe('Signe');
+		expect(normalizeStatut('Terminé')).toBe('Termine');
+		expect(normalizeStatut('Annulé')).toBe('Annule');
+		expect(normalizeStatut('Expiré')).toBe('Expire');
+	});
+
+	it('leaves strings without diacritics unchanged', async () => {
+		const { normalizeStatut } = await import('./helpers');
+		expect(normalizeStatut('Brouillon')).toBe('Brouillon');
+		expect(normalizeStatut('En cours')).toBe('En cours');
+	});
+});

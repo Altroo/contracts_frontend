@@ -23,6 +23,12 @@ import {
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { setFormikAutoErrors, getLabelForKey } from '@/utils/helpers';
+import {
+	contractStatutItemsList as statutItems,
+	typeContratItemsList as typeContratItems,
+	deviseItemsList as deviseItems,
+	confidentialiteItemsList as confidentialiteItems,
+} from '@/utils/rawData';
 import { CONTRACTS_LIST, CONTRACTS_VIEW } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/utils/hooks';
@@ -38,20 +44,6 @@ import type { ContractFormValuesType } from '@/types/contractTypes';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
-
-/* ─── static dropdown lists ─── */
-const statutItems = ['Brouillon', 'Envoyé', 'Signé', 'En cours', 'Terminé', 'Annulé', 'Expiré'];
-const typeContratItems = [
-	{ code: 'travaux_finition', value: 'Travaux de finition' },
-	{ code: 'travaux_gros_oeuvre', value: 'Travaux gros œuvre' },
-	{ code: 'design_interieur', value: 'Design intérieur' },
-	{ code: 'cle_en_main', value: 'Clé en main' },
-	{ code: 'ameublement', value: 'Ameublement' },
-	{ code: 'maintenance', value: 'Maintenance' },
-	{ code: 'suivi_chantier', value: 'Suivi de chantier' },
-];
-const deviseItems = ['MAD', 'EUR', 'USD'];
-const confidentialiteItems = ['CONFIDENTIEL', 'USAGE INTERNE', 'STANDARD'];
 
 interface Props extends SessionProps {
 	id?: number;

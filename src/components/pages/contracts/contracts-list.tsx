@@ -26,18 +26,10 @@ import { useRouter } from 'next/navigation';
 import { CONTRACTS_ADD, CONTRACTS_VIEW, CONTRACTS_EDIT } from '@/utils/routes';
 import { useGetContractsListQuery } from '@/store/services/contract';
 import { getAccessTokenFromSession } from '@/store/session';
+import { normalizeStatut } from '@/utils/helpers';
+import { contractStatusColors } from '@/utils/rawData';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import type { ContractClass } from '@/models/classes';
-
-const statusColors: Record<string, 'default' | 'warning' | 'success' | 'error' | 'info' | 'primary' | 'secondary'> = {
-	Brouillon: 'default',
-	Envoyé: 'info',
-	Signé: 'primary',
-	'En cours': 'warning',
-	Terminé: 'success',
-	Annulé: 'error',
-	Expiré: 'error',
-};
 
 const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const router = useRouter();
@@ -94,7 +86,7 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 									<TableCell>
 										<Chip
 											label={contract.statut}
-											color={statusColors[contract.statut] ?? 'default'}
+										color={contractStatusColors[normalizeStatut(contract.statut)] ?? 'default'}
 											size="small"
 										/>
 									</TableCell>
