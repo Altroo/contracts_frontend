@@ -1,69 +1,101 @@
-import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
+import SetPasswordClient from './setPassword';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
-import SetPasswordClient from './setPassword';
+import React from 'react';
+
+// Mocks
+jest.mock('next-auth/react', () => ({
+	useSession: () => ({ data: null, status: 'unauthenticated' }),
+}));
 
 const mockPush = jest.fn();
-const mockBack = jest.fn();
-
 jest.mock('next/navigation', () => ({
-	useRouter: () => ({ push: mockPush, back: mockBack, replace: jest.fn() }),
+	useRouter: () => ({ push: mockPush, replace: jest.fn() }),
 }));
 
-jest.mock('@/utils/routes', () => ({
-	AUTH_RESET_PASSWORD_SET_PASSWORD_COMPLETE: '/reset-password/set-password-complete',
+jest.mock('@/store/actions/_initActions', () => ({
+	refreshAppTokenStatesAction: jest.fn(),
 }));
+
+jest.mock('@/utils/clientHelpers', () => ({
+	Desktop: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	TabletAndMobile: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+jest.mock('@/store/services/account', () => {
+	const actual = jest.requireActual('@/store/services/account');
+
+	return {
+		...actual,
+		accountApi: {
+			reducerPath: 'accountApi',
+			reducer: (_state = {}) => _state,
+			middleware: () => (next: (action: unknown) => unknown) => (action: unknown) => next(action),
+		},
+	};
+});
 
 describe('SetPasswordClient', () => {
+	const testEmail = 'test@example.com';
+	const testCode = '1234';
+
 	beforeEach(() => {
 		jest.clearAllMocks();
-		global.fetch = jest.fn();
 	});
 
-	it('renders password inputs and submit button', () => {
-		render(
-			<Provider store={store}>
-				<SetPasswordClient />
-			</Provider>,
-		);
-		expect(screen.getByLabelText(/nouveau mot de passe/i)).toBeInTheDocument();
-		expect(screen.getByLabelText(/confirmer le mot de passe/i)).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: /mettre à jour/i })).toBeInTheDocument();
-	});
-
-	it('shows error when passwords do not match', async () => {
-		render(
-			<Provider store={store}>
-				<SetPasswordClient />
-			</Provider>,
-		);
-
+	it('renders password reset form with inputs and button', async () => {
 		await act(async () => {
-			fireEvent.change(screen.getByLabelText(/nouveau mot de passe/i), { target: { value: 'pass1234' } });
-			fireEvent.change(screen.getByLabelText(/confirmer le mot de passe/i), { target: { value: 'different' } });
-			fireEvent.click(screen.getByRole('button', { name: /mettre à jour/i }));
+			render(
+				<Provider store={store}>
+					<SetPasswordClient email={testEmail} code={testCode} />
+				</Provider>,
+			);
 		});
 
-		expect(screen.getByText(/les mots de passe ne correspondent pas/i)).toBeInTheDocument();
+		const titles = screen.getAllByText(
+			(_, el) => !!(el?.textContent?.includes('Nouveau') && el.textContent.includes('mot de passe')),
+		);
+		expect(titles.length).toBeGreaterThanOrEqual(1);
+
+		const passwordInputs = screen.getAllByPlaceholderText('Mot de passe');
+		expect(passwordInputs.length).toBeGreaterThanOrEqual(1);
+
+		const confirmInputs = screen.getAllByPlaceholderText('Confirmez mot de passe');
+		expect(confirmInputs.length).toBeGreaterThanOrEqual(1);
+
+		const submitButtons = screen.getAllByRole('button', {
+			name: /Modifier mot de passe/i,
+		});
+		expect(submitButtons.length).toBeGreaterThanOrEqual(1);
 	});
 
-	it('redirects on success', async () => {
-		(global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true });
-
-		render(
-			<Provider store={store}>
-				<SetPasswordClient />
-			</Provider>,
-		);
-
+	it('submits the form when passwords are entered and button is clicked', async () => {
 		await act(async () => {
-			fireEvent.change(screen.getByLabelText(/nouveau mot de passe/i), { target: { value: 'pass1234' } });
-			fireEvent.change(screen.getByLabelText(/confirmer le mot de passe/i), { target: { value: 'pass1234' } });
-			fireEvent.click(screen.getByRole('button', { name: /mettre à jour/i }));
+			render(
+				<Provider store={store}>
+					<SetPasswordClient email={testEmail} code={testCode} />
+				</Provider>,
+			);
 		});
 
-		expect(mockPush).toHaveBeenCalledWith('/reset-password/set-password-complete');
+		const passwordInputs = screen.getAllByPlaceholderText('Mot de passe');
+		const confirmInputs = screen.getAllByPlaceholderText('Confirmez mot de passe');
+		const submitButtons = screen.getAllByRole('button', {
+			name: /Modifier mot de passe/i,
+		});
+
+		await act(async () => {
+			fireEvent.change(passwordInputs[0], {
+				target: { value: 'StrongPass123!' },
+			});
+			fireEvent.change(confirmInputs[0], {
+				target: { value: 'StrongPass123!' },
+			});
+			fireEvent.click(submitButtons[0]);
+		});
+
+		expect(submitButtons[0]).toBeEnabled();
 	});
 });

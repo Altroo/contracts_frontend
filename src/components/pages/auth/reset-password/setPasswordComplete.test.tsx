@@ -1,18 +1,22 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import SetPasswordCompleteClient from './setPasswordComplete';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
-import SetPasswordCompleteClient from './setPasswordComplete';
+import React from 'react';
 
-const mockPush = jest.fn();
-
-jest.mock('next/navigation', () => ({
-	useRouter: () => ({ push: mockPush, replace: jest.fn() }),
+// Mocks
+jest.mock('next-auth/react', () => ({
+	useSession: () => ({ data: null, status: 'unauthenticated' }),
 }));
 
-jest.mock('@/utils/routes', () => ({
-	AUTH_LOGIN: '/login',
+jest.mock('next/navigation', () => ({
+	useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
+}));
+
+jest.mock('@/utils/clientHelpers', () => ({
+	Desktop: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	TabletAndMobile: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 describe('SetPasswordCompleteClient', () => {
@@ -20,24 +24,24 @@ describe('SetPasswordCompleteClient', () => {
 		jest.clearAllMocks();
 	});
 
-	it('renders success message', () => {
+	it('renders success message and login button', () => {
 		render(
 			<Provider store={store}>
 				<SetPasswordCompleteClient />
 			</Provider>,
 		);
-		expect(screen.getByText(/mot de passe modifié/i)).toBeInTheDocument();
-	});
 
-	it('has a login button that navigates to login', () => {
-		render(
-			<Provider store={store}>
-				<SetPasswordCompleteClient />
-			</Provider>,
-		);
-		const btn = screen.getByRole('button', { name: /se connecter/i });
-		expect(btn).toBeInTheDocument();
-		fireEvent.click(btn);
-		expect(mockPush).toHaveBeenCalledWith('/login');
+		const headers = screen.getAllByRole('heading', {
+			name: /Mot de passe modifié/i,
+		});
+		expect(headers.length).toBeGreaterThanOrEqual(1);
+
+		const subHeaders = screen.getAllByText(/Votre mot de passe a été modifié, connectez-vous/i);
+		expect(subHeaders.length).toBeGreaterThanOrEqual(1);
+
+		const loginButtons = screen.getAllByRole('link', {
+			name: /Me connecter/i,
+		});
+		expect(loginButtons.length).toBeGreaterThanOrEqual(1);
 	});
 });

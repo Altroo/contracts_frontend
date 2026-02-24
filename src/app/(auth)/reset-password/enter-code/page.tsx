@@ -22,7 +22,7 @@ const EnterCodePage = async () => {
 		redirect(AUTH_RESET_PASSWORD);
 	}
 
-	return <EnterCodeClient />;
+	return <EnterCodeClient email={email} />;
 };
 
 export default EnterCodePage;

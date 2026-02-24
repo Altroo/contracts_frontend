@@ -23,7 +23,7 @@ const SetPasswordPage = async () => {
 		redirect(AUTH_RESET_PASSWORD);
 	}
 
-	return <SetPasswordClient />;
+	return <SetPasswordClient email={email} code={code} />;
 };
 
 export default SetPasswordPage;

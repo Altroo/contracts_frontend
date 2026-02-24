@@ -2,8 +2,62 @@ import { z } from 'zod';
 import {
 	INPUT_REQUIRED,
 	INPUT_PASSWORD_MIN,
+	INPUT_MIN,
+	INPUT_MAX,
 	MINI_INPUT_EMAIL,
+	SHORT_INPUT_REQUIRED,
 } from '@/utils/formValidationErrorMessages';
+
+const passwordField = z.preprocess(
+	(val) => (val === undefined ? '' : val),
+	z
+		.string()
+		.min(8, { error: INPUT_PASSWORD_MIN(8) })
+		.nonempty({ error: INPUT_REQUIRED }),
+);
+
+const optionalTextField = (min: number, max: number) =>
+	z.preprocess(
+		(val) => (val === undefined || val === null || val === '' ? undefined : val),
+		z
+			.string()
+			.min(min, { error: INPUT_MIN(min) })
+			.max(max, { error: INPUT_MAX(max) })
+			.optional(),
+	);
+
+const singleDigit = z
+	.string()
+	.min(1, { error: SHORT_INPUT_REQUIRED })
+	.regex(/^\d$/, { error: SHORT_INPUT_REQUIRED })
+	.transform((val) => Number(val));
+
+export const loginSchema = z.object({
+	email: z.email({ error: MINI_INPUT_EMAIL }),
+	password: passwordField,
+	globalError: optionalTextField(1, 500),
+});
+
+export const emailSchema = z.object({
+	email: z.email({ error: MINI_INPUT_EMAIL }),
+	globalError: optionalTextField(1, 500),
+});
+
+export const passwordResetConfirmationSchema = z.object({
+	new_password: passwordField,
+	new_password2: passwordField,
+	globalError: optionalTextField(1, 500),
+});
+
+export const passwordResetCodeSchema = z.object({
+	one: singleDigit,
+	two: singleDigit,
+	three: singleDigit,
+	four: singleDigit,
+	five: singleDigit,
+	six: singleDigit,
+	globalError: optionalTextField(1, 500),
+});
 
 export const userSchema = z
 	.object({

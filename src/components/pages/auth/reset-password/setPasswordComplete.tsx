@@ -1,30 +1,54 @@
-'use client';
-
 import React from 'react';
-import { Button, Typography, Paper } from '@mui/material';
-import { CheckCircle as CheckCircleIcon } from '@mui/icons-material';
-import { useRouter } from 'next/navigation';
-import { AUTH_LOGIN } from '@/utils/routes';
+import Styles from '@/styles/auth/auth.module.sass';
 import AuthLayout from '@/components/layouts/auth/authLayout';
+import { Stack } from '@mui/material';
+import Image from 'next/image';
+import SuccessIlluSVG from '../../../../../public/assets/images/success-illu.svg';
+import PrimaryAnchorButton from '@/components/htmlElements/buttons/primaryAnchorButton/primaryAnchorButton';
+import { AUTH_LOGIN } from '@/utils/routes';
+import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
+import { Login as LoginIcon } from '@mui/icons-material';
 
-const SetPasswordCompleteClient = () => {
-	const router = useRouter();
-
+const SetPasswordCompleteClient: React.FC = () => {
 	return (
-		<AuthLayout>
-			<Paper elevation={4} sx={{ p: 4, width: '100%', maxWidth: 420, borderRadius: 2, textAlign: 'center' }}>
-				<CheckCircleIcon sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
-				<Typography variant="h5" fontWeight={700} gutterBottom>
-					Mot de passe modifié
-				</Typography>
-				<Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-					Votre mot de passe a été modifié, connectez-vous.
-				</Typography>
-				<Button variant="contained" fullWidth onClick={() => router.push(AUTH_LOGIN)}>
-					Se connecter
-				</Button>
-			</Paper>
-		</AuthLayout>
+		<>
+			<Desktop>
+				<div>
+					<AuthLayout>
+						<Stack direction="column" spacing={4} className={Styles.contentWrapper}>
+							<Image src={SuccessIlluSVG} alt="" width="0" height="0" sizes="100vw" className={Styles.logo} />
+						<h1 className={Styles.header}>Mot de passe modifié</h1>
+						<p className={Styles.subHeader}>Votre mot de passe a été modifié, connectez-vous</p>
+							<PrimaryAnchorButton
+								startIcon={<LoginIcon />}
+								buttonText="Me connecter"
+								active={true}
+								nextPage={AUTH_LOGIN}
+							/>
+						</Stack>
+					</AuthLayout>
+				</div>
+			</Desktop>
+			<TabletAndMobile>
+				<div>
+					<main className={Styles.main}>
+						<Stack direction="column" spacing={4} className={Styles.contentWrapper}>
+							<Image src={SuccessIlluSVG} alt="" width="0" height="0" sizes="100vw" className={Styles.logo} />
+						<h1 className={Styles.header}>Mot de passe modifié</h1>
+						<p className={Styles.subHeader}>Votre mot de passe a été modifié, connectez-vous</p>
+						</Stack>
+						<div className={Styles.primaryButtonWrapper}>
+							<PrimaryAnchorButton
+								startIcon={<LoginIcon />}
+								buttonText="Me connecter"
+								active={true}
+								nextPage={AUTH_LOGIN}
+							/>
+						</div>
+					</main>
+				</div>
+			</TabletAndMobile>
+		</>
 	);
 };
 

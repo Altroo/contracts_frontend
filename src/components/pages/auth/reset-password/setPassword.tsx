@@ -1,76 +1,142 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Box, Button, TextField, Typography, Paper, Alert, CircularProgress } from '@mui/material';
-import { useRouter } from 'next/navigation';
-import { AUTH_RESET_PASSWORD_SET_PASSWORD_COMPLETE } from '@/utils/routes';
+import Styles from '@/styles/auth/auth.module.sass';
+import { setFormikAutoErrors } from '@/utils/helpers';
+import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
+import { cookiesPoster } from '@/utils/apiHelpers';
+import { AUTH_RESET_PASSWORD_COMPLETE } from '@/utils/routes';
 import AuthLayout from '@/components/layouts/auth/authLayout';
+import { toFormikValidationSchema } from 'zod-formik-adapter';
+import { Stack } from '@mui/material';
+import { useRouter } from 'next/navigation';
+import { useFormik } from 'formik';
+import { passwordResetConfirmationSchema } from '@/utils/formValidationSchemas';
+import { textInputTheme } from '@/utils/themes';
+import CustomPasswordInput from '@/components/formikElements/customPasswordInput/customPasswordInput';
+import { useSetPasswordMutation } from '@/store/services/account';
+import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
+import { Edit as EditIcon, Lock as LockIcon } from '@mui/icons-material';
 
-const SetPasswordClient = () => {
+const inputTheme = textInputTheme();
+
+type SetPasswordPageContentProps = {
+	email: string;
+	code: string;
+};
+
+const SetPasswordPageContent: React.FC<SetPasswordPageContentProps> = ({ email, code }) => {
 	const router = useRouter();
-	const [password, setPassword] = useState('');
-	const [confirm, setConfirm] = useState('');
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+	const [isPending, setIsPending] = useState(false);
+	const [setPassword, { isLoading: isSetPasswordLoading }] = useSetPasswordMutation();
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		setError(null);
-
-		if (password !== confirm) {
-			setError('Les mots de passe ne correspondent pas.');
-			return;
-		}
-
-		setLoading(true);
-		try {
-			await fetch('/cookies', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ pass_updated: 'true', maxAge: 60 }),
-			});
-			router.push(AUTH_RESET_PASSWORD_SET_PASSWORD_COMPLETE);
-		} catch {
-			setError('Une erreur est survenue.');
-		} finally {
-			setLoading(false);
-		}
-	};
+	const formik = useFormik({
+		initialValues: {
+			new_password: '',
+			new_password2: '',
+			globalError: '',
+		},
+		validateOnMount: true,
+		validationSchema: toFormikValidationSchema(passwordResetConfirmationSchema),
+		onSubmit: async (values, { setFieldError }) => {
+			setIsPending(true);
+			try {
+				await setPassword({
+					email,
+					code,
+					new_password: values.new_password,
+					new_password2: values.new_password2,
+				}).unwrap();
+				await cookiesPoster('/cookies', { pass_updated: 1 });
+				router.push(AUTH_RESET_PASSWORD_COMPLETE);
+			} catch (e) {
+				setFormikAutoErrors({ e, setFieldError });
+			} finally {
+				setIsPending(false);
+			}
+		},
+	});
 
 	return (
-		<AuthLayout>
-			<Paper elevation={4} sx={{ p: 4, width: '100%', maxWidth: 420, borderRadius: 2 }}>
-				<Typography variant="h5" fontWeight={700} gutterBottom>Nouveau mot de passe</Typography>
-				<Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-					Choisissez un nouveau mot de passe sécurisé.
-				</Typography>
-				{error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-				<Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-					<TextField
-						label="Nouveau mot de passe"
-						type="password"
-						value={password}
-						onChange={(e) => setPassword(e.target.value)}
-						required
-						fullWidth
+		<Stack direction="column" className={Styles.contentWrapper} spacing={6}>
+			<Stack direction="column" justifyContent="flex-start" alignItems="flex-start" width="100%">
+				<span className={Styles.content}>
+					Nouveau <br />
+					mot de passe
+				</span>
+			</Stack>
+			<form style={{ width: '100%' }} onSubmit={(e) => e.preventDefault()}>
+				<Stack direction="column" spacing={4}>
+					<Stack direction="column" spacing={2}>
+						<CustomPasswordInput
+							id="new_password"
+							value={formik.values.new_password}
+							onChange={formik.handleChange('new_password')}
+							onBlur={formik.handleBlur('new_password')}
+							helperText={formik.touched.new_password ? formik.errors.new_password : ''}
+							error={formik.touched.new_password && Boolean(formik.errors.new_password)}
+							fullWidth={false}
+							size="medium"
+							label="Mot de passe"
+							placeholder="Mot de passe"
+							cssClass={Styles.mobileInput}
+							theme={inputTheme}
+							startIcon={<LockIcon fontSize="small" />}
+						/>
+						<CustomPasswordInput
+							id="new_password2"
+							value={formik.values.new_password2}
+							onChange={formik.handleChange('new_password2')}
+							onBlur={formik.handleBlur('new_password2')}
+							helperText={formik.touched.new_password2 ? formik.errors.new_password2 : ''}
+							error={formik.touched.new_password2 && Boolean(formik.errors.new_password2)}
+							fullWidth={false}
+							size="medium"
+							label="Confirmez mot de passe"
+							placeholder="Confirmez mot de passe"
+							cssClass={Styles.mobileInput}
+							theme={inputTheme}
+							startIcon={<LockIcon fontSize="small" />}
+						/>
+					</Stack>
+					{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
+					<PrimaryLoadingButton
+						buttonText="Modifier mot de passe"
+						active={!isSetPasswordLoading && !isPending}
+						onClick={formik.handleSubmit}
+						cssClass={Styles.emailRegisterButton}
+						type="submit"
+						startIcon={<EditIcon />}
+						loading={isSetPasswordLoading || isPending}
 					/>
-					<TextField
-						label="Confirmer le mot de passe"
-						type="password"
-						value={confirm}
-						onChange={(e) => setConfirm(e.target.value)}
-						required
-						fullWidth
-					/>
-					<Button type="submit" variant="contained" fullWidth disabled={loading}
-						startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}>
-						{loading ? 'Mise à jour...' : 'Mettre à jour'}
-					</Button>
-					<Button variant="text" onClick={() => router.back()}>Retour</Button>
-				</Box>
-			</Paper>
-		</AuthLayout>
+				</Stack>
+			</form>
+		</Stack>
 	);
 };
+
+type Props = {
+	email: string;
+	code: string;
+};
+
+const SetPasswordClient: React.FC<Props> = ({ email, code }) => (
+	<>
+		<Desktop>
+			<div>
+				<AuthLayout>
+					<SetPasswordPageContent email={email} code={code} />
+				</AuthLayout>
+			</div>
+		</Desktop>
+		<TabletAndMobile>
+			<div style={{ display: 'flex', width: '100%', height: '100%' }}>
+				<main className={Styles.main}>
+					<SetPasswordPageContent email={email} code={code} />
+				</main>
+			</div>
+		</TabletAndMobile>
+	</>
+);
 
 export default SetPasswordClient;

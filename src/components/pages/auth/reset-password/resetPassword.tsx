@@ -1,75 +1,139 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Box, Button, TextField, Typography, Paper, Alert, CircularProgress } from '@mui/material';
-import { useRouter } from 'next/navigation';
-import { AUTH_RESET_PASSWORD_ENTER_CODE } from '@/utils/routes';
+import React, { useState, useEffect } from 'react';
+import Styles from '@/styles/auth/auth.module.sass';
+import { setFormikAutoErrors } from '@/utils/helpers';
+import { toFormikValidationSchema } from 'zod-formik-adapter';
+import { Desktop, TabletAndMobile } from '@/utils/clientHelpers';
+import { cookiesPoster } from '@/utils/apiHelpers';
+import { AUTH_RESET_PASSWORD_ENTER_CODE, DASHBOARD, AUTH_LOGIN } from '@/utils/routes';
 import AuthLayout from '@/components/layouts/auth/authLayout';
+import { Stack, Divider } from '@mui/material';
+import { useRouter } from 'next/navigation';
+import { useFormik } from 'formik';
+import { emailSchema } from '@/utils/formValidationSchemas';
+import { textInputTheme } from '@/utils/themes';
+import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
+import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
+import { useSendPasswordResetCodeMutation } from '@/store/services/account';
+import { useSession } from 'next-auth/react';
+import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
+import { Send as SendIcon, Email as EmailIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import TextButton from '@/components/htmlElements/buttons/textButton/textButton';
 
-const ResetPasswordClient = () => {
+const inputTheme = textInputTheme();
+const ResetPasswordPageContent = () => {
 	const router = useRouter();
-	const [email, setEmail] = useState('');
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+	const [isPending, setIsPending] = useState(false);
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		setLoading(true);
-		setError(null);
+	const [reSendPasswordResetCode, { isLoading: isResendLoading }] = useSendPasswordResetCodeMutation();
 
-		try {
-			const res = await fetch(`${process.env.NEXT_PUBLIC_ACCOUNT_RESET_PASSWORD}`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ email }),
-			});
-
-			if (res.ok) {
-				await fetch('/cookies', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ new_email: email, maxAge: 600 }),
-				});
+	const formik = useFormik({
+		initialValues: {
+			email: '',
+			globalError: '',
+		},
+		validateOnMount: true,
+		validationSchema: toFormikValidationSchema(emailSchema),
+		onSubmit: async (values, { setFieldError }) => {
+			setIsPending(true);
+			try {
+				await reSendPasswordResetCode({ email: values.email }).unwrap();
+				await cookiesPoster('/cookies', { new_email: values.email });
 				router.push(AUTH_RESET_PASSWORD_ENTER_CODE);
-			} else {
-				setError('Aucun compte trouvé avec cet email.');
+			} catch (e) {
+				setFormikAutoErrors({ e, setFieldError });
+			} finally {
+				setIsPending(false);
 			}
-		} catch {
-			setError('Une erreur est survenue. Veuillez réessayer.');
-		} finally {
-			setLoading(false);
-		}
-	};
+		},
+	});
 
 	return (
-		<AuthLayout>
-			<Paper elevation={4} sx={{ p: 4, width: '100%', maxWidth: 420, borderRadius: 2 }}>
-				<Typography variant="h5" fontWeight={700} gutterBottom>
-					Réinitialiser le mot de passe
-				</Typography>
-				<Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-					Entrez votre email pour recevoir un code de réinitialisation.
-				</Typography>
-
-				{error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-
-				<Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-					<TextField
-						label="Email"
+		<Stack direction="column" className={Styles.contentWrapper} spacing={4}>
+			<Stack direction="column" spacing={1} alignItems="flex-start" width="100%">
+				<Stack direction="column">
+					<span className={Styles.content}>Récupération</span>
+					<span className={Styles.subContent}>du mot de passe</span>
+				</Stack>
+				<span className={Styles.paragraphe}>
+					Entrez votre email pour recevoir un code et modifier votre mot de passe.
+				</span>
+			</Stack>
+			<Divider orientation="horizontal" flexItem className={Styles.divider} />
+			<form style={{ width: '100%' }} onSubmit={formik.handleSubmit} method="post">
+				<Stack direction="column" spacing={4}>
+					<CustomTextInput
+						id="email"
+						name="email"
+						value={formik.values.email}
+						onChange={formik.handleChange('email')}
+						onBlur={formik.handleBlur('email')}
+						helperText={formik.touched.email ? formik.errors.email : ''}
+						error={formik.touched.email && Boolean(formik.errors.email)}
+						fullWidth={false}
+						size="medium"
 						type="email"
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
+						label="Adresse email"
+						placeholder="Adresse email"
+						theme={inputTheme}
+						startIcon={<EmailIcon fontSize="small" />}
 						required
-						fullWidth
+						autoComplete="email"
+						maxLength={254}
 					/>
-					<Button type="submit" variant="contained" fullWidth disabled={loading}
-						startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}>
-						{loading ? 'Envoi...' : 'Envoyer le code'}
-					</Button>
-					<Button variant="text" onClick={() => router.back()}>Retour à la connexion</Button>
-				</Box>
-			</Paper>
-		</AuthLayout>
+					<PrimaryLoadingButton
+						buttonText="Renvoyer le code"
+						active={!isResendLoading && !isPending}
+						cssClass={Styles.emailRegisterButton}
+						type="submit"
+						startIcon={<SendIcon />}
+						loading={isResendLoading || isPending}
+					/>
+					<TextButton
+						buttonText="Retour à la connexion"
+						startIcon={<ArrowBackIcon />}
+						onClick={() => router.push(AUTH_LOGIN)}
+					/>
+				</Stack>
+			</form>
+		</Stack>
+	);
+};
+
+const ResetPasswordClient: React.FC = () => {
+	const { data: session, status } = useSession();
+	const loading = status === 'loading';
+	const router = useRouter();
+
+	useEffect(() => {
+		if (!loading && session) {
+			router.replace(DASHBOARD);
+		}
+	}, [loading, session, router]);
+
+	return (
+		<>
+			{loading && <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />}
+			{!loading && !session && (
+				<>
+					<Desktop>
+						<div>
+							<AuthLayout>
+								<ResetPasswordPageContent />
+							</AuthLayout>
+						</div>
+					</Desktop>
+					<TabletAndMobile>
+						<div style={{ display: 'flex', width: '100%', height: '100%' }}>
+							<main className={Styles.main}>
+								<ResetPasswordPageContent />
+							</main>
+						</div>
+					</TabletAndMobile>
+				</>
+			)}
+		</>
 	);
 };
 
