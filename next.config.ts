@@ -58,15 +58,78 @@ const nextConfig: NextConfig = {
 	images: {
 		unoptimized: isDev,
 		formats: ['image/avif', 'image/webp'],
+		deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+		imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+		minimumCacheTTL: 60,
 		remotePatterns,
+		dangerouslyAllowLocalIP: isProd,
 	},
 
-	async rewrites() {
-		return {
-			beforeFiles: [],
-			afterFiles: [],
-			fallback: [],
-		};
+	async headers() {
+		return [
+			{
+				source: '/_next/static/:path*',
+				headers: [
+					{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+				],
+			},
+			{
+				source: '/assets/ico/manifest.json',
+				headers: [
+					{ key: 'Content-Type', value: 'application/manifest+json' },
+					{ key: 'Cache-Control', value: 'public, max-age=604800, immutable' },
+				],
+			},
+			{
+				source: '/assets/fonts/:path*',
+				headers: [
+					{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+					{ key: 'Access-Control-Allow-Origin', value: '*' },
+				],
+			},
+			{
+				source: '/assets/images/:path*',
+				headers: [
+					{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+				],
+			},
+			{
+				source: '/assets/ico/:path*',
+				headers: [
+					{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+				],
+			},
+			{
+				source: '/assets/:path*',
+				headers: [
+					{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+				],
+			},
+			{
+				source: '/(.*)',
+				headers: [
+					{ key: 'X-Content-Type-Options', value: 'nosniff' },
+					{ key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+					{ key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+					{ key: 'X-XSS-Protection', value: '1; mode=block' },
+					{ key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=()' },
+					{
+						key: 'Content-Security-Policy',
+						value: [
+							"default-src 'self'",
+							"script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+							"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+							"font-src 'self' https://fonts.gstatic.com data:",
+					`img-src 'self' https://api-contracts.elbouazzatiholding.ma data: blob:${isDev ? ' http://localhost:8000 http://127.0.0.1:8000' : ''}`,
+					`connect-src 'self' https://api-contracts.elbouazzatiholding.ma wss://api-contracts.elbouazzatiholding.ma${isDev ? ' http://localhost:8000 http://127.0.0.1:8000 ws://localhost:8000 ws://127.0.0.1:8000' : ''}`,
+							"frame-ancestors 'self'",
+							"base-uri 'self'",
+							"form-action 'self'",
+						].join('; '),
+					},
+				],
+			},
+		];
 	},
 };
 

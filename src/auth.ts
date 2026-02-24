@@ -188,10 +188,10 @@ export const { handlers, auth } = NextAuth({
 		},
 
 		async session({ session, token }) {
-			session.accessToken = token.access;
-			session.refreshToken = token.refresh;
-			session.accessTokenExpiration = token.access_expiration;
-			session.refreshTokenExpiration = token.refresh_expiration;
+			session.accessToken = token.access as string;
+			session.refreshToken = token.refresh as string;
+			session.accessTokenExpiration = token.access_expiration as string;
+			session.refreshTokenExpiration = token.refresh_expiration as string;
 			// @ts-expect-error next-auth augmented AdapterUser extends User, creating an intersection type
 			session.user = token.user;
 			return session;

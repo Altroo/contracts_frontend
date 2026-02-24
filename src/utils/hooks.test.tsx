@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import '@testing-library/jest-dom';
@@ -30,7 +30,10 @@ describe('useAppSelector', () => {
 // ─── usePermission ───────────────────────────────────────────────────────────
 
 jest.mock('@/store/selectors', () => ({
-	getProfilState: jest.fn((state: unknown) => state),
+	getProfilState: jest.fn((state: unknown) => {
+		const s = state as { account?: { profil?: unknown } };
+		return (s?.account?.profil ?? {}) as ReturnType<typeof import('@/store/selectors').getProfilState>;
+	}),
 }));
 
 import { usePermission } from './hooks';
@@ -38,6 +41,7 @@ import { usePermission } from './hooks';
 describe('usePermission', () => {
 	const makeWrapper =
 		(profil: Record<string, unknown>) =>
+		// eslint-disable-next-line react/display-name
 		({ children }: { children: React.ReactNode }) => {
 			const fakeStore = configureStore({
 				reducer: {

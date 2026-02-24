@@ -6,6 +6,7 @@ import { Gavel as GavelIcon } from '@mui/icons-material';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { DASHBOARD } from '@/utils/routes';
+import AuthLayout from '@/components/layouts/auth/authLayout';
 
 const LoginClient = () => {
 	const router = useRouter();
@@ -14,7 +15,7 @@ const LoginClient = () => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setLoading(true);
 		setError(null);
@@ -30,15 +31,7 @@ const LoginClient = () => {
 	};
 
 	return (
-		<Box
-			sx={{
-				display: 'flex',
-				justifyContent: 'center',
-				alignItems: 'center',
-				minHeight: '100vh',
-				bgcolor: '#F5F5F5',
-			}}
-		>
+		<AuthLayout>
 			<Paper elevation={4} sx={{ p: 4, width: '100%', maxWidth: 420, borderRadius: 2 }}>
 				<Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
 					<GavelIcon sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
@@ -87,7 +80,7 @@ const LoginClient = () => {
 					</Button>
 				</Box>
 			</Paper>
-		</Box>
+		</AuthLayout>
 	);
 };
 

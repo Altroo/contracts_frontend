@@ -59,17 +59,18 @@ describe('ErrorBoundary', () => {
 
 		expect(screen.getByText(/Une erreur est survenue/i)).toBeInTheDocument();
 
-		// Find and click the reset/retry button
-		const resetBtn = screen.getByRole('button');
-		await userEvent.click(resetBtn);
-
-		// Now rerender without throwing — hasError should be reset
+		// First, switch to non-throwing children so they won't re-throw after reset
 		rerender(
 			<ErrorBoundary>
 				<ThrowingComponent shouldThrow={false} />
 			</ErrorBoundary>,
 		);
 
+		// Find and click the reset/retry button
+		const resetBtn = screen.getByRole('button', { name: /réessayer/i });
+		await userEvent.click(resetBtn);
+
+		// Non-throwing children should now be rendered
 		expect(screen.getByTestId('ok')).toBeInTheDocument();
 	});
 

@@ -191,3 +191,6 @@ export const parseNumber = (value: string | number): number | null => {
 	const n = Number(normalized);
 	return Number.isFinite(n) ? n : null;
 };
+
+export const getLabelForKey = (fieldLabels: Record<string, string>, key: string): string =>
+	fieldLabels[key] ?? key;

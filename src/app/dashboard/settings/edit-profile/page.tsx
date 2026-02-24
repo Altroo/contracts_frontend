@@ -1,10 +1,22 @@
-import { type Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { auth } from '@/auth';
+import { AUTH_LOGIN } from '@/utils/routes';
 import EditProfileClient from '@/components/pages/settings/edit-profile';
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-	title: 'Mon profil',
+	title: 'Modifier le Profil',
+	description: 'Modifier les informations du profil utilisateur',
 };
 
-const EditProfilePage = () => <EditProfileClient />;
+const EditProfilePage = async () => {
+	const session = await auth();
+
+	if (!session) {
+		redirect(AUTH_LOGIN);
+	}
+
+	return <EditProfileClient session={session} />;
+};
 
 export default EditProfilePage;

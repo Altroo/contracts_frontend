@@ -1,72 +1,110 @@
 'use client';
 
-import React, { useState } from 'react';
-import {
-	Box, Typography, Button, TextField, Paper, Stack, CircularProgress, Alert,
-} from '@mui/material';
+import React from 'react';
+import { Stack, Typography } from '@mui/material';
+import { useFormik } from 'formik';
+import { toFormikValidationSchema } from 'zod-formik-adapter';
+import { useToast } from '@/utils/hooks';
+import { useEditPasswordMutation } from '@/store/services/account';
+import { setFormikAutoErrors } from '@/utils/helpers';
+import { changePasswordSchema } from '@/utils/formValidationSchemas';
+import { textInputTheme } from '@/utils/themes';
+import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
+import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
+import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
+import Styles from '@/styles/dashboard/settings/settings.module.sass';
+
+interface PasswordFormValues {
+	old_password: string;
+	new_password: string;
+	new_password2: string;
+	globalError: string;
+}
 
 const PasswordClient = () => {
-	const [form, setForm] = useState({ old_password: '', new_password1: '', new_password2: '' });
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-	const [success, setSuccess] = useState(false);
+	const { onSuccess, onError } = useToast();
+	const [editPassword, { isLoading, error: apiError }] = useEditPasswordMutation();
 
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-	};
-
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		setError(null);
-		setSuccess(false);
-
-		if (form.new_password1 !== form.new_password2) {
-			setError('Les nouveaux mots de passe ne correspondent pas.');
-			return;
-		}
-
-		setLoading(true);
-		try {
-			const res = await fetch(`${process.env.NEXT_PUBLIC_ACCOUNT_CHANGE_PASSWORD}`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				credentials: 'include',
-				body: JSON.stringify(form),
-			});
-
-			if (res.ok) {
-				setSuccess(true);
-				setForm({ old_password: '', new_password1: '', new_password2: '' });
-			} else {
-				const data = await res.json();
-				setError(data?.detail ?? 'Erreur lors du changement de mot de passe.');
+	const formik = useFormik<PasswordFormValues>({
+		initialValues: {
+			old_password: '',
+			new_password: '',
+			new_password2: '',
+			globalError: '',
+		},
+		validationSchema: toFormikValidationSchema(changePasswordSchema),
+		onSubmit: async (data, { setFieldError, resetForm }) => {
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const { globalError, ...payload } = data;
+			try {
+				await editPassword({ data: payload }).unwrap();
+				onSuccess('Mot de passe mis à jour.');
+				resetForm();
+			} catch (e) {
+				onError('Erreur lors du changement de mot de passe.');
+				setFormikAutoErrors({ e, setFieldError });
 			}
-		} catch {
-			setError('Une erreur est survenue.');
-		} finally {
-			setLoading(false);
-		}
-	};
+		},
+	});
 
 	return (
-		<Box sx={{ p: 3 }}>
-			<Typography variant="h5" fontWeight={700} gutterBottom>Changer le mot de passe</Typography>
-			<Paper sx={{ p: 3, maxWidth: 480 }} component="form" onSubmit={handleSubmit}>
-				<Stack spacing={3}>
-					{error && <Alert severity="error">{error}</Alert>}
-					{success && <Alert severity="success">Mot de passe mis à jour.</Alert>}
-					<TextField label="Mot de passe actuel" name="old_password" type="password" value={form.old_password} onChange={handleChange} required fullWidth />
-					<TextField label="Nouveau mot de passe" name="new_password1" type="password" value={form.new_password1} onChange={handleChange} required fullWidth />
-					<TextField label="Confirmer" name="new_password2" type="password" value={form.new_password2} onChange={handleChange} required fullWidth />
-					<Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-						<Button type="submit" variant="contained" disabled={loading}
-							startIcon={loading ? <CircularProgress size={18} color="inherit" /> : null}>
-							{loading ? 'Mise à jour...' : 'Mettre à jour'}
-						</Button>
-					</Box>
+		<Stack className={Styles.main as string} spacing={3}>
+			<Typography variant="h5" fontWeight={700}>
+				Changer le mot de passe
+			</Typography>
+
+			{formik.errors.globalError && <ApiAlert errorDetails={{ error: [formik.errors.globalError] }} />}
+			{!!apiError && <ApiAlert errorDetails={{ error: ['Erreur lors du changement de mot de passe.'] }} />}
+
+			<form onSubmit={formik.handleSubmit}>
+				<Stack spacing={2.5} sx={{ maxWidth: 480 }}>
+					<CustomTextInput
+						id="old_password"
+						type="password"
+						label="Mot de passe actuel"
+						value={formik.values.old_password}
+						onChange={formik.handleChange}
+						onBlur={formik.handleBlur}
+						error={formik.touched.old_password && Boolean(formik.errors.old_password)}
+						helperText={formik.touched.old_password ? formik.errors.old_password : ''}
+						fullWidth
+						theme={textInputTheme()}
+					/>
+					<CustomTextInput
+						id="new_password"
+						type="password"
+						label="Nouveau mot de passe"
+						value={formik.values.new_password}
+						onChange={formik.handleChange}
+						onBlur={formik.handleBlur}
+						error={formik.touched.new_password && Boolean(formik.errors.new_password)}
+						helperText={formik.touched.new_password ? formik.errors.new_password : ''}
+						fullWidth
+						theme={textInputTheme()}
+					/>
+					<CustomTextInput
+						id="new_password2"
+						type="password"
+						label="Confirmer le mot de passe"
+						value={formik.values.new_password2}
+						onChange={formik.handleChange}
+						onBlur={formik.handleBlur}
+						error={formik.touched.new_password2 && Boolean(formik.errors.new_password2)}
+						helperText={formik.touched.new_password2 ? formik.errors.new_password2 : ''}
+						fullWidth
+						theme={textInputTheme()}
+					/>
+					<Stack direction="row" justifyContent="center">
+						<PrimaryLoadingButton
+							buttonText="Mettre à jour"
+							type="submit"
+							loading={isLoading}
+							active={!isLoading}
+						/>
+					</Stack>
 				</Stack>
-			</Paper>
-		</Box>
+			</form>
+		</Stack>
 	);
 };
 

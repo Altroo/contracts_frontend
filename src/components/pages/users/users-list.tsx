@@ -24,12 +24,15 @@ import {
 import { useRouter } from 'next/navigation';
 import { USERS_ADD, USERS_VIEW } from '@/utils/routes';
 import { useGetUsersListQuery } from '@/store/services/account';
-import type { PaginationResponseType } from '@/types/_initTypes';
+import { getAccessTokenFromSession } from '@/store/session';
+import { Protected } from '@/components/layouts/protected/protected';
+import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import type { UserClass } from '@/models/classes';
 
-const UsersListClient = () => {
+const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const router = useRouter();
-	const { data, isLoading, isError } = useGetUsersListQuery({ with_pagination: true, page: 1 });
+	const token = getAccessTokenFromSession(session);
+	const { data, isLoading, isError } = useGetUsersListQuery({ with_pagination: true, page: 1 }, { skip: !token });
 
 	if (isLoading) {
 		return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><CircularProgress /></Box>;
@@ -46,6 +49,7 @@ const UsersListClient = () => {
 	const users = (data && 'results' in data ? (data as PaginationResponseType<UserClass>).results : (data as UserClass[] | undefined)) ?? [];
 
 	return (
+		<Protected>
 		<Box sx={{ p: 3 }}>
 			<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
 				<Typography variant="h5" fontWeight={700}>Utilisateurs</Typography>
@@ -103,6 +107,7 @@ const UsersListClient = () => {
 				</TableContainer>
 			)}
 		</Box>
+		</Protected>
 	);
 };
 

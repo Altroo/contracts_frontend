@@ -1,8 +1,12 @@
-import { type Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { auth } from '@/auth';
+import { AUTH_LOGIN, USERS_LIST } from '@/utils/routes';
 import UsersViewClient from '@/components/pages/users/users-view';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-	title: 'Utilisateur',
+	title: "Détails de l'Utilisateur",
+	description: "Consulter les détails d'un utilisateur",
 };
 
 interface Props {
@@ -10,8 +14,18 @@ interface Props {
 }
 
 const UserDetailPage = async ({ params }: Props) => {
+	const session = await auth();
 	const { id } = await params;
-	return <UsersViewClient id={Number(id)} />;
+
+	if (!session) {
+		redirect(AUTH_LOGIN);
+	}
+
+	if (!id || isNaN(Number(id))) {
+		redirect(USERS_LIST);
+	}
+
+	return <UsersViewClient session={session} id={Number(id)} />;
 };
 
 export default UserDetailPage;

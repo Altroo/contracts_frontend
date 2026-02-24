@@ -10,6 +10,7 @@ jest.mock('next/navigation', () => ({
 }));
 
 jest.mock('@/store/services/contract', () => ({
+	...jest.requireActual('@/store/services/contract'),
 	useGetContractQuery: jest.fn(() => ({ data: undefined, isLoading: false, isError: true })),
 }));
 
@@ -48,7 +49,7 @@ describe('ContractViewClient', () => {
 				<ContractViewClient id={1} />
 			</Provider>,
 		);
-		expect(screen.getByText('CTR-001')).toBeInTheDocument();
+		expect(screen.getAllByText('CTR-001').length).toBeGreaterThan(0);
 		expect(screen.getByText('Jean Dupont')).toBeInTheDocument();
 	});
 });

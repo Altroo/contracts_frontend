@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Box, Button, TextField, Typography, Paper, Alert, CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { AUTH_RESET_PASSWORD_SET_PASSWORD_COMPLETE } from '@/utils/routes';
+import AuthLayout from '@/components/layouts/auth/authLayout';
 
 const SetPasswordClient = () => {
 	const router = useRouter();
@@ -12,7 +13,7 @@ const SetPasswordClient = () => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setError(null);
 
@@ -37,7 +38,7 @@ const SetPasswordClient = () => {
 	};
 
 	return (
-		<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: '#F5F5F5' }}>
+		<AuthLayout>
 			<Paper elevation={4} sx={{ p: 4, width: '100%', maxWidth: 420, borderRadius: 2 }}>
 				<Typography variant="h5" fontWeight={700} gutterBottom>Nouveau mot de passe</Typography>
 				<Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -68,7 +69,7 @@ const SetPasswordClient = () => {
 					<Button variant="text" onClick={() => router.back()}>Retour</Button>
 				</Box>
 			</Paper>
-		</Box>
+		</AuthLayout>
 	);
 };
 

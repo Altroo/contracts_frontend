@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Box, Button, TextField, Typography, Paper, Alert, CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { AUTH_RESET_PASSWORD_ENTER_CODE } from '@/utils/routes';
+import AuthLayout from '@/components/layouts/auth/authLayout';
 
 const ResetPasswordClient = () => {
 	const router = useRouter();
@@ -11,7 +12,7 @@ const ResetPasswordClient = () => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setLoading(true);
 		setError(null);
@@ -41,7 +42,7 @@ const ResetPasswordClient = () => {
 	};
 
 	return (
-		<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: '#F5F5F5' }}>
+		<AuthLayout>
 			<Paper elevation={4} sx={{ p: 4, width: '100%', maxWidth: 420, borderRadius: 2 }}>
 				<Typography variant="h5" fontWeight={700} gutterBottom>
 					Réinitialiser le mot de passe
@@ -68,7 +69,7 @@ const ResetPasswordClient = () => {
 					<Button variant="text" onClick={() => router.back()}>Retour à la connexion</Button>
 				</Box>
 			</Paper>
-		</Box>
+		</AuthLayout>
 	);
 };
 

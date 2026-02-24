@@ -1,135 +1,182 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-	Box, Typography, Button, TextField, Paper, Stack,
-	FormControlLabel, Switch, CircularProgress, Divider,
+	Avatar,
+	Button,
+	Card,
+	CardContent,
+	Chip,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogContentText,
+	DialogTitle,
+	Divider,
+	Stack,
+	Typography,
 } from '@mui/material';
-import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import {
+	Person as PersonIcon,
+	Email as EmailIcon,
+	Wc as WcIcon,
+	Edit as EditIcon,
+	Delete as DeleteIcon,
+} from '@mui/icons-material';
+import { USERS_LIST, USERS_EDIT } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
-import { USERS_LIST } from '@/utils/routes';
-import { useGetUserQuery, usePatchUserMutation } from '@/store/services/account';
+import { useToast } from '@/utils/hooks';
+import { useGetUserQuery, useDeleteUserMutation } from '@/store/services/account';
+import { getAccessTokenFromSession } from '@/store/session';
+import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
+import { Protected } from '@/components/layouts/protected/protected';
+import type { SessionProps } from '@/types/_initTypes';
+import Styles from '@/styles/dashboard/dashboard.module.sass';
 
-interface Props {
+interface Props extends SessionProps {
 	id: number;
 }
 
-const UsersViewClient = ({ id }: Props) => {
+const InfoRow = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
+	<Stack direction="row" spacing={2} alignItems="center" sx={{ py: 1 }}>
+		{icon}
+		<Typography variant="body2" color="text.secondary" sx={{ minWidth: 120, fontWeight: 600 }}>
+			{label}
+		</Typography>
+		<Typography variant="body1">{value || '—'}</Typography>
+	</Stack>
+);
+
+const UsersViewClient = ({ id, session }: Props) => {
 	const router = useRouter();
-	const { data: user, isLoading } = useGetUserQuery({ id });
-	const [patchUser, { isLoading: isSaving }] = usePatchUserMutation();
+	const { onSuccess, onError } = useToast();
+	const token = getAccessTokenFromSession(session);
+	const { data: rawData, isLoading: isDataLoading } = useGetUserQuery({ id }, { skip: !token });
+	const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
+	const [openDialog, setOpenDialog] = useState(false);
 
-	const [form, setForm] = useState({
-		first_name: '',
-		last_name: '',
-		email: '',
-		is_active: true,
-		is_staff: false,
-		can_view: true,
-		can_print: true,
-		can_create: false,
-		can_edit: false,
-		can_delete: false,
-	});
-	const [error, setError] = useState<string | null>(null);
-	const [success, setSuccess] = useState(false);
-
-	useEffect(() => {
-		if (user) {
-			setForm({
-				first_name: user.first_name ?? '',
-				last_name: user.last_name ?? '',
-				email: user.email ?? '',
-				is_active: user.is_active ?? true,
-				is_staff: user.is_staff ?? false,
-				can_view: user.can_view ?? true,
-				can_print: user.can_print ?? true,
-				can_create: user.can_create ?? false,
-				can_edit: user.can_edit ?? false,
-				can_delete: user.can_delete ?? false,
-			});
-		}
-	}, [user]);
-
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value, type, checked } = e.target;
-		setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
-	};
-
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		setError(null);
-		setSuccess(false);
-		try {
-			await patchUser({ id, data: form }).unwrap();
-			setSuccess(true);
-		} catch {
-			setError('Erreur lors de la mise à jour.');
-		}
-	};
-
-	if (isLoading) {
-		return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><CircularProgress /></Box>;
+	if (isDataLoading) {
+		return <ApiProgress backdropColor="#FFFFFF" circularColor="#0274D7" />;
 	}
 
-	if (!user) {
+	if (!rawData) {
 		return (
-			<Box sx={{ p: 3 }}>
-				<Typography color="error">Utilisateur introuvable.</Typography>
-				<Button onClick={() => router.push(USERS_LIST)} sx={{ mt: 2 }}>Retour</Button>
-			</Box>
+			<Stack className={Styles.main as string} spacing={3}>
+				<Typography variant="h6" color="error">
+					Utilisateur introuvable.
+				</Typography>
+				<Button variant="outlined" onClick={() => router.push(USERS_LIST)}>
+					Retour à la liste
+				</Button>
+			</Stack>
 		);
 	}
 
+	const handleDelete = async () => {
+		try {
+			await deleteUser({ id }).unwrap();
+			onSuccess('Utilisateur supprimé.');
+			router.push(USERS_LIST);
+		} catch {
+			onError('Échec de la suppression.');
+		}
+		setOpenDialog(false);
+	};
+
+	const genderLabel = rawData.gender === 'H' ? 'Homme' : rawData.gender === 'F' ? 'Femme' : '—';
+
 	return (
-		<Box sx={{ p: 3 }}>
-			<Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-				<Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={() => router.push(USERS_LIST)}>Retour</Button>
-				<Typography variant="h5" fontWeight={700}>
-					{user.first_name} {user.last_name}
-				</Typography>
-			</Stack>
-
-			<Paper sx={{ p: 3 }} component="form" onSubmit={handleSubmit}>
-				<Stack spacing={3}>
-					{error && <Typography color="error">{error}</Typography>}
-					{success && <Typography color="success.main">Modifications enregistrées.</Typography>}
-
-					<Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-						<TextField label="Prénom" name="first_name" value={form.first_name} onChange={handleChange} fullWidth />
-						<TextField label="Nom" name="last_name" value={form.last_name} onChange={handleChange} fullWidth />
-					</Stack>
-					<TextField label="Email" name="email" type="email" value={form.email} onChange={handleChange} fullWidth />
-
-					<Divider />
-					<Typography variant="subtitle2">Permissions</Typography>
-					<Stack direction="row" flexWrap="wrap" gap={1}>
-						{(['is_active', 'is_staff', 'can_view', 'can_print', 'can_create', 'can_edit', 'can_delete'] as const).map((key) => (
-							<FormControlLabel
-								key={key}
-								control={<Switch name={key} checked={form[key]} onChange={handleChange} />}
-								label={{
-									is_active: 'Actif',
-									is_staff: 'Administrateur',
-									can_view: 'Peut consulter',
-									can_print: 'Peut imprimer',
-									can_create: 'Peut créer',
-									can_edit: 'Peut modifier',
-									can_delete: 'Peut supprimer',
-								}[key]}
-							/>
-						))}
-					</Stack>
-
-					<Stack direction="row" justifyContent="flex-end">
-						<Button type="submit" variant="contained" disabled={isSaving}
-							startIcon={isSaving ? <CircularProgress size={18} color="inherit" /> : null}>
-							{isSaving ? 'Sauvegarde...' : 'Enregistrer'}
-						</Button>
+		<Protected>
+		<Stack className={Styles.main as string} spacing={3}>
+			{/* Header */}
+			<Stack direction="row" spacing={3} alignItems="center">
+				<Avatar
+					src={(rawData.avatar_cropped || rawData.avatar || undefined) as string | undefined}
+					sx={{ width: 72, height: 72, bgcolor: '#0274D7' }}
+				>
+					{rawData.first_name?.charAt(0)}
+					{rawData.last_name?.charAt(0)}
+				</Avatar>
+				<Stack>
+					<Typography variant="h5" fontWeight={700}>
+						{rawData.first_name} {rawData.last_name}
+					</Typography>
+					<Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
+						{rawData.is_staff && <Chip label="Admin" color="primary" size="small" />}
+						{rawData.is_active && <Chip label="Actif" color="success" size="small" />}
+						{!rawData.is_active && <Chip label="Inactif" color="default" size="small" />}
 					</Stack>
 				</Stack>
-			</Paper>
-		</Box>
+			</Stack>
+
+			{/* Informations */}
+			<Card elevation={2} sx={{ borderRadius: 2 }}>
+				<CardContent sx={{ p: 3 }}>
+					<Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+						Informations générales
+					</Typography>
+					<Divider sx={{ mb: 2 }} />
+					<InfoRow icon={<PersonIcon color="action" />} label="Prénom" value={rawData.first_name ?? ''} />
+					<InfoRow icon={<PersonIcon color="action" />} label="Nom" value={rawData.last_name ?? ''} />
+					<InfoRow icon={<EmailIcon color="action" />} label="Email" value={rawData.email ?? ''} />
+					<InfoRow icon={<WcIcon color="action" />} label="Genre" value={genderLabel} />
+				</CardContent>
+			</Card>
+
+			{/* Permissions */}
+			<Card elevation={2} sx={{ borderRadius: 2 }}>
+				<CardContent sx={{ p: 3 }}>
+					<Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+						Permissions
+					</Typography>
+					<Divider sx={{ mb: 2 }} />
+					<Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+						<Chip label="Administrateur" color={rawData.is_staff ? 'primary' : 'default'} variant={rawData.is_staff ? 'filled' : 'outlined'} />
+						<Chip label="Peut voir" color={rawData.can_view ? 'primary' : 'default'} variant={rawData.can_view ? 'filled' : 'outlined'} />
+						<Chip label="Peut imprimer" color={rawData.can_print ? 'primary' : 'default'} variant={rawData.can_print ? 'filled' : 'outlined'} />
+						<Chip label="Peut créer" color={rawData.can_create ? 'primary' : 'default'} variant={rawData.can_create ? 'filled' : 'outlined'} />
+						<Chip label="Peut modifier" color={rawData.can_edit ? 'primary' : 'default'} variant={rawData.can_edit ? 'filled' : 'outlined'} />
+						<Chip label="Peut supprimer" color={rawData.can_delete ? 'primary' : 'default'} variant={rawData.can_delete ? 'filled' : 'outlined'} />
+					</Stack>
+				</CardContent>
+			</Card>
+
+			{/* Actions */}
+			<Stack direction="row" spacing={2} justifyContent="center">
+				<Button
+					variant="contained"
+					startIcon={<EditIcon />}
+					onClick={() => router.push(USERS_EDIT(id))}
+				>
+					Modifier
+				</Button>
+				<Button
+					variant="outlined"
+					color="error"
+					startIcon={<DeleteIcon />}
+					onClick={() => setOpenDialog(true)}
+				>
+					Supprimer
+				</Button>
+			</Stack>
+
+			{/* Delete confirmation dialog */}
+			<Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+				<DialogTitle>Confirmer la suppression</DialogTitle>
+				<DialogContent>
+					<DialogContentText>
+						Voulez-vous vraiment supprimer l&apos;utilisateur {rawData.first_name} {rawData.last_name} ?
+					</DialogContentText>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={() => setOpenDialog(false)}>Annuler</Button>
+					<Button onClick={handleDelete} color="error" disabled={isDeleting}>
+						{isDeleting ? 'Suppression...' : 'Supprimer'}
+					</Button>
+				</DialogActions>
+			</Dialog>
+		</Stack>
+		</Protected>
 	);
 };
 

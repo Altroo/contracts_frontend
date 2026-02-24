@@ -15,7 +15,9 @@ jest.mock('@/utils/hooks', () => ({
 jest.mock('@mui/material/styles', () => ({
 	useTheme: () => ({
 		breakpoints: {
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			up: (_bp: string) => '(min-width:992px)',
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			down: (_bp: string) => '(max-width:991px)',
 		},
 	}),

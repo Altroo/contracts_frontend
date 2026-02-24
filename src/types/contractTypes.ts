@@ -48,3 +48,31 @@ export type ContractTrancheType = {
 	label: string;
 	pourcentage: number;
 };
+
+export type ContractFormValuesType = {
+	numero_contrat: string;
+	date_contrat: string;
+	statut: ContractStatutType;
+	type_contrat: string;
+	ville_signature: string;
+	client_nom: string;
+	client_cin: string;
+	client_qualite: string;
+	client_adresse: string;
+	client_tel: string;
+	client_email: string;
+	type_bien: string;
+	surface: string;
+	adresse_travaux: string;
+	date_debut: string;
+	duree_estimee: string;
+	description_travaux: string;
+	montant_ht: string;
+	devise: string;
+	tva: string;
+	garantie: string;
+	tribunal: string;
+	responsable_projet: string;
+	confidentialite: string;
+	globalError: string;
+};

@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import { getCorsHeaders, addCorsHeaders } from './corsHeaders';
 
 describe('getCorsHeaders', () => {

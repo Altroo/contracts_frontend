@@ -1,6 +1,12 @@
 import type { ResponseDataInterface, SagaPayloadType, TokenType } from '@/types/_initTypes';
 import type { UserClass } from '@/models/classes';
 
+//!- DropDown Type
+export type DropDownType = {
+	code: string;
+	value: string;
+};
+
 //!- Account State
 export interface AccountStateInterface {
 	profil: UserClass | Record<string, unknown>;
@@ -29,7 +35,7 @@ export type AccountGenderCodeValueType = {
 export type setProfilPayloadType = SagaPayloadType<UserClass>;
 
 export interface EditProfilResponse extends TokenType {
-	data: Partial<UserClass>;
+	data: FormData | Partial<UserClass>;
 }
 
 export interface PasswordResetResponse extends TokenType {

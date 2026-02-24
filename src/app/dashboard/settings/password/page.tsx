@@ -1,10 +1,22 @@
-import { type Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { auth } from '@/auth';
+import { AUTH_LOGIN } from '@/utils/routes';
 import PasswordClient from '@/components/pages/settings/password';
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-	title: 'Changer le mot de passe',
+	title: 'Modifier le Mot de Passe',
+	description: 'Modifier le mot de passe du compte',
 };
 
-const PasswordPage = () => <PasswordClient />;
+const EditPasswordPage = async () => {
+	const session = await auth();
 
-export default PasswordPage;
+	if (!session) {
+		redirect(AUTH_LOGIN);
+	}
+
+	return <PasswordClient />;
+};
+
+export default EditPasswordPage;

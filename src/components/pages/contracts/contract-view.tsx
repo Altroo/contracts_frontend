@@ -19,6 +19,8 @@ import {
 import { useRouter } from 'next/navigation';
 import { CONTRACTS_LIST, CONTRACTS_EDIT } from '@/utils/routes';
 import { useGetContractQuery } from '@/store/services/contract';
+import { getAccessTokenFromSession } from '@/store/session';
+import type { SessionProps } from '@/types/_initTypes';
 
 const statusColors: Record<string, 'default' | 'warning' | 'success' | 'error' | 'info' | 'primary' | 'secondary'> = {
 	Brouillon: 'default',
@@ -30,13 +32,14 @@ const statusColors: Record<string, 'default' | 'warning' | 'success' | 'error' |
 	Expiré: 'error',
 };
 
-interface Props {
+interface Props extends SessionProps {
 	id: number;
 }
 
-const ContractViewClient = ({ id }: Props) => {
+const ContractViewClient = ({ id, session }: Props) => {
 	const router = useRouter();
-	const { data: contract, isLoading, isError } = useGetContractQuery({ id });
+	const token = getAccessTokenFromSession(session);
+	const { data: contract, isLoading, isError } = useGetContractQuery({ id }, { skip: !token });
 
 	if (isLoading) {
 		return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><CircularProgress /></Box>;

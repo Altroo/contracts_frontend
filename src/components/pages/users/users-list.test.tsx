@@ -10,7 +10,12 @@ jest.mock('next/navigation', () => ({
 }));
 
 jest.mock('@/store/services/account', () => ({
+	...jest.requireActual('@/store/services/account'),
 	useGetUsersListQuery: jest.fn(() => ({ data: undefined, isLoading: false, isError: false })),
+}));
+
+jest.mock('@/utils/hooks', () => ({
+	usePermission: () => ({ is_staff: true, can_view: true, can_print: true, can_create: true, can_edit: true, can_delete: true }),
 }));
 
 jest.mock('@/utils/routes', () => ({
@@ -40,7 +45,7 @@ describe('UsersListClient', () => {
 				<UsersListClient />
 			</Provider>,
 		);
-		expect(screen.getByText(/jean/i)).toBeInTheDocument();
+		expect(screen.getByText(/jean dupont/i)).toBeInTheDocument();
 		expect(screen.getByText('jean@test.com')).toBeInTheDocument();
 	});
 });

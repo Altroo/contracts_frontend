@@ -10,6 +10,7 @@ jest.mock('next/navigation', () => ({
 }));
 
 jest.mock('@/store/services/contract', () => ({
+	...jest.requireActual('@/store/services/contract'),
 	useGetContractsListQuery: jest.fn(() => ({ data: undefined, isLoading: false, isError: false })),
 }));
 

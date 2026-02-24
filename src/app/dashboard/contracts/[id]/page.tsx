@@ -1,8 +1,12 @@
-import { type Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { auth } from '@/auth';
+import { AUTH_LOGIN, CONTRACTS_LIST } from '@/utils/routes';
 import ContractViewClient from '@/components/pages/contracts/contract-view';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
 	title: 'Contrat',
+	description: 'Détails du contrat',
 };
 
 interface Props {
@@ -10,8 +14,18 @@ interface Props {
 }
 
 const ContractViewPage = async ({ params }: Props) => {
+	const session = await auth();
 	const { id } = await params;
-	return <ContractViewClient id={Number(id)} />;
+
+	if (!session) {
+		redirect(AUTH_LOGIN);
+	}
+
+	if (!id || isNaN(Number(id))) {
+		redirect(CONTRACTS_LIST);
+	}
+
+	return <ContractViewClient session={session} id={Number(id)} />;
 };
 
 export default ContractViewPage;

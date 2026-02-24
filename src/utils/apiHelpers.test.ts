@@ -5,7 +5,6 @@ jest.mock('axios', () => {
 	const mockPost = jest.fn();
 	const mockDelete = jest.fn();
 	const mockGet = jest.fn();
-	const mockPostApi = jest.fn();
 	const instance = {
 		post: mockPost,
 		delete: mockDelete,

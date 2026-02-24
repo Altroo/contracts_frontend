@@ -34,7 +34,7 @@ describe('contractApi', () => {
 
 	it('getContractsList query with statut filter completes without error', async () => {
 		const result = await storeRef.store.dispatch(
-			contractApi.endpoints.getContractsList.initiate({ statut: 'EN_COURS' }),
+			contractApi.endpoints.getContractsList.initiate({ statut: 'En cours' }),
 		);
 		expect('error' in result).toBe(false);
 	});
@@ -65,7 +65,7 @@ describe('contractApi', () => {
 
 	it('patchContractStatut mutation completes without error', async () => {
 		const result = await storeRef.store.dispatch(
-			contractApi.endpoints.patchContractStatut.initiate({ id: 1, data: { statut: 'SIGNE' } }),
+			contractApi.endpoints.patchContractStatut.initiate({ id: 1, data: { statut: 'Signé' } }),
 		);
 		expect('error' in result).toBe(false);
 	});

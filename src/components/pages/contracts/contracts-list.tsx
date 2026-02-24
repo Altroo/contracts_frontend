@@ -25,7 +25,8 @@ import {
 import { useRouter } from 'next/navigation';
 import { CONTRACTS_ADD, CONTRACTS_VIEW, CONTRACTS_EDIT } from '@/utils/routes';
 import { useGetContractsListQuery } from '@/store/services/contract';
-import type { PaginationResponseType } from '@/types/_initTypes';
+import { getAccessTokenFromSession } from '@/store/session';
+import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import type { ContractClass } from '@/models/classes';
 
 const statusColors: Record<string, 'default' | 'warning' | 'success' | 'error' | 'info' | 'primary' | 'secondary'> = {
@@ -38,9 +39,10 @@ const statusColors: Record<string, 'default' | 'warning' | 'success' | 'error' |
 	Expiré: 'error',
 };
 
-const ContractsListClient = () => {
+const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const router = useRouter();
-	const { data, isLoading, isError } = useGetContractsListQuery({ with_pagination: true, page: 1 });
+	const token = getAccessTokenFromSession(session);
+	const { data, isLoading, isError } = useGetContractsListQuery({ with_pagination: true, page: 1 }, { skip: !token });
 
 	if (isLoading) {
 		return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><CircularProgress /></Box>;

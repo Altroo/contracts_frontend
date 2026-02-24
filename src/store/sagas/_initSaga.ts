@@ -1,10 +1,9 @@
 import { put, takeLatest } from 'redux-saga/effects';
 import * as Types from '../actions';
-import type { InitStateInterface, InitStateToken } from '@/types/_initTypes';
+import type { InitStateInterface, InitStateToken, AppSession } from '@/types/_initTypes';
 import { setInitState } from '../slices/_initSlice';
-import type { Session } from 'next-auth';
 
-export function* initAppSessionTokensSaga(payload: { type: string; session: Session }) {
+export function* initAppSessionTokensSaga(payload: { type: string; session: AppSession }) {
 	const stateToken = {
 		user: payload.session.user,
 		access: payload.session.accessToken,

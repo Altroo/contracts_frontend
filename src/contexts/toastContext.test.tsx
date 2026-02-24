@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { ToastContext, ToastContextProvider } from './toastContext';
+import { ToastContext, ToastContextProvider, type ToastContextType } from './toastContext';
 
 const TestConsumer: React.FC<{ action: 'success' | 'error'; message: string }> = ({ action, message }) => {
 	const ctx = React.useContext(ToastContext);
@@ -59,8 +59,9 @@ describe('ToastContextProvider', () => {
 	});
 
 	it('provides onSuccess and onError via context', () => {
-		let capturedCtx: ReturnType<typeof React.useContext<typeof ToastContext>> | undefined;
+		let capturedCtx: ToastContextType | undefined;
 		const Capture = () => {
+			// eslint-disable-next-line react-hooks/globals
 			capturedCtx = React.useContext(ToastContext);
 			return null;
 		};

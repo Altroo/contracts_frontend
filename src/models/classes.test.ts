@@ -103,9 +103,7 @@ describe('ContractClass', () => {
 
 			// Contract dates & status
 			'2024-03-15',               // date_contrat
-			'EN_COURS',                 // statut
-
-			// Project fields
+			'En cours',                 // statut
 			'12 Boulevard Haussmann',   // adresse_travaux
 			'Appartement',              // type_bien
 			120,                        // surface
@@ -175,7 +173,7 @@ describe('ContractClass', () => {
 	it('stores contract dates and status', () => {
 		const contract = makeContract();
 		expect(contract.date_contrat).toBe('2024-03-15');
-		expect(contract.statut).toBe('EN_COURS');
+		expect(contract.statut).toBe('En cours');
 	});
 
 	it('stores financial fields', () => {

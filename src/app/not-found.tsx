@@ -20,7 +20,7 @@ const NotFound = () => {
 					Page introuvable
 				</Typography>
 				<Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-					La page que vous cherchez n'existe pas ou a été déplacée.
+					La page que vous cherchez n&apos;existe pas ou a été déplacée.
 				</Typography>
 				<Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
 					<Button variant="contained" startIcon={<HomeIcon />} onClick={() => router.push(DASHBOARD)}>
