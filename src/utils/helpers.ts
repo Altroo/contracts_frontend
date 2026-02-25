@@ -197,3 +197,35 @@ export const getLabelForKey = (fieldLabels: Record<string, string>, key: string)
 
 export const normalizeStatut = (s: string): string =>
 	s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+/**
+ * Extracts a user-friendly error message from an RTK Query mutation error.
+ * When the backend returns structured error details (e.g. ProtectedError / 409),
+ * the first detail string is returned. Otherwise returns the fallback message.
+ */
+export const extractApiErrorMessage = (error: unknown, fallback: string): string => {
+	if (
+		typeof error === 'object' &&
+		error !== null &&
+		'data' in error &&
+		typeof (error as { data: unknown }).data === 'object' &&
+		(error as { data: { details?: Record<string, string[] | string> } }).data !== null
+	) {
+		const data = (error as { data: { message?: string; details?: Record<string, string[] | string> } }).data;
+		const details = data.details;
+		if (details) {
+			for (const values of Object.values(details)) {
+				if (Array.isArray(values) && values.length > 0) {
+					return values[0];
+				}
+				if (typeof values === 'string' && values.length > 0) {
+					return values;
+				}
+			}
+		}
+		if (data.message) {
+			return data.message;
+		}
+	}
+	return fallback;
+};
