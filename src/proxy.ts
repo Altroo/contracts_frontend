@@ -12,10 +12,11 @@ const PUBLIC_PATHS = [
 export default auth((req) => {
 	const pathname = req.nextUrl.pathname;
 
+	// allow public paths without redirect
 	if (PUBLIC_PATHS.includes(pathname)) {
 		return NextResponse.next();
 	}
-
+	// settings doesn't have root page
 	if (req.nextUrl.pathname === '/dashboard/settings') {
 		return NextResponse.redirect(new URL('/dashboard/settings/edit-profile', req.url));
 	}

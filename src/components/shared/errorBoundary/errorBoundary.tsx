@@ -15,6 +15,10 @@ interface ErrorBoundaryState {
 	error: Error | null;
 }
 
+/**
+ * Error Boundary component to catch JavaScript errors anywhere in the child
+ * component tree and display a fallback UI instead of crashing the whole app.
+ */
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 	constructor(props: ErrorBoundaryProps) {
 		super(props);
@@ -26,7 +30,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 	}
 
 	componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-		if (process.env.NODE_ENV !== 'production') {
+		// Log error to monitoring service in production
+		if (process.env.NODE_ENV === 'production') {
+			// Could integrate with Sentry, LogRocket, etc.
+			// For now, just suppress the error in production
+		} else {
+			// In development, log to console for debugging
 			console.error('ErrorBoundary caught an error:', error, errorInfo);
 		}
 	}

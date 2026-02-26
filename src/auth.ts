@@ -53,6 +53,8 @@ export const { handlers, auth } = NextAuth({
 				email: { label: 'Email', type: 'email', placeholder: 'email' },
 				password: { label: 'Password', type: 'password', placeholder: 'password' },
 			},
+			// used in login page ex :
+			// await signIn('credentials', {email: values.email,password: values.password,redirect: false});
 			async authorize(credentials) {
 				const validatedCredentials = z
 					.object({
@@ -79,15 +81,15 @@ export const { handlers, auth } = NextAuth({
 						const { user, access, refresh, access_expiration, refresh_expiration } = response.data;
 
 						return {
-							id: String(user.pk),
+							id: String(user.pk), // Convert pk to string
 							email: user.email,
-							name: `${user.first_name} ${user.last_name}`,
+							name: `${user.first_name} ${user.last_name}`, // Construct full name
 							image: null,
 							user: {
 								id: String(user.pk),
 								pk: user.pk,
 								email: user.email,
-								emailVerified: null,
+								emailVerified: null, // Backend doesn't provide this
 								name: `${user.first_name} ${user.last_name}`,
 								first_name: user.first_name,
 								last_name: user.last_name,
@@ -110,14 +112,14 @@ export const { handlers, auth } = NextAuth({
 		}),
 	],
 
-	secret: process.env.NEXTAUTH_SECRET,
+	secret: process.env.NEXTAUTH_SECRET, // Ensure this is set securely
 	session: {
-		strategy: 'jwt',
-		maxAge: 6 * 24 * 60 * 60,
-		updateAge: 60 * 60,
+		strategy: 'jwt', // Persist the session using JWTs
+		maxAge: 6 * 24 * 60 * 60,    // 6 days — safely within 7-day backend refresh window
+		updateAge: 60 * 60, // Update JWT every 1 hour
 	},
 	jwt: {
-		maxAge: 6 * 24 * 60 * 60,
+		maxAge: 6 * 24 * 60 * 60,    // 6 days
 	},
 
 	pages: {
@@ -143,20 +145,24 @@ export const { handlers, auth } = NextAuth({
 
 		async jwt({ token, account, user }) {
 			if (account && user) {
-				token.access = user.access;
-				token.refresh = user.refresh;
+				// On initial login
+				token.access = user.access; // access token
+				token.refresh = user.refresh; // refresh token
 				token.access_expiration = user.access_expiration;
 				token.refresh_expiration = user.refresh_expiration;
-				token.user = user.user;
+				token.user = user.user; // user object
 				return token;
 			}
 
+			// NEW GUARD: if refresh token is itself expired, force re-auth immediately
 			if (token.refresh_expiration && Date.now() >= parseExpirationToMs(token.refresh_expiration)) {
 				return null;
 			}
 
+			// Perform refresh token logic if the access token is expired
 			if (Date.now() >= parseExpirationToMs(token.access_expiration)) {
 				try {
+					// Call your refresh token API if necessary
 					const instance = allowAnyInstance();
 					const refreshed = await postApi(`${process.env.NEXT_PUBLIC_ACCOUNT_REFRESH_TOKEN}`, instance, {
 						refresh: token.refresh,
@@ -177,10 +183,11 @@ export const { handlers, auth } = NextAuth({
 						if (refreshedAccessExpiration) {
 							token.access_expiration = String(refreshedAccessExpiration);
 						}
-						token.refresh = refreshed.data.refresh ?? token.refresh;
+						token.refresh = refreshed.data.refresh ?? token.refresh; // Fallback to the old refresh token if not updated
 					}
 				} catch (error) {
 					console.error('[Auth] Token refresh failed:', error instanceof Error ? error.message : error);
+					// Return null to force re-authentication
 					return null;
 				}
 			}
@@ -188,10 +195,10 @@ export const { handlers, auth } = NextAuth({
 		},
 
 		async session({ session, token }) {
-			session.accessToken = token.access as string;
-			session.refreshToken = token.refresh as string;
-			session.accessTokenExpiration = token.access_expiration as string;
-			session.refreshTokenExpiration = token.refresh_expiration as string;
+			session.accessToken = String(token.access);
+			session.refreshToken = String(token.refresh);
+			session.accessTokenExpiration = String(token.access_expiration);
+			session.refreshTokenExpiration = String(token.refresh_expiration);
 			// @ts-expect-error next-auth augmented AdapterUser extends User, creating an intersection type
 			session.user = token.user;
 			return session;

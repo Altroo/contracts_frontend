@@ -4,7 +4,12 @@ import { signOut } from 'next-auth/react';
 import { SITE_ROOT } from '@/utils/routes';
 import type { APIContentTypeInterface, ApiErrorResponseType, InitStateToken } from '@/types/_initTypes';
 
+/**
+ * Handles unauthorized response by clearing cookies, signing out, and resetting token.
+ * Dispatches a custom 'session-expired' event to notify the UI.
+ */
 export const handleUnauthorized = async (onResetToken?: () => void) => {
+	// Notify UI about session expiration
 	if (typeof window !== 'undefined') {
 		window.dispatchEvent(new CustomEvent('session-expired'));
 	}
@@ -14,6 +19,10 @@ export const handleUnauthorized = async (onResetToken?: () => void) => {
 	}
 };
 
+/**
+ * Creates an Axios instance with authentication headers.
+ * The getToken callback should read the latest token from Redux state (via api.getState()).
+ */
 export const isAuthenticatedInstance = (
 	getToken?: () => InitStateToken | undefined,
 	onUnauthorized?: () => void,
@@ -21,9 +30,12 @@ export const isAuthenticatedInstance = (
 ): AxiosInstance => {
 	const instance = axios.create({
 		baseURL: process.env.NEXT_PUBLIC_ROOT_API_URL,
-		headers: { 'Content-Type': contentType },
+		headers: {
+			'Content-Type': contentType,
+		},
 	});
 
+	// Request interceptor - add auth token
 	instance.interceptors.request.use(
 		(config: InternalAxiosRequestConfig) => {
 			const headers = new AxiosHeaders(config.headers as Record<string, string>);
@@ -31,6 +43,8 @@ export const isAuthenticatedInstance = (
 			if (token?.access) {
 				headers.set('Authorization', `Bearer ${token.access}`);
 			}
+
+			// Let axios auto-set Content-Type (with boundary) for multipart uploads
 			if (config.data instanceof FormData) {
 				headers.delete('Content-Type');
 			}
@@ -40,17 +54,23 @@ export const isAuthenticatedInstance = (
 		(error) => Promise.reject(error),
 	);
 
+	// Response interceptor - handle errors
 	instance.interceptors.response.use(
 		(response: AxiosResponse) => response,
 		async (error) => {
 			if (error.response?.data) {
 				const errorData = error.response.data as ApiErrorResponseType;
+
 				if (error.response.status >= 500) {
 					return Promise.reject({
 						error: {
 							status_code: error.response.status,
 							message: 'Erreur serveur.',
-							details: { error: ['Veuillez vérifier votre connexion réseau et réessayer.'] },
+							details: {
+								error: [
+									'Il semble que nous ne puissions pas nous connecter. Veuillez vérifier votre connexion réseau et réessayer.',
+								],
+							},
 						},
 					});
 				}
@@ -87,10 +107,15 @@ export const isAuthenticatedInstance = (
 	return instance;
 };
 
+/**
+ * Creates an Axios instance without authentication.
+ */
 export const allowAnyInstance = (contentType: APIContentTypeInterface = 'application/json'): AxiosInstance => {
 	const instance = axios.create({
 		baseURL: process.env.NEXT_PUBLIC_ROOT_API_URL,
-		headers: { 'Content-Type': contentType },
+		headers: {
+			'Content-Type': contentType,
+		},
 	});
 
 	instance.interceptors.response.use(
@@ -126,6 +151,9 @@ type FormikAutoErrorsProps = {
 	setFieldError: (field: string, message: string | undefined) => void;
 };
 
+/**
+ * Automatically maps API error responses to Formik field errors.
+ */
 export const setFormikAutoErrors = ({ e, setFieldError }: FormikAutoErrorsProps) => {
 	const payload =
 		(e as { error?: ApiErrorResponseType; data?: ApiErrorResponseType }).error ??
@@ -148,6 +176,9 @@ export const setFormikAutoErrors = ({ e, setFieldError }: FormikAutoErrorsProps)
 	}
 };
 
+/**
+ * Converts hex color to RGB or RGBA string.
+ */
 export const hexToRGB = (hex: string, alpha?: number): string => {
 	const r = parseInt(hex.slice(1, 3), 16);
 	const g = parseInt(hex.slice(3, 5), 16);
@@ -156,7 +187,7 @@ export const hexToRGB = (hex: string, alpha?: number): string => {
 };
 
 export const formatDate = (value: string | null) => {
-	if (!value) return '—';
+	if (!value) return '—'; // display a placeholder for null
 	const date = new Date(value);
 	if (Number.isNaN(date.getTime())) return '—';
 	return new Intl.DateTimeFormat('fr-FR', {
@@ -165,6 +196,7 @@ export const formatDate = (value: string | null) => {
 		day: '2-digit',
 		hour: '2-digit',
 		minute: '2-digit',
+		second: '2-digit',
 	}).format(date);
 };
 
@@ -186,14 +218,17 @@ export const parseNumber = (value: string | number): number | null => {
 	if (typeof value === 'number') return Number.isFinite(value) ? value : null;
 	const trimmed = value.trim();
 	if (trimmed === '') return null;
+	// Replace comma with dot for decimal parsing (supports both "10.5" and "10,5")
 	const normalized = trimmed.replace(',', '.');
+	// Return null for intermediate typing states (trailing decimal point)
+	// This keeps the raw string in the input so user can continue typing decimals
 	if (normalized.endsWith('.')) return null;
 	const n = Number(normalized);
 	return Number.isFinite(n) ? n : null;
 };
 
 export const getLabelForKey = (fieldLabels: Record<string, string>, key: string): string =>
-	fieldLabels[key] ?? key;
+	fieldLabels[key] ?? key.replace(/_/g, ' ').replace(/\b\w/g, (ch) => ch.toUpperCase());
 
 export const normalizeStatut = (s: string): string =>
 	s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');

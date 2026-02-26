@@ -9,18 +9,34 @@ type MediaQueryProps = {
 	children: ReactNode;
 };
 
+/**
+ * Desktop: only screen and (min-width: 992px)
+ */
 export const Desktop = ({ children }: MediaQueryProps) => {
 	const theme = useTheme();
 	const isClient = useIsClient();
 	const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
-	if (!isClient) return null;
+
+	// Return null on server to match initial client render
+	if (!isClient) {
+		return null;
+	}
+
 	return isDesktop ? <>{children}</> : null;
 };
 
+/**
+ * TabletAndMobile: only screen and (max-width: 991px)
+ */
 export const TabletAndMobile = ({ children }: MediaQueryProps) => {
 	const theme = useTheme();
 	const isClient = useIsClient();
 	const isTabletMobile = useMediaQuery(theme.breakpoints.down('md'));
-	if (!isClient) return null;
+
+	// Return null on server to match initial client render
+	if (!isClient) {
+		return null;
+	}
+
 	return isTabletMobile ? <>{children}</> : null;
 };

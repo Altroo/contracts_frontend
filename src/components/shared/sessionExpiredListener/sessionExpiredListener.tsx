@@ -3,6 +3,11 @@
 import { useContext, useEffect } from 'react';
 import { ToastContext } from '@/contexts/toastContext';
 
+/**
+ * Listens for the global 'session-expired' event and displays
+ * a toast notification when the session expires.
+ * Must be mounted inside ToastContextProvider.
+ */
 const SessionExpiredListener: React.FC = () => {
 	const toast = useContext(ToastContext);
 
