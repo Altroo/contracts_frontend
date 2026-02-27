@@ -1,69 +1,104 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
+	Box,
+	Button,
+	FormControlLabel,
+	Checkbox,
+	Switch,
+	Stack,
+	Typography,
 	Card,
 	CardContent,
 	Divider,
-	FormControlLabel,
-	Stack,
-	Switch,
-	Typography,
+	useTheme,
+	useMediaQuery,
+	Alert,
 } from '@mui/material';
+import {
+	ArrowBack as ArrowBackIcon,
+	Email as EmailIcon,
+	Groups as GroupsIcon,
+	PersonOutline as PersonOutlineIcon,
+	AdminPanelSettings as AdminPanelSettingsIcon,
+	CheckCircle as CheckCircleIcon,
+	AccountCircle as AccountCircleIcon,
+	Security as SecurityIcon,
+	Edit as EditIcon,
+	Add as AddIcon,
+	Warning as WarningIcon,
+} from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
-import { setFormikAutoErrors } from '@/utils/helpers';
-import { USERS_VIEW } from '@/utils/routes';
-import { useRouter } from 'next/navigation';
-import { useToast } from '@/utils/hooks';
-import { useAddUserMutation, useEditUserMutation, useGetUserQuery } from '@/store/services/account';
-import { userSchema } from '@/utils/formValidationSchemas';
-import { textInputTheme, customDropdownTheme } from '@/utils/themes';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
+import { userSchema } from '@/utils/formValidationSchemas';
 import { genderItemsList } from '@/utils/rawData';
+import { getLabelForKey, setFormikAutoErrors } from '@/utils/helpers';
+import { textInputTheme, customDropdownTheme } from '@/utils/themes';
+import { USERS_LIST, USERS_VIEW } from '@/utils/routes';
+import { useRouter } from 'next/navigation';
+import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
+import { useToast } from '@/utils/hooks';
+import { useAddUserMutation, useCheckEmailMutation, useEditUserMutation, useGetUserQuery } from '@/store/services/account';
 import { getAccessTokenFromSession } from '@/store/session';
 import { Protected } from '@/components/layouts/protected/protected';
-import type { SelectChangeEvent } from '@mui/material/Select';
-import type { SessionProps } from '@/types/_initTypes';
-import Styles from '@/styles/dashboard/dashboard.module.sass';
 
-interface Props extends SessionProps {
-	id?: number;
-}
+const inputTheme = textInputTheme();
 
 interface UserFormValues {
 	first_name: string;
 	last_name: string;
 	email: string;
 	gender: string;
-	password1: string;
-	password2: string;
+	is_active: boolean;
 	is_staff: boolean;
 	can_view: boolean;
 	can_print: boolean;
 	can_create: boolean;
 	can_edit: boolean;
 	can_delete: boolean;
+	avatar: string | ArrayBuffer | null;
+	avatar_cropped: string | ArrayBuffer | null;
 	globalError: string;
 }
 
-const UsersFormClient = ({ id, session }: Props) => {
-	const router = useRouter();
+type FormikContentProps = {
+	token: string | undefined;
+	id?: number;
+};
+
+const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
+	const { token, id } = props;
 	const { onSuccess, onError } = useToast();
 	const isEditMode = id !== undefined;
-	const token = getAccessTokenFromSession(session);
+	const theme = useTheme();
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+	const router = useRouter();
 
-	const { data: rawData, isLoading: isDataLoading } = useGetUserQuery({ id: id! }, { skip: !isEditMode || !token });
+	const {
+		data: rawData,
+		isLoading: isDataLoading,
+		error: dataError,
+	} = useGetUserQuery({ id: id! }, { skip: !token || !isEditMode });
+
 	const [addUser, { isLoading: isAddLoading, error: addError }] = useAddUserMutation();
+	const [checkEmail, { isLoading: isCheckEmailLoading, error: checkEmailError }] = useCheckEmailMutation();
 	const [editUser, { isLoading: isEditLoading, error: editError }] = useEditUserMutation();
 
-	const apiError = isEditMode ? editError : addError;
+	const error = checkEmailError || (isEditMode ? dataError || editError : addError);
+	const axiosError: ResponseDataInterface<ApiErrorResponseType> | undefined = useMemo(() => {
+		return error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
+	}, [error]);
 
 	const [isPending, setIsPending] = useState(false);
+	const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
 	const formik = useFormik<UserFormValues>({
 		initialValues: {
@@ -71,37 +106,45 @@ const UsersFormClient = ({ id, session }: Props) => {
 			last_name: rawData?.last_name ?? '',
 			email: rawData?.email ?? '',
 			gender: rawData?.gender ?? '',
-			password1: '',
-			password2: '',
+			is_active: rawData?.is_active ?? true,
 			is_staff: rawData?.is_staff ?? false,
 			can_view: rawData?.can_view ?? false,
 			can_print: rawData?.can_print ?? false,
 			can_create: rawData?.can_create ?? false,
 			can_edit: rawData?.can_edit ?? false,
 			can_delete: rawData?.can_delete ?? false,
+			avatar: rawData?.avatar ?? '',
+			avatar_cropped: rawData?.avatar_cropped ?? '',
 			globalError: '',
 		},
 		enableReinitialize: true,
+		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(userSchema),
 		onSubmit: async (data, { setFieldError }) => {
+			setHasAttemptedSubmit(true);
 			setIsPending(true);
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			const { globalError, password2, ...fields } = data;
-			const payload = isEditMode
-				? { ...fields }
-				: { ...fields, password: data.password1 };
+			const { globalError, ...fields } = data;
+			const payload = { ...fields };
 			try {
+				if (rawData?.email !== data.email) {
+					await checkEmail({ email: data.email }).unwrap();
+				}
 				if (isEditMode) {
 					await editUser({ id: id!, data: payload }).unwrap();
-					onSuccess('Utilisateur mis à jour avec succès.');
+					onSuccess("L'utilisateur a été mis à jour avec succès.");
 					router.push(USERS_VIEW(id!));
 				} else {
-					const result = await addUser({ data: payload }).unwrap();
-					onSuccess('Utilisateur créé avec succès.');
-					router.push(USERS_VIEW(result.id));
+					await addUser({ data: payload }).unwrap();
+					onSuccess("L'utilisateur a été ajouté avec succès.");
+					router.push(USERS_LIST);
 				}
 			} catch (e) {
-				onError(isEditMode ? 'Échec de la mise à jour.' : "Échec de la création de l'utilisateur.");
+				if (isEditMode) {
+					onError("Échec de la mise à jour de l'utilisateur.");
+				} else {
+					onError("Échec de l'ajout de l'utilisateur.");
+				}
 				setFormikAutoErrors({ e, setFieldError });
 			} finally {
 				setIsPending(false);
@@ -109,181 +152,303 @@ const UsersFormClient = ({ id, session }: Props) => {
 		},
 	});
 
-	const isLoading = isAddLoading || isEditLoading || isPending;
+	const fieldLabels = useMemo<Record<string, string>>(
+		() => ({
+			email: 'Email',
+			first_name: 'Nom',
+			last_name: 'Prénom',
+			gender: 'Sexe',
+			is_active: 'Compte actif',
+			is_staff: 'Compte administrateur',
+			avatar: 'Photo de profil',
+			avatar_cropped: 'Photo recadrée',
+			can_view: 'Peut voir',
+			can_print: 'Peut imprimer',
+			can_create: 'Peut créer',
+			can_edit: 'Peut modifier',
+			can_delete: 'Peut supprimer',
+			globalError: 'Erreur globale',
+		}),
+		[],
+	);
 
-	if (isEditMode && isDataLoading) {
-		return <ApiProgress backdropColor="#FFFFFF" circularColor="#0274D7" />;
-	}
+	const validationErrors = useMemo(() => {
+		const errors: Record<string, string> = {};
+		if (hasAttemptedSubmit) {
+			Object.entries(formik.errors).forEach(([key, value]) => {
+				if (key !== 'globalError' && typeof value === 'string') {
+					errors[key] = value;
+				}
+			});
+		}
+		return errors;
+	}, [formik.errors, hasAttemptedSubmit]);
+
+	const hasValidationErrors = Object.keys(validationErrors).length > 0;
+
+	const isLoading: boolean =
+		isAddLoading || isCheckEmailLoading || isEditLoading || isPending || (isEditMode && isDataLoading);
+	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
 	return (
-		<Protected>
-		<Stack className={Styles.main as string} spacing={3}>
-			<Typography variant="h5" fontWeight={700}>
-				{isEditMode ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'}
-			</Typography>
-
-			{formik.errors.globalError && <ApiAlert errorDetails={{ error: [formik.errors.globalError] }} />}
-
-			{(apiError as Record<string, unknown>) && (
-				<ApiAlert
-					errorDetails={
-						(apiError as { data?: { details?: Record<string, string[]> } })?.data?.details ?? {
-							error: ['Une erreur est survenue.'],
-						}
-					}
-				/>
+		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
+			<Stack direction={isMobile ? 'column' : 'row'} pt={2} justifyContent="space-between" spacing={2}>
+				<Button
+					variant="outlined"
+					startIcon={<ArrowBackIcon />}
+					onClick={() => router.push(USERS_LIST)}
+					sx={{
+						whiteSpace: 'nowrap',
+						px: { xs: 1.5, sm: 2, md: 3 },
+						py: { xs: 0.8, sm: 1, md: 1 },
+						fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+					}}
+				>
+					Liste des utilisateurs
+				</Button>
+			</Stack>
+			{hasValidationErrors && (
+				<Alert severity="error" icon={<WarningIcon />} sx={{ mb: 2 }}>
+					<Typography variant="subtitle2" fontWeight={600}>
+						Erreurs de validation détectées:
+					</Typography>
+					<ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+						{Object.entries(validationErrors).map(([key, err]) => (
+							<li key={key}>
+								<Typography variant="body2">
+									{getLabelForKey(fieldLabels, key)} : {err}
+								</Typography>
+							</li>
+						))}
+					</ul>
+				</Alert>
 			)}
+			{formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
+			{isLoading ? (
+				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
+			) : shouldShowError ? (
+				<ApiAlert errorDetails={axiosError?.data.details} />
+			) : (
+				<form onSubmit={formik.handleSubmit}>
+					<Stack spacing={3}>
+						{/* Profile Picture Card */}
+						<Card elevation={2} sx={{ borderRadius: 2 }}>
+							<CardContent sx={{ p: 3 }}>
+								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<AccountCircleIcon color="primary" />
+									<Typography variant="h6" fontWeight={700}>
+										Photo de profil
+									</Typography>
+								</Stack>
+								<Divider sx={{ mb: 3 }} />
+								<Box sx={{ display: 'flex', justifyContent: 'center' }}>
+									<CustomSquareImageUploading
+										image={formik.values.avatar}
+										croppedImage={formik.values.avatar_cropped}
+										onChange={(img) => formik.setFieldValue('avatar', img)}
+										onCrop={(cropped) => formik.setFieldValue('avatar_cropped', cropped)}
+									/>
+								</Box>
+							</CardContent>
+						</Card>
 
-			{isLoading && <ApiProgress backdropColor="rgba(255,255,255,0.8)" circularColor="#0274D7" />}
-
-			<form onSubmit={formik.handleSubmit}>
-				<Stack spacing={3}>
-					{/* Informations */}
-					<Card elevation={2} sx={{ borderRadius: 2 }}>
-						<CardContent sx={{ p: 3 }}>
-							<Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
-								Informations
-							</Typography>
-							<Divider sx={{ mb: 3 }} />
-							<Stack spacing={2.5}>
-								<Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+						{/* Personal Information Card */}
+						<Card elevation={2} sx={{ borderRadius: 2 }}>
+							<CardContent sx={{ p: 3 }}>
+								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<PersonOutlineIcon color="primary" />
+									<Typography variant="h6" fontWeight={700}>
+										Informations personnelles
+									</Typography>
+								</Stack>
+								<Divider sx={{ mb: 3 }} />
+								<Stack spacing={2.5}>
+									<CustomTextInput
+										id="email"
+										type="email"
+										label="Email *"
+										disabled={isEditMode}
+										value={formik.values.email}
+										onChange={formik.handleChange('email')}
+										onBlur={formik.handleBlur('email')}
+										error={formik.touched.email && Boolean(formik.errors.email)}
+										helperText={formik.touched.email ? formik.errors.email : ''}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<EmailIcon fontSize="small" />}
+									/>
 									<CustomTextInput
 										id="first_name"
 										type="text"
-										label="Prénom"
+										label="Nom *"
 										value={formik.values.first_name}
-										onChange={formik.handleChange}
-										onBlur={formik.handleBlur}
+										onChange={formik.handleChange('first_name')}
+										onBlur={formik.handleBlur('first_name')}
 										error={formik.touched.first_name && Boolean(formik.errors.first_name)}
 										helperText={formik.touched.first_name ? formik.errors.first_name : ''}
-										fullWidth
-										theme={textInputTheme()}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<PersonOutlineIcon fontSize="small" />}
 									/>
 									<CustomTextInput
 										id="last_name"
 										type="text"
-										label="Nom"
+										label="Prénom *"
 										value={formik.values.last_name}
-										onChange={formik.handleChange}
-										onBlur={formik.handleBlur}
+										onChange={formik.handleChange('last_name')}
+										onBlur={formik.handleBlur('last_name')}
 										error={formik.touched.last_name && Boolean(formik.errors.last_name)}
 										helperText={formik.touched.last_name ? formik.errors.last_name : ''}
-										fullWidth
-										theme={textInputTheme()}
-									/>
-								</Stack>
-								<Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-									<CustomTextInput
-										id="email"
-										type="email"
-										label="Email"
-										value={formik.values.email}
-										onChange={formik.handleChange}
-										onBlur={formik.handleBlur}
-										error={formik.touched.email && Boolean(formik.errors.email)}
-										helperText={formik.touched.email ? formik.errors.email : ''}
-										fullWidth
-										theme={textInputTheme()}
+										fullWidth={false}
+										size="small"
+										theme={inputTheme}
+										startIcon={<PersonOutlineIcon fontSize="small" />}
 									/>
 									<CustomDropDownSelect
+										size="small"
 										id="gender"
-										label="Genre"
-										items={genderItemsList.map((g) => g.value)}
+										label="Sexe *"
+										items={genderItemsList}
 										value={formik.values.gender}
-										onChange={(e: SelectChangeEvent) => formik.setFieldValue('gender', e.target.value)}
+										onChange={(e) => formik.setFieldValue('gender', e.target.value)}
 										theme={customDropdownTheme()}
-									/>
-								</Stack>
-							</Stack>
-						</CardContent>
-					</Card>
-
-					{/* Mot de passe — only in add mode */}
-					{!isEditMode && (
-						<Card elevation={2} sx={{ borderRadius: 2 }}>
-							<CardContent sx={{ p: 3 }}>
-								<Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
-									Mot de passe
-								</Typography>
-								<Divider sx={{ mb: 3 }} />
-								<Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-									<CustomTextInput
-										id="password1"
-										type="password"
-										label="Mot de passe"
-										value={formik.values.password1}
-										onChange={formik.handleChange}
-										onBlur={formik.handleBlur}
-										error={formik.touched.password1 && Boolean(formik.errors.password1)}
-										helperText={formik.touched.password1 ? formik.errors.password1 : ''}
-										fullWidth
-										theme={textInputTheme()}
-									/>
-									<CustomTextInput
-										id="password2"
-										type="password"
-										label="Confirmer le mot de passe"
-										value={formik.values.password2}
-										onChange={formik.handleChange}
-										onBlur={formik.handleBlur}
-										error={formik.touched.password2 && Boolean(formik.errors.password2)}
-										helperText={formik.touched.password2 ? formik.errors.password2 : ''}
-										fullWidth
-										theme={textInputTheme()}
+										startIcon={<GroupsIcon fontSize="small" />}
+										onBlur={formik.handleBlur('gender')}
+										error={formik.touched.gender && Boolean(formik.errors.gender)}
+										helperText={formik.touched.gender ? formik.errors.gender : ''}
 									/>
 								</Stack>
 							</CardContent>
 						</Card>
-					)}
 
-					{/* Permissions */}
-					<Card elevation={2} sx={{ borderRadius: 2 }}>
-						<CardContent sx={{ p: 3 }}>
-							<Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
-								Permissions
-							</Typography>
-							<Divider sx={{ mb: 3 }} />
-							<Stack spacing={1}>
-								<FormControlLabel
-									control={<Switch checked={formik.values.is_staff} onChange={formik.handleChange} name="is_staff" />}
-									label="Administrateur"
-								/>
-								<FormControlLabel
-									control={<Switch checked={formik.values.can_view} onChange={formik.handleChange} name="can_view" />}
-									label="Peut voir"
-								/>
-								<FormControlLabel
-									control={<Switch checked={formik.values.can_print} onChange={formik.handleChange} name="can_print" />}
-									label="Peut imprimer"
-								/>
-								<FormControlLabel
-									control={<Switch checked={formik.values.can_create} onChange={formik.handleChange} name="can_create" />}
-									label="Peut créer"
-								/>
-								<FormControlLabel
-									control={<Switch checked={formik.values.can_edit} onChange={formik.handleChange} name="can_edit" />}
-									label="Peut modifier"
-								/>
-								<FormControlLabel
-									control={<Switch checked={formik.values.can_delete} onChange={formik.handleChange} name="can_delete" />}
-									label="Peut supprimer"
-								/>
-							</Stack>
-						</CardContent>
-					</Card>
+						{/* Account Settings Card */}
+						<Card elevation={2} sx={{ borderRadius: 2 }}>
+							<CardContent sx={{ p: 3 }}>
+								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<AdminPanelSettingsIcon color="primary" />
+									<Typography variant="h6" fontWeight={700}>
+										Paramètres du compte
+									</Typography>
+								</Stack>
+								<Divider sx={{ mb: 3 }} />
+								<Stack spacing={1}>
+									<FormControlLabel
+										control={
+											<Checkbox
+												checked={formik.values.is_active}
+												onChange={formik.handleChange}
+												name="is_active"
+												color="success"
+											/>
+										}
+										label={
+											<Stack direction="row" spacing={1} alignItems="center">
+												<CheckCircleIcon fontSize="small" color={formik.values.is_active ? 'success' : 'disabled'} />
+												<Typography>Compte Active</Typography>
+											</Stack>
+										}
+									/>
+									<FormControlLabel
+										control={
+											<Checkbox
+												checked={formik.values.is_staff}
+												onChange={formik.handleChange}
+												name="is_staff"
+												color="primary"
+											/>
+										}
+										label={
+											<Stack direction="row" spacing={1} alignItems="center">
+												<AdminPanelSettingsIcon
+													fontSize="small"
+													color={formik.values.is_staff ? 'primary' : 'disabled'}
+												/>
+												<Typography>Compte Administrateur</Typography>
+											</Stack>
+										}
+									/>
+								</Stack>
+							</CardContent>
+						</Card>
 
-					{/* Submit */}
-					<Stack direction="row" justifyContent="center" className={Styles.submitButton}>
-						<PrimaryLoadingButton
-							buttonText={isEditMode ? 'Enregistrer' : "Créer l'utilisateur"}
-							type="submit"
-							loading={isLoading}
-							active={!isLoading}
-						/>
+						{/* Permissions Card */}
+						<Card elevation={2} sx={{ borderRadius: 2 }}>
+							<CardContent sx={{ p: 3 }}>
+								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<SecurityIcon color="primary" />
+									<Typography variant="h6" fontWeight={700}>
+										Permissions
+									</Typography>
+								</Stack>
+								<Divider sx={{ mb: 3 }} />
+								<Stack spacing={1}>
+									<FormControlLabel
+										control={<Switch checked={formik.values.can_view} onChange={formik.handleChange} name="can_view" />}
+										label="Peut voir"
+									/>
+									<FormControlLabel
+										control={<Switch checked={formik.values.can_print} onChange={formik.handleChange} name="can_print" />}
+										label="Peut imprimer"
+									/>
+									<FormControlLabel
+										control={<Switch checked={formik.values.can_create} onChange={formik.handleChange} name="can_create" />}
+										label="Peut créer"
+									/>
+									<FormControlLabel
+										control={<Switch checked={formik.values.can_edit} onChange={formik.handleChange} name="can_edit" />}
+										label="Peut modifier"
+									/>
+									<FormControlLabel
+										control={<Switch checked={formik.values.can_delete} onChange={formik.handleChange} name="can_delete" />}
+										label="Peut supprimer"
+									/>
+								</Stack>
+							</CardContent>
+						</Card>
+
+						{/* Submit Button */}
+						<Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
+							<PrimaryLoadingButton
+								type="submit"
+								buttonText={isEditMode ? 'Mettre à jour' : "Ajouter l'utilisateur"}
+								active={!isPending}
+								loading={isPending}
+								startIcon={isEditMode ? <EditIcon /> : <AddIcon />}
+								onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+									setHasAttemptedSubmit(true);
+									if (!formik.isValid) {
+										e.preventDefault();
+										formik.handleSubmit();
+										onError('Veuillez corriger les erreurs de validation avant de soumettre.');
+										window.scrollTo({ top: 0, behavior: 'smooth' });
+									}
+								}}
+								cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
+							/>
+						</Box>
 					</Stack>
-				</Stack>
-			</form>
+				</form>
+			)}
 		</Stack>
+	);
+};
+
+interface Props extends SessionProps {
+	id?: number;
+}
+
+const UsersFormClient: React.FC<Props> = ({ session, id }: Props) => {
+	const token = getAccessTokenFromSession(session);
+
+	return (
+		<Protected>
+			<main className={`${Styles.main} ${Styles.fixMobile}`}>
+				<Box sx={{ width: '100%' }}>
+					<FormikContent token={token} id={id} />
+				</Box>
+			</main>
 		</Protected>
 	);
 };

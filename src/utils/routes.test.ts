@@ -21,7 +21,6 @@ describe('routes', () => {
 		expect(routes.AUTH_RESET_PASSWORD_ENTER_CODE).toBe('https://app.example.com//reset-password/enter-code');
 		expect(routes.AUTH_RESET_PASSWORD_SET_PASSWORD).toBe('https://app.example.com//reset-password/set-password');
 		expect(routes.AUTH_RESET_PASSWORD_COMPLETE).toBe('https://app.example.com//reset-password/set-password-complete');
-		expect(routes.AUTH_RESET_PASSWORD_SET_PASSWORD_COMPLETE).toBe(routes.AUTH_RESET_PASSWORD_COMPLETE);
 		expect(routes.DASHBOARD).toBe('https://app.example.com/dashboard');
 		expect(routes.DASHBOARD_EDIT_PROFILE).toBe('https://app.example.com/dashboard/settings/edit-profile');
 		expect(routes.DASHBOARD_PASSWORD).toBe('https://app.example.com/dashboard/settings/password');

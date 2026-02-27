@@ -14,9 +14,8 @@ import { ErrorBoundary } from '@/components/shared/errorBoundary';
 import SessionExpiredListener from '@/components/shared/sessionExpiredListener/sessionExpiredListener';
 
 export const metadata: Metadata = {
-	title: 'Contrats - Elbouazzati Holding',
-	applicationName: 'Contrats - Elbouazzati Holding',
-	authors: [{ name: 'Elbouazzati Holding' }],
+	title: 'Contrats',
+	applicationName: 'Contrats',
 	robots: {
 		index: false,
 		follow: false,
@@ -25,7 +24,7 @@ export const metadata: Metadata = {
 		icon: [{ url: '/assets/ico/favicon.ico', rel: 'shortcut icon' }],
 	},
 	other: {
-		copyright: `Copyright - Elbouazzati Holding © ${new Date().getFullYear()}`,
+		copyright: `Copyright - Contrats © ${new Date().getFullYear()}`,
 		rating: 'general',
 		expires: 'never',
 	},
@@ -58,7 +57,7 @@ const RootLayout: React.FC<EntryPointProps> = async (props) => {
 									<ErrorBoundary>
 										<ToastContextProvider>
 											<SessionExpiredListener />
-											<main id="main-content">{props.children}</main>
+											<div id="main-content">{props.children}</div>
 										</ToastContextProvider>
 									</ErrorBoundary>
 								</ThemeProvider>

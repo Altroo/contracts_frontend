@@ -3,7 +3,7 @@ import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 	return (
-		<NavigationBar title="Contrats - Elbouazzati Holding">
+		<NavigationBar title="Contrats">
 			{children}
 		</NavigationBar>
 	);

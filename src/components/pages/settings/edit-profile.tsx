@@ -1,121 +1,165 @@
 'use client';
 
-import React from 'react';
-import { Stack, Typography } from '@mui/material';
-import { useFormik } from 'formik';
-import { toFormikValidationSchema } from 'zod-formik-adapter';
-import { useAppSelector, useToast } from '@/utils/hooks';
-import { getProfilState } from '@/store/selectors';
-import { useEditProfilMutation } from '@/store/services/account';
-import { useAppDispatch } from '@/utils/hooks';
-import { accountEditProfilAction } from '@/store/actions/accountActions';
-import { setFormikAutoErrors } from '@/utils/helpers';
-import { profilSchema } from '@/utils/formValidationSchemas';
-import { textInputTheme, customDropdownTheme } from '@/utils/themes';
-import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
-import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
-import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
-import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { genderItemsList } from '@/utils/rawData';
-import type { SelectChangeEvent } from '@mui/material/Select';
-import type { SessionProps } from '@/types/_initTypes';
+import React, { useState } from 'react';
 import Styles from '@/styles/dashboard/settings/settings.module.sass';
+import { Box, Stack, useMediaQuery, useTheme } from '@mui/material';
+import { useFormik } from 'formik';
+import { profilSchema } from '@/utils/formValidationSchemas';
+import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
+import { textInputTheme, customDropdownTheme } from '@/utils/themes';
+import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
+import { genderItemsList } from '@/utils/rawData';
+import { useAppDispatch, useToast } from '@/utils/hooks';
+import { toFormikValidationSchema } from 'zod-formik-adapter';
+import { setFormikAutoErrors } from '@/utils/helpers';
+import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
+import type { SessionProps } from '@/types/_initTypes';
+import { useGetProfilQuery, useEditProfilMutation } from '@/store/services/account';
+import { getAccessTokenFromSession } from '@/store/session';
+import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
+import { accountEditProfilAction } from '@/store/actions/accountActions';
+import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
+import { Edit as EditIcon, Groups as GroupsIcon, Person as PersonIcon } from '@mui/icons-material';
 
-interface ProfilFormValues {
-	first_name: string;
-	last_name: string;
-	gender: string;
-	globalError: string;
-}
+const inputTheme = textInputTheme();
 
-const EditProfileClient: React.FC<SessionProps> = () => {
-	const dispatch = useAppDispatch();
-	const profil = useAppSelector(getProfilState);
+type formikContentType = {
+	token: string | undefined;
+};
+
+const FormikContent: React.FC<formikContentType> = (props: formikContentType) => {
+	const { token } = props;
 	const { onSuccess, onError } = useToast();
-	const [editProfil, { isLoading, error: apiError }] = useEditProfilMutation();
+	const { data: profilData, isLoading: isProfilLoading } = useGetProfilQuery(undefined, { skip: !token });
+	const [editProfil, { isLoading: isEditLoading }] = useEditProfilMutation();
+	const dispatch = useAppDispatch();
+	const [isPending, setIsPending] = useState(false);
 
-	const formik = useFormik<ProfilFormValues>({
+	const formik = useFormik({
 		initialValues: {
-			first_name: profil?.first_name ?? '',
-			last_name: profil?.last_name ?? '',
-			gender: profil?.gender ?? '',
+			first_name: profilData?.first_name ?? '',
+			last_name: profilData?.last_name ?? '',
+			gender: profilData?.gender ?? '',
+			avatar: profilData?.avatar ?? '',
+			avatar_cropped: profilData?.avatar_cropped ?? '',
 			globalError: '',
 		},
 		enableReinitialize: true,
+		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(profilSchema),
 		onSubmit: async (data, { setFieldError }) => {
+			setIsPending(true);
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { globalError, ...payload } = data;
 			try {
-				const result = await editProfil({ data: payload }).unwrap();
-				dispatch(accountEditProfilAction(result));
-				onSuccess('Profil mis à jour.');
+				const response = await editProfil({ data: payload }).unwrap();
+				if (response) {
+					dispatch(accountEditProfilAction(response));
+					onSuccess('Profil mis à jour avec succès.');
+				}
 			} catch (e) {
-				onError('Erreur lors de la mise à jour.');
+				onError('Une erreur est survenue lors de la mise à jour du profil.');
 				setFormikAutoErrors({ e, setFieldError });
+			} finally {
+				setIsPending(false);
 			}
 		},
 	});
 
 	return (
-		<Stack className={Styles.main as string} spacing={3}>
-			<Typography variant="h5" fontWeight={700}>
-				Mon Profil
-			</Typography>
-
-			{formik.errors.globalError && <ApiAlert errorDetails={{ error: [formik.errors.globalError] }} />}
-			{!!apiError && <ApiAlert errorDetails={{ error: ['Erreur lors de la mise à jour du profil.'] }} />}
-
-			<form onSubmit={formik.handleSubmit}>
-				<Stack spacing={2.5} sx={{ maxWidth: 600 }}>
-					<Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-						<CustomTextInput
-							id="first_name"
-							type="text"
-							label="Prénom"
-							value={formik.values.first_name}
-							onChange={formik.handleChange}
-							onBlur={formik.handleBlur}
-							error={formik.touched.first_name && Boolean(formik.errors.first_name)}
-							helperText={formik.touched.first_name ? formik.errors.first_name : ''}
-							fullWidth
-							theme={textInputTheme()}
-						/>
-						<CustomTextInput
-							id="last_name"
-							type="text"
-							label="Nom"
-							value={formik.values.last_name}
-							onChange={formik.handleChange}
-							onBlur={formik.handleBlur}
-							error={formik.touched.last_name && Boolean(formik.errors.last_name)}
-							helperText={formik.touched.last_name ? formik.errors.last_name : ''}
-							fullWidth
-							theme={textInputTheme()}
-						/>
-					</Stack>
+		<Stack direction="column" alignItems="center" spacing={2} className={`${Styles.flexRootStack}`} mt="32px">
+			{(isEditLoading || isPending || isProfilLoading) && (
+				<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
+			)}
+			<h2 className={Styles.pageTitle}>Profil</h2>
+			<form className={Styles.form} onSubmit={(e) => e.preventDefault()}>
+				<Stack direction="column" spacing={2} justifyContent="center" alignItems="center">
+					<CustomSquareImageUploading
+						cssClasse={Styles.centerAvatar}
+						image={formik.values.avatar}
+						croppedImage={formik.values.avatar_cropped}
+						onChange={(img) => formik.setFieldValue('avatar', img)}
+						onCrop={(cropped) => formik.setFieldValue('avatar_cropped', cropped)}
+					/>
+					<CustomTextInput
+						id="first_name"
+						type="text"
+						value={formik.values.first_name}
+						onChange={formik.handleChange('first_name')}
+						onBlur={formik.handleBlur('first_name')}
+						helperText={formik.touched.first_name ? formik.errors.first_name : ''}
+						error={formik.touched.first_name && Boolean(formik.errors.first_name)}
+						fullWidth={true}
+						size="small"
+						label="Nom"
+						placeholder="Nom"
+						theme={inputTheme}
+						startIcon={<PersonIcon fontSize="small" />}
+						cssClass={Styles.maxInputWidth}
+					/>
+					<CustomTextInput
+						id="last_name"
+						type="text"
+						value={formik.values.last_name}
+						onChange={formik.handleChange('last_name')}
+						onBlur={formik.handleBlur('last_name')}
+						helperText={formik.touched.last_name ? formik.errors.last_name : ''}
+						error={formik.touched.last_name && Boolean(formik.errors.last_name)}
+						fullWidth={true}
+						size="small"
+						label="Prénom"
+						placeholder="Prénom"
+						theme={inputTheme}
+						startIcon={<PersonIcon fontSize="small" />}
+						cssClass={Styles.maxInputWidth}
+					/>
 					<CustomDropDownSelect
+						size="small"
 						id="gender"
 						label="Genre"
-						items={genderItemsList.map((g) => g.value)}
-						value={formik.values.gender === 'H' ? 'Homme' : formik.values.gender === 'F' ? 'Femme' : formik.values.gender}
-						onChange={(e: SelectChangeEvent) => {
-							const selected = genderItemsList.find((g) => g.value === e.target.value);
-							formik.setFieldValue('gender', selected?.code ?? e.target.value);
-						}}
+						items={genderItemsList}
 						theme={customDropdownTheme()}
+						onChange={(e) => formik.setFieldValue('gender', e.target.value)}
+						value={formik.values.gender}
+						startIcon={<GroupsIcon fontSize="small" />}
+						cssClass={Styles.maxInputWidth}
 					/>
-					<Stack direction="row" justifyContent="center">
-						<PrimaryLoadingButton
-							buttonText="Enregistrer"
-							type="submit"
-							loading={isLoading}
-							active={!isLoading}
-						/>
-					</Stack>
+					<PrimaryLoadingButton
+						buttonText="Mettre à jour"
+						active={!isPending}
+						onClick={formik.handleSubmit}
+						cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
+						type="submit"
+						startIcon={<EditIcon />}
+						loading={isPending}
+					/>
 				</Stack>
 			</form>
 		</Stack>
+	);
+};
+
+const EditProfileClient: React.FC<SessionProps> = (props: SessionProps) => {
+	const { session } = props;
+	const theme = useTheme();
+	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+	const token = getAccessTokenFromSession(session);
+
+	return (
+		<main className={`${Styles.main} ${Styles.fixMobile}`}>
+			<Box
+				sx={{
+					width: '100%',
+					display: 'flex',
+					justifyContent: isMobile ? 'center' : 'flex-start',
+					alignItems: 'flex-start',
+				}}
+			>
+				<Box sx={{ width: '100%' }}>
+					<FormikContent token={token} />
+				</Box>
+			</Box>
+		</main>
 	);
 };
 

@@ -10,7 +10,7 @@ export const genderItemsList: Array<AccountGenderCodeValueType> = [
 export type ChipColor = 'default' | 'warning' | 'success' | 'error' | 'info' | 'primary' | 'secondary';
 
 export const contractStatutItemsList: string[] = [
-	'Brouillon', 'Envoye', 'Signe', 'En cours', 'Termine', 'Annule', 'Expire',
+	'Brouillon', 'Envoyé', 'Signé', 'En cours', 'Terminé', 'Annulé', 'Expiré',
 ];
 
 export const contractStatusColors: Record<string, ChipColor> = {

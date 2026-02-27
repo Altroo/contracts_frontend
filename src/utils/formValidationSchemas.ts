@@ -4,9 +4,14 @@ import {
 	INPUT_PASSWORD_MIN,
 	INPUT_MIN,
 	INPUT_MAX,
+	INPUT_PHONE,
+	INPUT_URL_INVALID,
 	MINI_INPUT_EMAIL,
 	SHORT_INPUT_REQUIRED,
+	TVA_INPUT_INVALID,
 } from '@/utils/formValidationErrorMessages';
+
+const base64ImageField = z.url().or(z.string().startsWith('data:image/')).nullable().optional();
 
 const passwordField = z.preprocess(
 	(val) => (val === undefined ? '' : val),
@@ -16,6 +21,40 @@ const passwordField = z.preprocess(
 		.nonempty({ error: INPUT_REQUIRED }),
 );
 
+const optionalEmailField = z.preprocess(
+	(val) => (val === undefined || val === null || val === '' ? undefined : val),
+	z.email({ error: MINI_INPUT_EMAIL }).optional(),
+);
+
+const optionalUrlField = z.preprocess(
+	(val) => (val === undefined || val === null || val === '' ? undefined : val),
+	z.url({ error: INPUT_URL_INVALID }).optional(),
+);
+
+const optionalPhoneField = z.preprocess(
+	(val) => (val === undefined || val === null || val === '' ? undefined : val),
+	z
+		.string()
+		.regex(/^\+?\d{7,15}$/, { error: INPUT_PHONE })
+		.optional(),
+);
+
+const requiredTextField = (min: number, max: number) =>
+	z.preprocess(
+		(val) => (val === undefined ? '' : val),
+		z
+			.string()
+			.min(min, { error: INPUT_MIN(min) })
+			.max(max, { error: INPUT_MAX(max) })
+			.nonempty({ error: INPUT_REQUIRED }),
+	);
+
+const requiredChoiceTextField = () =>
+	z.preprocess((val) => (val === undefined ? '' : val), z.string().nonempty({ error: INPUT_REQUIRED }));
+
+const optionalChoiceField = () =>
+	z.preprocess((val) => (val === undefined || val === null || val === '' ? undefined : val), z.string().optional());
+
 const optionalTextField = (min: number, max: number) =>
 	z.preprocess(
 		(val) => (val === undefined || val === null || val === '' ? undefined : val),
@@ -24,6 +63,44 @@ const optionalTextField = (min: number, max: number) =>
 			.min(min, { error: INPUT_MIN(min) })
 			.max(max, { error: INPUT_MAX(max) })
 			.optional(),
+	);
+
+const requiredNumberField = (min: number = 1, max?: number) =>
+	z.preprocess(
+		(val) => (val === undefined || val === null || val === '' ? NaN : Number(val)),
+		z
+			.number({ error: INPUT_REQUIRED })
+			.refine((val) => !Number.isNaN(val), { error: INPUT_REQUIRED })
+			.min(min, { error: INPUT_MIN(min) })
+			.max(max ?? Number.MAX_SAFE_INTEGER, { error: INPUT_MAX(max ?? Number.MAX_SAFE_INTEGER) }),
+	);
+
+const optionalNumberField = (min: number = 1, max?: number) =>
+	z.preprocess(
+		(val) => (val === undefined || val === null || val === '' ? undefined : Number(val)),
+		z
+			.number()
+			.refine((val) => !Number.isNaN(val), { error: INPUT_REQUIRED })
+			.min(min, { error: INPUT_MIN(min) })
+			.max(max ?? Number.MAX_SAFE_INTEGER, { error: INPUT_MAX(max ?? Number.MAX_SAFE_INTEGER) })
+			.optional(),
+	);
+
+const optionalTVANumberField = (min: number = 0, max?: number) =>
+	z.preprocess(
+		(val) => {
+			if (val === '') return undefined;
+			if (val === undefined) return undefined;
+			if (val === null) return null;
+			return Number(val);
+		},
+		z
+			.number({ message: TVA_INPUT_INVALID })
+			.refine((val) => Number.isFinite(val), { message: TVA_INPUT_INVALID })
+			.min(min, { message: INPUT_MIN(min) })
+			.max(max ?? Number.MAX_SAFE_INTEGER, { message: INPUT_MAX(max ?? Number.MAX_SAFE_INTEGER) })
+			.optional()
+			.nullable(),
 	);
 
 const singleDigit = z
@@ -59,40 +136,31 @@ export const passwordResetCodeSchema = z.object({
 	globalError: optionalTextField(1, 500),
 });
 
-export const userSchema = z
-	.object({
-		first_name: z.string().min(1, INPUT_REQUIRED),
-		last_name: z.string().min(1, INPUT_REQUIRED),
-		email: z.string().min(1, INPUT_REQUIRED).email(MINI_INPUT_EMAIL),
-		gender: z.string().optional(),
-		password1: z.string().optional(),
-		password2: z.string().optional(),
-		is_staff: z.boolean(),
-		can_view: z.boolean(),
-		can_print: z.boolean(),
-		can_create: z.boolean(),
-		can_edit: z.boolean(),
-		can_delete: z.boolean(),
-		globalError: z.string().optional(),
-	})
-	.refine(
-		(data) => {
-			if (data.password1 || data.password2) {
-				return data.password1 === data.password2;
-			}
-			return true;
-		},
-		{
-			message: 'Les mots de passe ne correspondent pas',
-			path: ['password2'],
-		},
-	);
+export const userSchema = z.object({
+	// REQUIRED FIELDS
+	first_name: requiredTextField(2, 255),
+	last_name: requiredTextField(2, 255),
+	email: z.email({ error: MINI_INPUT_EMAIL }),
+	gender: requiredChoiceTextField(),
+	is_active: z.boolean(),
+	is_staff: z.boolean(),
+	// OPTIONAL FIELDS
+	can_view: z.boolean(),
+	can_print: z.boolean(),
+	can_create: z.boolean(),
+	can_edit: z.boolean(),
+	can_delete: z.boolean(),
+	avatar: base64ImageField,
+	avatar_cropped: base64ImageField,
+	globalError: optionalTextField(1, 500),
+});
 
 export const profilSchema = z.object({
-	first_name: z.string().min(1, INPUT_REQUIRED),
-	last_name: z.string().min(1, INPUT_REQUIRED),
-	gender: z.string().optional(),
-	globalError: z.string().optional(),
+	first_name: requiredTextField(2, 30),
+	last_name: requiredTextField(2, 30),
+	gender: optionalChoiceField(),
+	avatar: base64ImageField,
+	avatar_cropped: base64ImageField,
 });
 
 export const changePasswordSchema = z
@@ -108,29 +176,31 @@ export const changePasswordSchema = z
 	});
 
 export const contractSchema = z.object({
-	numero_contrat: z.string().min(1, INPUT_REQUIRED),
-	date_contrat: z.string(),
-	statut: z.string(),
-	type_contrat: z.string(),
-	ville_signature: z.string(),
-	client_nom: z.string().min(1, INPUT_REQUIRED),
-	client_cin: z.string(),
-	client_qualite: z.string(),
-	client_adresse: z.string(),
-	client_tel: z.string(),
-	client_email: z.string(),
-	type_bien: z.string(),
-	surface: z.string(),
-	adresse_travaux: z.string(),
-	date_debut: z.string(),
-	duree_estimee: z.string(),
-	description_travaux: z.string(),
-	montant_ht: z.string().min(1, 'Le montant HT est requis'),
-	devise: z.string(),
-	tva: z.string(),
-	garantie: z.string(),
-	tribunal: z.string(),
-	responsable_projet: z.string(),
-	confidentialite: z.string(),
-	globalError: z.string().optional(),
+	// REQUIRED FIELDS
+	numero_contrat: requiredTextField(1, 255),
+	client_nom: requiredTextField(1, 255),
+	montant_ht: requiredNumberField(0),
+	// OPTIONAL FIELDS
+	date_contrat: optionalTextField(1, 255),
+	statut: optionalChoiceField(),
+	type_contrat: optionalChoiceField(),
+	ville_signature: optionalTextField(1, 255),
+	client_cin: optionalTextField(1, 255),
+	client_qualite: optionalTextField(1, 255),
+	client_adresse: optionalTextField(1, 500),
+	client_tel: optionalPhoneField,
+	client_email: optionalEmailField,
+	type_bien: optionalTextField(1, 255),
+	surface: optionalNumberField(0),
+	adresse_travaux: optionalTextField(1, 500),
+	date_debut: optionalTextField(1, 255),
+	duree_estimee: optionalTextField(1, 255),
+	description_travaux: optionalTextField(1, 2000),
+	devise: optionalChoiceField(),
+	tva: optionalTVANumberField(0, 100),
+	garantie: optionalTextField(1, 255),
+	tribunal: optionalTextField(1, 255),
+	responsable_projet: optionalTextField(1, 255),
+	confidentialite: optionalChoiceField(),
+	globalError: optionalTextField(1, 500),
 });

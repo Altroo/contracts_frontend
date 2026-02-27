@@ -2,7 +2,8 @@
 
 import React, { createContext, useState } from 'react';
 import type { AlertColor } from '@mui/material';
-import { Snackbar, Alert } from '@mui/material';
+import Portal from '@/contexts/portal';
+import CustomToast from '@/components/portals/customToast/customToast';
 
 export type ToastContextType = {
 	onSuccess: (msg: string) => void;
@@ -12,9 +13,9 @@ export type ToastContextType = {
 export const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export const ToastContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-	const [show, setShow] = useState(false);
+	const [show, setShow] = useState<boolean>(false);
 	const [type, setType] = useState<AlertColor>('success');
-	const [message, setMessage] = useState('');
+	const [message, setMessage] = useState<string>('');
 
 	const onSuccess = (msg: string) => {
 		setType('success');
@@ -31,16 +32,9 @@ export const ToastContextProvider: React.FC<{ children: React.ReactNode }> = ({ 
 	return (
 		<ToastContext.Provider value={{ onSuccess, onError }}>
 			{children}
-			<Snackbar
-				open={show}
-				autoHideDuration={4000}
-				onClose={() => setShow(false)}
-				anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-			>
-				<Alert onClose={() => setShow(false)} severity={type} variant="filled">
-					{message}
-				</Alert>
-			</Snackbar>
+			<Portal id="snackbar_portal">
+				<CustomToast type={type} message={message} setShow={setShow} show={show} />
+			</Portal>
 		</ToastContext.Provider>
 	);
 };

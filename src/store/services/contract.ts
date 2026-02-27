@@ -28,9 +28,10 @@ export const contractApi = createApi({
 				statut?: ContractStatutType;
 				date_after?: string;
 				date_before?: string;
+				[key: string]: string | number | boolean | undefined;
 			}
 		>({
-			query: ({ with_pagination, page, pageSize, search, statut, date_after, date_before }) => ({
+			query: ({ with_pagination, page, pageSize, search, statut, date_after, date_before, ...rest }) => ({
 				url: process.env.NEXT_PUBLIC_CONTRACT_LIST,
 				method: 'GET',
 				params: {
@@ -41,6 +42,7 @@ export const contractApi = createApi({
 					statut,
 					date_after,
 					date_before,
+					...rest,
 				},
 			}),
 			providesTags: ['Contract'],
@@ -48,7 +50,15 @@ export const contractApi = createApi({
 
 		getContract: builder.query<ContractClass, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_CONTRACT_ROOT}/contracts/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_CONTRACT_ROOT}/${id}/`,
+				method: 'GET',
+			}),
+			providesTags: ['Contract'],
+		}),
+
+		getCodeReference: builder.query<Pick<ContractClass, 'numero_contrat'>, void>({
+			query: () => ({
+				url: process.env.NEXT_PUBLIC_CONTRACT_GENERATE_CODE_REFERENCE,
 				method: 'GET',
 			}),
 			providesTags: ['Contract'],
@@ -56,7 +66,7 @@ export const contractApi = createApi({
 
 		addContract: builder.mutation<ContractClass, { data: Partial<ContractClass> }>({
 			query: ({ data }) => ({
-				url: `${process.env.NEXT_PUBLIC_CONTRACT_ROOT}/contracts/`,
+				url: `${process.env.NEXT_PUBLIC_CONTRACT_ROOT}/`,
 				method: 'POST',
 				data,
 			}),
@@ -65,7 +75,7 @@ export const contractApi = createApi({
 
 		editContract: builder.mutation<SuccessResponseType<ContractClass>, { id: number; data: Partial<ContractClass> }>({
 			query: ({ id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_CONTRACT_ROOT}/contracts/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_CONTRACT_ROOT}/${id}/`,
 				method: 'PUT',
 				data,
 			}),
@@ -77,7 +87,7 @@ export const contractApi = createApi({
 			{ id: number; data: { statut: ContractStatutType } }
 		>({
 			query: ({ id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_CONTRACT_ROOT}/contracts/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_CONTRACT_ROOT}/switch_statut/${id}/`,
 				method: 'PATCH',
 				data,
 			}),
@@ -86,8 +96,17 @@ export const contractApi = createApi({
 
 		deleteContract: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
-				url: `${process.env.NEXT_PUBLIC_CONTRACT_ROOT}/contracts/${id}/`,
+				url: `${process.env.NEXT_PUBLIC_CONTRACT_ROOT}/${id}/`,
 				method: 'DELETE',
+			}),
+			invalidatesTags: ['Contract'],
+		}),
+
+		bulkDeleteContracts: builder.mutation<void | ApiErrorResponseType, { ids: number[] }>({
+			query: ({ ids }) => ({
+				url: `${process.env.NEXT_PUBLIC_CONTRACT_ROOT}/bulk_delete/`,
+				method: 'DELETE',
+				data: { ids },
 			}),
 			invalidatesTags: ['Contract'],
 		}),
@@ -97,8 +116,10 @@ export const contractApi = createApi({
 export const {
 	useGetContractsListQuery,
 	useGetContractQuery,
+	useGetCodeReferenceQuery,
 	useAddContractMutation,
 	useEditContractMutation,
 	usePatchContractStatutMutation,
 	useDeleteContractMutation,
+	useBulkDeleteContractsMutation,
 } = contractApi;

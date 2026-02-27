@@ -246,3 +246,43 @@ export const codeTextInputTheme = (error: boolean | undefined) => {
 		},
 	});
 };
+
+export const customToastTheme = (primaryColor: string | undefined = undefined) => {
+	const defaultTheme = getDefaultTheme(primaryColor);
+	return createTheme({
+		...defaultTheme,
+		components: {
+			MuiSnackbar: {
+				styleOverrides: {
+					root: {
+						width: '20%',
+						backgroundColor: 'white',
+						borderRadius: '20px',
+						position: 'absolute',
+						margin: '0 auto',
+					},
+				},
+			},
+			MuiPaper: {
+				styleOverrides: {
+					root: {
+						borderRadius: '20px',
+						boxShadow: '0px 0px 24px rgba(13, 7, 11, 0.1)',
+						'&.MuiAlert-outlinedWarning': {
+							border: '1px solid rgba(255, 45, 61, 0.2)',
+						},
+						'&.MuiAlert-outlinedSuccess': {
+							border: '1px solid rgba(7, 203, 173, 0.2)',
+						},
+						'&.MuiAlert-outlinedError': {
+							border: '1px solid rgba(255, 45, 61, 0.2)',
+						},
+						'&.MuiAlert-outlinedInfo': {
+							border: '1px solid rgba(2, 116, 215, 0.2)',
+						},
+					},
+				},
+			},
+		},
+	});
+};

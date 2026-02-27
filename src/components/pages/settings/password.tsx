@@ -1,110 +1,150 @@
 'use client';
 
-import React from 'react';
-import { Stack, Typography } from '@mui/material';
-import { useFormik } from 'formik';
-import { toFormikValidationSchema } from 'zod-formik-adapter';
-import { useToast } from '@/utils/hooks';
-import { useEditPasswordMutation } from '@/store/services/account';
-import { setFormikAutoErrors } from '@/utils/helpers';
-import { changePasswordSchema } from '@/utils/formValidationSchemas';
-import { textInputTheme } from '@/utils/themes';
-import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
-import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
-import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
+import React, { useState } from 'react';
 import Styles from '@/styles/dashboard/settings/settings.module.sass';
+import { Box, Stack, useMediaQuery, useTheme, Alert } from '@mui/material';
+import { setFormikAutoErrors } from '@/utils/helpers';
+import { useFormik } from 'formik';
+import { changePasswordSchema } from '@/utils/formValidationSchemas';
+import { toFormikValidationSchema } from 'zod-formik-adapter';
+import { textInputTheme } from '@/utils/themes';
+import CustomPasswordInput from '@/components/formikElements/customPasswordInput/customPasswordInput';
+import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
+import { useEditPasswordMutation } from '@/store/services/account';
+import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
+import { useToast, useAppSelector } from '@/utils/hooks';
+import { Edit as EditIcon, Lock as LockIcon } from '@mui/icons-material';
+import { getProfilState } from '@/store/selectors';
 
-interface PasswordFormValues {
-	old_password: string;
-	new_password: string;
-	new_password2: string;
-	globalError: string;
-}
+const inputTheme = textInputTheme();
 
-const PasswordClient = () => {
+const FormikContent: React.FC = () => {
 	const { onSuccess, onError } = useToast();
-	const [editPassword, { isLoading, error: apiError }] = useEditPasswordMutation();
+	const profil = useAppSelector(getProfilState);
+	const [changePassword, { isLoading: isChangePasswordLoading }] = useEditPasswordMutation();
+	const [isPending, setIsPending] = useState(false);
 
-	const formik = useFormik<PasswordFormValues>({
+	const formik = useFormik({
 		initialValues: {
 			old_password: '',
 			new_password: '',
 			new_password2: '',
 			globalError: '',
 		},
+		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(changePasswordSchema),
-		onSubmit: async (data, { setFieldError, resetForm }) => {
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			const { globalError, ...payload } = data;
+		onSubmit: async (values, { setFieldError, resetForm }) => {
+			setIsPending(true);
 			try {
-				await editPassword({ data: payload }).unwrap();
-				onSuccess('Mot de passe mis à jour.');
+				await changePassword({
+					data: {
+						old_password: values.old_password,
+						new_password: values.new_password,
+						new_password2: values.new_password2,
+					},
+				}).unwrap();
+				onSuccess('Le mot de passe a été modifié avec succès.');
 				resetForm();
 			} catch (e) {
-				onError('Erreur lors du changement de mot de passe.');
+				onError('Échec de la modification du mot de passe.');
 				setFormikAutoErrors({ e, setFieldError });
+			} finally {
+				setIsPending(false);
 			}
 		},
 	});
 
 	return (
-		<Stack className={Styles.main as string} spacing={3}>
-			<Typography variant="h5" fontWeight={700}>
-				Changer le mot de passe
-			</Typography>
+		<Stack direction="column" alignItems="center" spacing={2} className={`${Styles.flexRootStack}`} mt="32px">
+			{(isChangePasswordLoading || isPending) && <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />}
+			<h2 className={Styles.pageTitle}>Modifier le mot de passe</h2>
 
-			{formik.errors.globalError && <ApiAlert errorDetails={{ error: [formik.errors.globalError] }} />}
-			{!!apiError && <ApiAlert errorDetails={{ error: ['Erreur lors du changement de mot de passe.'] }} />}
-
-			<form onSubmit={formik.handleSubmit}>
-				<Stack spacing={2.5} sx={{ maxWidth: 480 }}>
-					<CustomTextInput
+			<form className={Styles.form} onSubmit={(e) => e.preventDefault()}>
+				<Stack direction="column" justifyContent="center" alignItems="center" spacing={2}>
+					{profil && profil.default_password_set && (
+						<Alert severity="warning" sx={{ maxWidth: '365px', width: '100%' }}>
+							Il est recommandé de changer votre mot de passe par défaut pour des raisons de sécurité.
+						</Alert>
+					)}
+					<CustomPasswordInput
 						id="old_password"
-						type="password"
-						label="Mot de passe actuel"
 						value={formik.values.old_password}
-						onChange={formik.handleChange}
-						onBlur={formik.handleBlur}
-						error={formik.touched.old_password && Boolean(formik.errors.old_password)}
+						onChange={formik.handleChange('old_password')}
+						onBlur={formik.handleBlur('old_password')}
 						helperText={formik.touched.old_password ? formik.errors.old_password : ''}
-						fullWidth
-						theme={textInputTheme()}
+						error={formik.touched.old_password && Boolean(formik.errors.old_password)}
+						fullWidth={false}
+						size="small"
+						label="Ancien mot de passe"
+						placeholder="Ancien mot de passe"
+						theme={inputTheme}
+						startIcon={<LockIcon fontSize="small" />}
+						cssClass={Styles.maxInputWidth}
 					/>
-					<CustomTextInput
+					<CustomPasswordInput
 						id="new_password"
-						type="password"
-						label="Nouveau mot de passe"
 						value={formik.values.new_password}
-						onChange={formik.handleChange}
-						onBlur={formik.handleBlur}
-						error={formik.touched.new_password && Boolean(formik.errors.new_password)}
+						onChange={formik.handleChange('new_password')}
+						onBlur={formik.handleBlur('new_password')}
 						helperText={formik.touched.new_password ? formik.errors.new_password : ''}
-						fullWidth
-						theme={textInputTheme()}
+						error={formik.touched.new_password && Boolean(formik.errors.new_password)}
+						fullWidth={false}
+						size="small"
+						label="Nouveau mot de passe"
+						placeholder="Nouveau mot de passe"
+						theme={inputTheme}
+						startIcon={<LockIcon fontSize="small" />}
+						cssClass={Styles.maxInputWidth}
 					/>
-					<CustomTextInput
+					<CustomPasswordInput
 						id="new_password2"
-						type="password"
-						label="Confirmer le mot de passe"
 						value={formik.values.new_password2}
-						onChange={formik.handleChange}
-						onBlur={formik.handleBlur}
-						error={formik.touched.new_password2 && Boolean(formik.errors.new_password2)}
+						onChange={formik.handleChange('new_password2')}
+						onBlur={formik.handleBlur('new_password2')}
 						helperText={formik.touched.new_password2 ? formik.errors.new_password2 : ''}
-						fullWidth
-						theme={textInputTheme()}
+						error={formik.touched.new_password2 && Boolean(formik.errors.new_password2)}
+						fullWidth={false}
+						size="small"
+						label="Confirmation du nouveau mot de passe"
+						placeholder="Confirmation du nouveau mot de passe"
+						theme={inputTheme}
+						startIcon={<LockIcon fontSize="small" />}
+						cssClass={Styles.maxInputWidth}
 					/>
-					<Stack direction="row" justifyContent="center">
-						<PrimaryLoadingButton
-							buttonText="Mettre à jour"
-							type="submit"
-							loading={isLoading}
-							active={!isLoading}
-						/>
-					</Stack>
+					<PrimaryLoadingButton
+						buttonText="Modifier"
+						active={!isPending}
+						onClick={formik.handleSubmit}
+						cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
+						type="submit"
+						startIcon={<EditIcon />}
+						loading={isPending}
+					/>
 				</Stack>
 			</form>
 		</Stack>
+	);
+};
+
+const PasswordClient: React.FC = () => {
+	const theme = useTheme();
+	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+	return (
+		<main className={`${Styles.main} ${Styles.fixMobile}`}>
+			<Box
+				sx={{
+					width: '100%',
+					display: 'flex',
+					justifyContent: isMobile ? 'center' : 'flex-start',
+					alignItems: 'flex-start',
+				}}
+			>
+				<Box sx={{ width: '100%' }}>
+					<FormikContent />
+				</Box>
+			</Box>
+		</main>
 	);
 };
 

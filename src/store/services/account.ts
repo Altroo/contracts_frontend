@@ -78,9 +78,9 @@ export const usersApi = createApi({
 	endpoints: (builder) => ({
 		getUsersList: builder.query<
 			SuccessResponseType<Array<Partial<UserClass>>> | PaginationResponseType<Partial<UserClass>>,
-			{ with_pagination?: boolean; page?: number; pageSize?: number; search?: string }
+			{ with_pagination?: boolean; page?: number; pageSize?: number; search?: string; [key: string]: string | number | boolean | undefined }
 		>({
-			query: ({ with_pagination, page, pageSize, search }) => ({
+			query: ({ with_pagination, page, pageSize, search, ...rest }) => ({
 				url: process.env.NEXT_PUBLIC_USERS_ROOT,
 				method: 'GET',
 				params: {
@@ -88,6 +88,7 @@ export const usersApi = createApi({
 					page: with_pagination ? page : undefined,
 					page_size: with_pagination ? pageSize : undefined,
 					search,
+					...rest,
 				},
 			}),
 			providesTags: ['Users'],
@@ -116,14 +117,6 @@ export const usersApi = createApi({
 			}),
 			invalidatesTags: ['Users'],
 		}),
-		patchUser: builder.mutation<UserClass, { id: number; data: Partial<UserClass> }>({
-			query: ({ id, data }) => ({
-				url: `${process.env.NEXT_PUBLIC_USERS_ROOT}${id}/`,
-				method: 'PATCH',
-				data,
-			}),
-			invalidatesTags: ['Users'],
-		}),
 		deleteUser: builder.mutation<void | ApiErrorResponseType, { id: number }>({
 			query: ({ id }) => ({
 				url: `${process.env.NEXT_PUBLIC_USERS_ROOT}${id}/`,
@@ -146,11 +139,10 @@ export const { useSendPasswordResetCodeMutation, usePasswordResetMutation, useSe
 export const { useGetProfilQuery, useEditProfilMutation, useEditPasswordMutation } = profilApi;
 export const {
 	useGetUsersListQuery,
-	useGetUserQuery,
-	useCheckEmailMutation,
-	useAddUserMutation,
-	useEditUserMutation,
-	usePatchUserMutation,
 	useDeleteUserMutation,
+	useEditUserMutation,
+	useGetUserQuery,
+	useAddUserMutation,
+	useCheckEmailMutation,
 	useBulkDeleteUsersMutation,
 } = usersApi;
