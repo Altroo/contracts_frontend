@@ -76,7 +76,19 @@ jest.mock('@/utils/routes', () => ({
 	CONTRACTS_ADD: '/contracts/new',
 	CONTRACTS_VIEW: (id: number) => `/contracts/${id}`,
 	CONTRACTS_EDIT: (id: number) => `/contracts/${id}/edit`,
+	CONTRACT_PDF: (id: number, language: string) => `/contract/pdf/${language}/${id}/`,
+	CONTRACT_DOC: (id: number, language: string) => `/contract/doc/${language}/${id}/`,
 }));
+
+jest.mock('@/utils/apiHelpers', () => ({
+	fetchFileBlob: jest.fn(),
+}));
+
+jest.mock('@/components/shared/pdfLanguageModal/pdfLanguageModal', () => {
+	const Mock = () => <div data-testid="pdf-language-modal" />;
+	Mock.displayName = 'PdfLanguageModal';
+	return { __esModule: true, default: Mock };
+});
 
 // Enhanced PaginatedDataGrid mock that calls renderCell
 jest.mock('@/components/shared/paginatedDataGrid/paginatedDataGrid', () => ({

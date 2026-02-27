@@ -107,10 +107,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [isPending, setIsPending] = useState(false);
 	const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
+	const today = formatLocalDate(new Date());
+
 	const formik = useFormik<ContractFormValuesType>({
 		initialValues: {
 			numero_contrat: isEditMode ? (rawData?.numero_contrat ?? '') : (generatedCodeData?.numero_contrat ?? ''),
-			date_contrat: rawData?.date_contrat ?? '',
+			date_contrat: isEditMode ? (rawData?.date_contrat ?? today) : today,
 			statut: rawData?.statut ?? 'Brouillon',
 			type_contrat: rawData?.type_contrat ?? 'travaux_finition',
 			ville_signature: rawData?.ville_signature ?? 'Tanger',
@@ -228,7 +230,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				<Button
 					variant="outlined"
 					startIcon={<ArrowBackIcon />}
-					onClick={() => router.push(isEditMode ? CONTRACTS_VIEW(id!) : CONTRACTS_LIST)}
+					onClick={() => router.push(CONTRACTS_LIST)}
 					sx={{
 						whiteSpace: 'nowrap',
 						px: { xs: 1.5, sm: 2, md: 3 },
@@ -236,7 +238,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
 					}}
 				>
-					{isEditMode ? 'Retour au contrat' : 'Liste des contrats'}
+					 Liste des contrats
 				</Button>
 			</Stack>
 			{hasValidationErrors && (

@@ -1,20 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, Chip, Stack, Typography } from '@mui/material';
+import { Box, Button, Chip, Stack, Typography, Menu, MenuItem, ListItemIcon, ListItemText, Divider } from '@mui/material';
 import {
 	Edit as EditIcon,
 	Delete as DeleteIcon,
 	Visibility as VisibilityIcon,
 	Add as AddIcon,
 	Close as CloseIcon,
+	Print as PrintIcon,
+	PictureAsPdf as PictureAsPdfIcon,
+	Description as DescriptionIcon,
 } from '@mui/icons-material';
 import { GridColDef, GridRenderCellParams, GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { useDeleteContractMutation, useGetContractsListQuery, useBulkDeleteContractsMutation } from '@/store/services/contract';
-import { CONTRACTS_VIEW, CONTRACTS_EDIT, CONTRACTS_ADD } from '@/utils/routes';
+import { CONTRACTS_VIEW, CONTRACTS_EDIT, CONTRACTS_ADD, CONTRACT_PDF, CONTRACT_DOC } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
@@ -23,6 +26,8 @@ import type { ContractClass } from '@/models/classes';
 import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
 import { getContractStatusColor } from '@/utils/rawData';
 import { useToast } from '@/utils/hooks';
+import { fetchFileBlob } from '@/utils/apiHelpers';
+import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import { Protected } from '@/components/layouts/protected/protected';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
@@ -30,6 +35,7 @@ import {
 	createDropdownFilterOperators,
 } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
+import { createNumericFilterOperators } from '@/components/shared/numericFilter/numericFilterOperator';
 
 const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const router = useRouter();
@@ -49,6 +55,12 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 	// Bulk selection state
 	const [selectedContractIds, setSelectedContractIds] = useState<number[]>([]);
 	const [showBulkDeleteModal, setShowBulkDeleteModal] = useState<boolean>(false);
+
+	// Print menu state
+	const [printAnchorEl, setPrintAnchorEl] = useState<HTMLElement | null>(null);
+	const [printMenuItemId, setPrintMenuItemId] = useState<number | null>(null);
+	const [showLanguageModal, setShowLanguageModal] = useState(false);
+	const [pendingDocFormat, setPendingDocFormat] = useState<'pdf' | 'docx' | null>(null);
 
 	const {
 		data: rawData,
@@ -113,15 +125,57 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		{ text: `Supprimer (${selectedContractIds.length})`, active: true, onClick: bulkDeleteHandler, icon: <DeleteIcon />, color: '#D32F2F' },
 	];
 
+	const showPrintMenuCall = useCallback((e: React.MouseEvent<HTMLElement>, id: number) => {
+		setPrintAnchorEl(e.currentTarget);
+		setPrintMenuItemId(id);
+	}, []);
+
+	const handlePrintMenuClose = useCallback(() => {
+		setPrintAnchorEl(null);
+		setPrintMenuItemId(null);
+	}, []);
+
+	const handlePrintMenuItemClick = useCallback((format: 'pdf' | 'docx') => {
+		setPrintAnchorEl(null);
+		setPendingDocFormat(format);
+		setShowLanguageModal(true);
+	}, []);
+
+	const handleLanguageSelect = useCallback(
+		async (language: 'fr' | 'en') => {
+			setShowLanguageModal(false);
+			if (!pendingDocFormat || printMenuItemId === null) return;
+			try {
+				const url = pendingDocFormat === 'pdf' ? CONTRACT_PDF(printMenuItemId, language) : CONTRACT_DOC(printMenuItemId, language);
+				const blob = await fetchFileBlob(url, token!);
+				const blobUrl = window.URL.createObjectURL(blob);
+				window.open(blobUrl, '_blank');
+				setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
+			} catch {
+				onError("Erreur lors de l'ouverture du document.");
+			} finally {
+				setPendingDocFormat(null);
+				setPrintMenuItemId(null);
+			}
+		},
+		[pendingDocFormat, printMenuItemId, token, onError],
+	);
+
+	const handleLanguageModalClose = useCallback(() => {
+		setShowLanguageModal(false);
+		setPendingDocFormat(null);
+		setPrintMenuItemId(null);
+	}, []);
+
 	const statutFilterOptions = React.useMemo(
 		() => [
-			{ value: 'Brouillon', label: 'Brouillon' },
-			{ value: 'Envoyé', label: 'Envoyé' },
-			{ value: 'Signé', label: 'Signé' },
-			{ value: 'En cours', label: 'En cours' },
-			{ value: 'Terminé', label: 'Terminé' },
-			{ value: 'Annulé', label: 'Annulé' },
-			{ value: 'Expiré', label: 'Expiré' },
+			{ value: 'Brouillon', label: 'Brouillon', color: 'default' as const },
+			{ value: 'Envoyé', label: 'Envoyé', color: 'info' as const },
+			{ value: 'Signé', label: 'Signé', color: 'primary' as const },
+			{ value: 'En cours', label: 'En cours', color: 'warning' as const },
+			{ value: 'Terminé', label: 'Terminé', color: 'success' as const },
+			{ value: 'Annulé', label: 'Annulé', color: 'error' as const },
+			{ value: 'Expiré', label: 'Expiré', color: 'warning' as const },
 		],
 		[],
 	);
@@ -171,15 +225,17 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			headerName: 'Statut',
 			flex: 0.8,
 			minWidth: 100,
-			filterOperators: createDropdownFilterOperators(statutFilterOptions, 'Tous'),
+			filterOperators: createDropdownFilterOperators(statutFilterOptions, 'Tous les statuts', true),
 			renderCell: (params: GridRenderCellParams<ContractClass>) => {
 				const statut = params.value as string;
 				return (
-					<Chip
-						label={statut}
-						color={getContractStatusColor(statut)}
-						size="small"
-					/>
+					<DarkTooltip title={statut || '-'}>
+						<Chip
+							label={statut || '-'}
+							color={getContractStatusColor(statut)}
+							variant="outlined"
+						/>
+					</DarkTooltip>
 				);
 			},
 		},
@@ -205,6 +261,7 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			headerName: 'Montant HT',
 			flex: 1,
 			minWidth: 120,
+			filterOperators: createNumericFilterOperators(),
 			renderCell: (params: GridRenderCellParams<ContractClass>) => {
 				const value = params.value != null
 					? `${Number(params.value).toLocaleString('fr-MA')} ${params.row.devise}`
@@ -231,6 +288,16 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 						label: 'Voir',
 						icon: <VisibilityIcon />,
 						onClick: () => router.push(CONTRACTS_VIEW(params.row.id)),
+						color: 'info' as const,
+					},
+					{
+						label: 'Afficher',
+						icon: <PrintIcon />,
+						onClick: (e?: React.MouseEvent<HTMLElement>) => {
+							if (e) {
+								showPrintMenuCall(e, params.row.id);
+							}
+						},
 						color: 'info' as const,
 					},
 					{
@@ -339,6 +406,25 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 								titleIconColor="#D32F2F"
 							/>
 						)}
+
+						<Menu
+							anchorEl={printAnchorEl}
+							open={Boolean(printAnchorEl)}
+							onClose={handlePrintMenuClose}
+							slotProps={{ paper: { elevation: 3, sx: { minWidth: 240 } } }}
+						>
+							<MenuItem onClick={() => handlePrintMenuItemClick('pdf')}>
+								<ListItemIcon sx={{ color: '#d32f2f' }}><PictureAsPdfIcon /></ListItemIcon>
+								<ListItemText>Afficher en PDF</ListItemText>
+							</MenuItem>
+							<Divider />
+							<MenuItem onClick={() => handlePrintMenuItemClick('docx')}>
+								<ListItemIcon sx={{ color: '#1976d2' }}><DescriptionIcon /></ListItemIcon>
+								<ListItemText>Afficher en DOCX</ListItemText>
+							</MenuItem>
+						</Menu>
+
+						{showLanguageModal && <PdfLanguageModal onSelectLanguage={handleLanguageSelect} onClose={handleLanguageModalClose} />}
 					</>
 				</Protected>
 			</NavigationBar>

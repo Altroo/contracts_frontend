@@ -112,6 +112,7 @@ jest.mock('@/components/layouts/navigationBar/navigationBar', () => {
 jest.mock('@/utils/helpers', () => ({
 	getLabelForKey: jest.fn((labels: Record<string, string>, key: string) => labels[key] || key),
 	setFormikAutoErrors: jest.fn(),
+	formatLocalDate: jest.fn((date: Date) => date.toISOString().split('T')[0]),
 }));
 
 jest.mock('@/utils/rawData', () => ({

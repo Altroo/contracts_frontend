@@ -12,6 +12,7 @@ import CustomPasswordInput from '@/components/formikElements/customPasswordInput
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import { useEditPasswordMutation } from '@/store/services/account';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
+import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useToast, useAppSelector } from '@/utils/hooks';
 import { Edit as EditIcon, Lock as LockIcon } from '@mui/icons-material';
 import { getProfilState } from '@/store/selectors';
@@ -131,20 +132,24 @@ const PasswordClient: React.FC = () => {
 	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
 	return (
-		<main className={`${Styles.main} ${Styles.fixMobile}`}>
-			<Box
-				sx={{
-					width: '100%',
-					display: 'flex',
-					justifyContent: isMobile ? 'center' : 'flex-start',
-					alignItems: 'flex-start',
-				}}
-			>
-				<Box sx={{ width: '100%' }}>
-					<FormikContent />
-				</Box>
-			</Box>
-		</main>
+		<Stack direction="column" sx={{ position: 'relative' }}>
+			<NavigationBar title="Éditer le profil">
+				<main className={`${Styles.main} ${Styles.fixMobile}`}>
+					<Box
+						sx={{
+							width: '100%',
+							display: 'flex',
+							justifyContent: isMobile ? 'center' : 'flex-start',
+							alignItems: 'flex-start',
+						}}
+					>
+						<Box sx={{ width: '100%' }}>
+							<FormikContent />
+						</Box>
+					</Box>
+				</main>
+			</NavigationBar>
+		</Stack>
 	);
 };
 

@@ -43,11 +43,14 @@ import {
 	Assignment as AssignmentIcon,
 	Build as BuildIcon,
 	Gavel as GavelIcon,
+	PictureAsPdf as PictureAsPdfIcon,
 } from '@mui/icons-material';
-import { CONTRACTS_LIST, CONTRACTS_EDIT } from '@/utils/routes';
+import { CONTRACTS_LIST, CONTRACTS_EDIT, CONTRACT_PDF, CONTRACT_DOC } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
+import { fetchFileBlob } from '@/utils/apiHelpers';
+import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
@@ -64,7 +67,11 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-	const displayValue = React.isValidElement(value) ? value : value && value.toString().length > 1 ? value : '-';
+	const displayValue = React.isValidElement(value)
+		? value
+		: value === null || value === undefined || String(value).trim() === ''
+			? '-'
+			: value;
 
 	return (
 		<Stack
@@ -138,6 +145,29 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 	const [patchStatut] = usePatchContractStatutMutation();
 	const { onSuccess, onError } = useToast();
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const [showLanguageModal, setShowLanguageModal] = useState(false);
+	const [pendingDocFormat, setPendingDocFormat] = useState<'pdf' | 'docx' | null>(null);
+
+	const openDocument = (format: 'pdf' | 'docx') => {
+		setPendingDocFormat(format);
+		setShowLanguageModal(true);
+	};
+
+	const handleLanguageSelect = async (language: 'fr' | 'en') => {
+		setShowLanguageModal(false);
+		if (!token || !pendingDocFormat) return;
+		try {
+			const url = pendingDocFormat === 'pdf' ? CONTRACT_PDF(id, language) : CONTRACT_DOC(id, language);
+			const blob = await fetchFileBlob(url, token);
+			const blobUrl = window.URL.createObjectURL(blob);
+			window.open(blobUrl, '_blank');
+			setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
+		} catch {
+			onError("Erreur lors de l'ouverture du document.");
+		} finally {
+			setPendingDocFormat(null);
+		}
+	};
 
 	const handleDelete = async () => {
 		try {
@@ -197,6 +227,24 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 								<Stack direction="row" gap={1} flexWrap="wrap">
 									<Button
 										variant="outlined"
+										color="error"
+										size="small"
+										startIcon={<PictureAsPdfIcon />}
+										onClick={() => openDocument('pdf')}
+									>
+										PDF
+									</Button>
+									<Button
+										variant="outlined"
+										color="info"
+										size="small"
+										startIcon={<DescriptionIcon />}
+										onClick={() => openDocument('docx')}
+									>
+										DOCX
+									</Button>
+									<Button
+										variant="outlined"
 										size="small"
 										startIcon={<EditIcon />}
 										onClick={() => router.push(CONTRACTS_EDIT(id))}
@@ -254,7 +302,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 														<Chip
 															label={contract?.statut}
 															color={statusColor}
-															size="small"
+															variant="outlined"
 														/>
 													</Stack>
 												</Stack>
@@ -454,6 +502,12 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 				actions={deleteModalActions}
 				titleIcon={<DeleteIcon />}
 				titleIconColor="#D32F2F"
+			/>
+		)}
+		{showLanguageModal && (
+			<PdfLanguageModal
+				onSelectLanguage={handleLanguageSelect}
+				onClose={() => { setShowLanguageModal(false); setPendingDocFormat(null); }}
 			/>
 		)}
 		</Stack>

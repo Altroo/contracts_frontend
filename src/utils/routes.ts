@@ -23,3 +23,10 @@ export const USERS_LIST = `${SITE_ROOT}dashboard/users`;
 export const USERS_ADD = `${SITE_ROOT}dashboard/users/new`;
 export const USERS_VIEW = (id: number) => `${SITE_ROOT}dashboard/users/${id}`;
 export const USERS_EDIT = (id: number) => `${SITE_ROOT}dashboard/users/${id}/edit`;
+
+// PDF / DOCX Routes (authentication is sent via Authorization header by the caller)
+export const CONTRACT_PDF = (id: number, language: 'fr' | 'en' = 'fr') =>
+	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/contract/pdf/${language}/${id}/`;
+
+export const CONTRACT_DOC = (id: number, language: 'fr' | 'en' = 'fr') =>
+	`${process.env.NEXT_PUBLIC_ROOT_API_URL}/contract/doc/${language}/${id}/`;

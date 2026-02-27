@@ -17,6 +17,7 @@ import type { SessionProps } from '@/types/_initTypes';
 import { useGetProfilQuery, useEditProfilMutation } from '@/store/services/account';
 import { getAccessTokenFromSession } from '@/store/session';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
+import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { accountEditProfilAction } from '@/store/actions/accountActions';
 import CustomSquareImageUploading from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
 import { Edit as EditIcon, Groups as GroupsIcon, Person as PersonIcon } from '@mui/icons-material';
@@ -139,28 +140,32 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
 	);
 };
 
-const EditProfileClient: React.FC<SessionProps> = (props: SessionProps) => {
+const EditProfilClient: React.FC<SessionProps> = (props: SessionProps) => {
 	const { session } = props;
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 	const token = getAccessTokenFromSession(session);
 
 	return (
-		<main className={`${Styles.main} ${Styles.fixMobile}`}>
-			<Box
-				sx={{
-					width: '100%',
-					display: 'flex',
-					justifyContent: isMobile ? 'center' : 'flex-start',
-					alignItems: 'flex-start',
-				}}
-			>
-				<Box sx={{ width: '100%' }}>
-					<FormikContent token={token} />
-				</Box>
-			</Box>
-		</main>
+		<Stack direction="column" sx={{ position: 'relative' }}>
+			<NavigationBar title="Éditer le profil">
+				<main className={`${Styles.main} ${Styles.fixMobile}`}>
+					<Box
+						sx={{
+							width: '100%',
+							display: 'flex',
+							justifyContent: isMobile ? 'center' : 'flex-start',
+							alignItems: 'flex-start',
+						}}
+					>
+						<Box sx={{ width: '100%' }}>
+							<FormikContent token={token} />
+						</Box>
+					</Box>
+				</main>
+			</NavigationBar>
+		</Stack>
 	);
 };
 
-export default EditProfileClient;
+export default EditProfilClient;

@@ -25,7 +25,19 @@ jest.mock('@/store/services/contract', () => ({
 jest.mock('@/utils/routes', () => ({
 	CONTRACTS_LIST: '/contracts',
 	CONTRACTS_EDIT: (id: number) => `/contracts/${id}/edit`,
+	CONTRACT_PDF: (id: number, language: string) => `/contract/pdf/${language}/${id}/`,
+	CONTRACT_DOC: (id: number, language: string) => `/contract/doc/${language}/${id}/`,
 }));
+
+jest.mock('@/utils/apiHelpers', () => ({
+	fetchFileBlob: jest.fn(),
+}));
+
+jest.mock('@/components/shared/pdfLanguageModal/pdfLanguageModal', () => {
+	const Mock = () => <div data-testid="pdf-language-modal" />;
+	Mock.displayName = 'PdfLanguageModal';
+	return { __esModule: true, default: Mock };
+});
 
 jest.mock('@/components/formikElements/apiLoading/apiProgress/apiProgress', () => {
 	const Mock = () => <div data-testid="api-progress" />;
@@ -97,5 +109,28 @@ describe('ContractViewClient', () => {
 		);
 		expect(screen.getByRole('button', { name: /modifier/i })).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: /supprimer/i })).toBeInTheDocument();
+	});
+
+	it('renders PDF and DOCX buttons', () => {
+		const { useGetContractQuery } = jest.requireMock('@/store/services/contract');
+		(useGetContractQuery as jest.Mock).mockReturnValue({
+			data: {
+				id: 1,
+				numero_contrat: 'CTR-003',
+				statut: 'Signé',
+				date_contrat: '2024-03-01',
+				client_nom: 'Test Client',
+				montant_ht: 10000,
+				devise: 'MAD',
+			},
+			isLoading: false,
+		});
+		render(
+			<Provider store={store}>
+				<ContractViewClient id={1} />
+			</Provider>,
+		);
+		expect(screen.getByRole('button', { name: /pdf/i })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /docx/i })).toBeInTheDocument();
 	});
 });

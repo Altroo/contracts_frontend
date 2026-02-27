@@ -20,7 +20,7 @@ const contractStatusColorsList: Array<{ code: string; color: ChipColor }> = [
 	{ code: 'En cours', color: 'warning' },
 	{ code: 'Terminé', color: 'success' },
 	{ code: 'Annulé', color: 'error' },
-	{ code: 'Expiré', color: 'error' },
+	{ code: 'Expiré', color: 'warning' },
 ];
 
 export const getContractStatusColor = (statut: string): ChipColor => {

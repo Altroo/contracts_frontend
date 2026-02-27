@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { AUTH_LOGIN } from '@/utils/routes';
-import EditProfileClient from '@/components/pages/settings/edit-profile';
+import EditProfilClient from '@/components/pages/settings/edit-profile';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ const EditProfilePage = async () => {
 		redirect(AUTH_LOGIN);
 	}
 
-	return <EditProfileClient session={session} />;
+	return <EditProfilClient session={session} />;
 };
 
 export default EditProfilePage;

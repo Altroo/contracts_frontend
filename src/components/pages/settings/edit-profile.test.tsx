@@ -34,6 +34,17 @@ jest.mock('@/store/session', () => ({
 	getAccessTokenFromSession: () => 'mock-token',
 }));
 
+// Mock NavigationBar
+jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
+	__esModule: true,
+	default: ({ children, title }: { children: React.ReactNode; title: string }) => (
+		<div data-testid="navigation-bar">
+			<h1 data-testid="nav-title">{title}</h1>
+			{children}
+		</div>
+	),
+}));
+
 // Mock RTK Query hooks
 const mockUseGetProfilQuery = jest.fn();
 const mockEditProfil = jest.fn();
