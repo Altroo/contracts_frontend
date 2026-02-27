@@ -14,13 +14,13 @@ export const contractStatutItemsList: string[] = [
 ];
 
 export const contractStatusColors: Record<string, ChipColor> = {
-	Brouillon: 'default',
-	Envoye: 'info',
-	Signe: 'primary',
+	'Brouillon': 'default',
+	'Envoyé': 'info',
+	'Signé': 'primary',
 	'En cours': 'warning',
-	Termine: 'success',
-	Annule: 'error',
-	Expire: 'error',
+	'Terminé': 'success',
+	'Annulé': 'error',
+	'Expiré': 'error',
 };
 
 /* ── Contract types ── */

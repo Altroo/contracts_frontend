@@ -1,171 +1,216 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
-	Box,
-	Typography,
 	Button,
-	Paper,
-	Stack,
+	Card,
+	CardContent,
 	Chip,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogContentText,
+	DialogTitle,
 	Divider,
-	CircularProgress,
-	Grid,
+	Stack,
+	Typography,
 } from '@mui/material';
 import {
+	Description as DescriptionIcon,
+	CalendarToday as CalendarIcon,
+	Category as CategoryIcon,
+	LocationCity as CityIcon,
+	Person as PersonIcon,
+	Badge as BadgeIcon,
+	Work as WorkIcon,
+	Phone as PhoneIcon,
+	Email as EmailIcon,
+	Home as HomeIcon,
+	Apartment as ApartmentIcon,
+	SquareFoot as SquareFootIcon,
+	Construction as ConstructionIcon,
+	AttachMoney as MoneyIcon,
+	Percent as PercentIcon,
+	Shield as ShieldIcon,
 	Edit as EditIcon,
-	ArrowBack as ArrowBackIcon,
+	Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import { CONTRACTS_LIST, CONTRACTS_EDIT } from '@/utils/routes';
-import { useGetContractQuery } from '@/store/services/contract';
+import { useGetContractQuery, useDeleteContractMutation } from '@/store/services/contract';
 import { getAccessTokenFromSession } from '@/store/session';
-import { normalizeStatut } from '@/utils/helpers';
 import { contractStatusColors } from '@/utils/rawData';
+import { useToast } from '@/utils/hooks';
+import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
+import { Protected } from '@/components/layouts/protected/protected';
 import type { SessionProps } from '@/types/_initTypes';
+import Styles from '@/styles/dashboard/dashboard.module.sass';
 
 interface Props extends SessionProps {
 	id: number;
 }
 
+const InfoRow = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
+	<Stack direction="row" spacing={2} alignItems="center" sx={{ py: 1 }}>
+		{icon}
+		<Typography variant="body2" color="text.secondary" sx={{ minWidth: 120, fontWeight: 600 }}>
+			{label}
+		</Typography>
+		<Typography variant="body1">{value || '—'}</Typography>
+	</Stack>
+);
+
 const ContractViewClient = ({ id, session }: Props) => {
 	const router = useRouter();
+	const { onSuccess, onError } = useToast();
 	const token = getAccessTokenFromSession(session);
-	const { data: contract, isLoading, isError } = useGetContractQuery({ id }, { skip: !token });
+	const { data: contract, isLoading: isDataLoading } = useGetContractQuery({ id }, { skip: !token });
+	const [deleteContract, { isLoading: isDeleting }] = useDeleteContractMutation();
+	const [openDialog, setOpenDialog] = useState(false);
 
-	if (isLoading) {
-		return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><CircularProgress /></Box>;
+	if (isDataLoading) {
+		return <ApiProgress backdropColor="#FFFFFF" circularColor="#0274D7" />;
 	}
 
-	if (isError || !contract) {
+	if (!contract) {
 		return (
-			<Box sx={{ p: 3 }}>
-				<Typography color="error">Contrat introuvable.</Typography>
-				<Button onClick={() => router.push(CONTRACTS_LIST)} startIcon={<ArrowBackIcon />} sx={{ mt: 2 }}>
+			<Stack className={Styles.main as string} spacing={3}>
+				<Typography variant="h6" color="error">
+					Contrat introuvable.
+				</Typography>
+				<Button variant="outlined" onClick={() => router.push(CONTRACTS_LIST)}>
 					Retour à la liste
 				</Button>
-			</Box>
+			</Stack>
 		);
 	}
 
-	const status = contractStatusColors[normalizeStatut(contract.statut)] ?? 'default';
+	const handleDelete = async () => {
+		try {
+			await deleteContract({ id }).unwrap();
+			onSuccess('Contrat supprimé.');
+			router.push(CONTRACTS_LIST);
+		} catch {
+			onError('Échec de la suppression.');
+		}
+		setOpenDialog(false);
+	};
+
+	const statusColor = contractStatusColors[contract.statut] ?? 'default';
 
 	return (
-		<Box sx={{ p: 3 }}>
-			<Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-				<Stack direction="row" alignItems="center" spacing={2}>
-					<Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={() => router.push(CONTRACTS_LIST)}>
-						Retour
-					</Button>
-					<Typography variant="h5" fontWeight={700}>{contract.numero_contrat}</Typography>
-					<Chip label={contract.statut} color={status} />
+		<Protected>
+		<Stack className={Styles.main as string} spacing={3}>
+			{/* Header */}
+			<Stack direction="row" spacing={3} alignItems="center">
+				<Stack>
+					<Typography variant="h5" fontWeight={700}>
+						{contract.numero_contrat}
+					</Typography>
+					<Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
+						<Chip label={contract.statut} color={statusColor} size="small" />
+					</Stack>
 				</Stack>
-				<Button variant="contained" startIcon={<EditIcon />} onClick={() => router.push(CONTRACTS_EDIT(contract.id))}>
+			</Stack>
+
+			{/* Informations générales */}
+			<Card elevation={2} sx={{ borderRadius: 2 }}>
+				<CardContent sx={{ p: 3 }}>
+					<Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+						Informations générales
+					</Typography>
+					<Divider sx={{ mb: 2 }} />
+					<InfoRow icon={<DescriptionIcon color="action" />} label="N° contrat" value={contract.numero_contrat ?? ''} />
+					<InfoRow icon={<CalendarIcon color="action" />} label="Date contrat" value={contract.date_contrat ?? ''} />
+					<InfoRow icon={<CategoryIcon color="action" />} label="Type contrat" value={contract.type_contrat ?? ''} />
+					<InfoRow icon={<CityIcon color="action" />} label="Ville signature" value={contract.ville_signature ?? ''} />
+				</CardContent>
+			</Card>
+
+			{/* Client */}
+			<Card elevation={2} sx={{ borderRadius: 2 }}>
+				<CardContent sx={{ p: 3 }}>
+					<Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+						Client
+					</Typography>
+					<Divider sx={{ mb: 2 }} />
+					<InfoRow icon={<PersonIcon color="action" />} label="Nom" value={contract.client_nom ?? ''} />
+					<InfoRow icon={<BadgeIcon color="action" />} label="CIN / N° ent." value={contract.client_cin ?? ''} />
+					<InfoRow icon={<WorkIcon color="action" />} label="Qualité" value={contract.client_qualite ?? ''} />
+					<InfoRow icon={<PhoneIcon color="action" />} label="Téléphone" value={contract.client_tel ?? ''} />
+					<InfoRow icon={<EmailIcon color="action" />} label="Email" value={contract.client_email ?? ''} />
+					<InfoRow icon={<HomeIcon color="action" />} label="Adresse" value={contract.client_adresse ?? ''} />
+				</CardContent>
+			</Card>
+
+			{/* Travaux */}
+			<Card elevation={2} sx={{ borderRadius: 2 }}>
+				<CardContent sx={{ p: 3 }}>
+					<Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+						Travaux
+					</Typography>
+					<Divider sx={{ mb: 2 }} />
+					<InfoRow icon={<ApartmentIcon color="action" />} label="Type de bien" value={contract.type_bien ?? ''} />
+					<InfoRow icon={<SquareFootIcon color="action" />} label="Surface (m²)" value={contract.surface != null ? String(contract.surface) : ''} />
+					<InfoRow icon={<HomeIcon color="action" />} label="Adresse travaux" value={contract.adresse_travaux ?? ''} />
+					<InfoRow icon={<CalendarIcon color="action" />} label="Date début" value={contract.date_debut ?? ''} />
+					<InfoRow icon={<ConstructionIcon color="action" />} label="Description" value={contract.description_travaux ?? ''} />
+				</CardContent>
+			</Card>
+
+			{/* Financier */}
+			<Card elevation={2} sx={{ borderRadius: 2 }}>
+				<CardContent sx={{ p: 3 }}>
+					<Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+						Financier
+					</Typography>
+					<Divider sx={{ mb: 2 }} />
+					<InfoRow
+						icon={<MoneyIcon color="action" />}
+						label="Montant HT"
+						value={contract.montant_ht != null ? `${Number(contract.montant_ht).toLocaleString('fr-MA')} ${contract.devise}` : ''}
+					/>
+					<InfoRow icon={<PercentIcon color="action" />} label="TVA (%)" value={contract.tva != null ? String(contract.tva) : ''} />
+					<InfoRow icon={<ShieldIcon color="action" />} label="Garantie" value={contract.garantie ?? ''} />
+				</CardContent>
+			</Card>
+
+			{/* Actions */}
+			<Stack direction="row" spacing={2} justifyContent="center">
+				<Button
+					variant="contained"
+					startIcon={<EditIcon />}
+					onClick={() => router.push(CONTRACTS_EDIT(id))}
+				>
 					Modifier
+				</Button>
+				<Button
+					variant="outlined"
+					color="error"
+					startIcon={<DeleteIcon />}
+					onClick={() => setOpenDialog(true)}
+				>
+					Supprimer
 				</Button>
 			</Stack>
 
-			<Paper sx={{ p: 3 }}>
-				<Grid container spacing={3}>
-					<Grid size={{ xs: 12 }}>
-						<Typography variant="subtitle1" fontWeight={700} gutterBottom>Informations générales</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, md: 6 }}>
-						<Typography variant="caption" color="text.secondary">Numéro de contrat</Typography>
-						<Typography variant="body1" fontWeight={600}>{contract.numero_contrat}</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, md: 6 }}>
-						<Typography variant="caption" color="text.secondary">Date du contrat</Typography>
-						<Typography variant="body1">{contract.date_contrat ?? '—'}</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, md: 6 }}>
-						<Typography variant="caption" color="text.secondary">Type de contrat</Typography>
-						<Typography variant="body1">{contract.type_contrat ?? '—'}</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, md: 6 }}>
-						<Typography variant="caption" color="text.secondary">Ville de signature</Typography>
-						<Typography variant="body1">{contract.ville_signature ?? '—'}</Typography>
-					</Grid>
-
-					<Grid size={{ xs: 12 }}>
-						<Divider sx={{ my: 1 }} />
-						<Typography variant="subtitle1" fontWeight={700} gutterBottom>Client</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, md: 6 }}>
-						<Typography variant="caption" color="text.secondary">Nom du client</Typography>
-						<Typography variant="body1">{contract.client_nom ?? '—'}</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, md: 6 }}>
-						<Typography variant="caption" color="text.secondary">CIN / Num. entreprise</Typography>
-						<Typography variant="body1">{contract.client_cin ?? '—'}</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, md: 6 }}>
-						<Typography variant="caption" color="text.secondary">Qualité</Typography>
-						<Typography variant="body1">{contract.client_qualite ?? '—'}</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, md: 6 }}>
-						<Typography variant="caption" color="text.secondary">Téléphone</Typography>
-						<Typography variant="body1">{contract.client_tel ?? '—'}</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, md: 6 }}>
-						<Typography variant="caption" color="text.secondary">Email</Typography>
-						<Typography variant="body1">{contract.client_email ?? '—'}</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, md: 6 }}>
-						<Typography variant="caption" color="text.secondary">Adresse</Typography>
-						<Typography variant="body1">{contract.client_adresse ?? '—'}</Typography>
-					</Grid>
-
-					<Grid size={{ xs: 12 }}>
-						<Divider sx={{ my: 1 }} />
-						<Typography variant="subtitle1" fontWeight={700} gutterBottom>Travaux</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, md: 6 }}>
-						<Typography variant="caption" color="text.secondary">Type de bien</Typography>
-						<Typography variant="body1">{contract.type_bien ?? '—'}</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, md: 6 }}>
-						<Typography variant="caption" color="text.secondary">Surface (m²)</Typography>
-						<Typography variant="body1">{contract.surface ?? '—'}</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, md: 6 }}>
-						<Typography variant="caption" color="text.secondary">Adresse des travaux</Typography>
-						<Typography variant="body1">{contract.adresse_travaux ?? '—'}</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, md: 6 }}>
-						<Typography variant="caption" color="text.secondary">Date de début</Typography>
-						<Typography variant="body1">{contract.date_debut ?? '—'}</Typography>
-					</Grid>
-					{contract.description_travaux && (
-						<Grid size={{ xs: 12 }}>
-							<Typography variant="caption" color="text.secondary">Description des travaux</Typography>
-							<Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>{contract.description_travaux}</Typography>
-						</Grid>
-					)}
-
-					<Grid size={{ xs: 12 }}>
-						<Divider sx={{ my: 1 }} />
-						<Typography variant="subtitle1" fontWeight={700} gutterBottom>Financier</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, md: 4 }}>
-						<Typography variant="caption" color="text.secondary">Montant HT</Typography>
-						<Typography variant="body1" fontWeight={600}>
-							{contract.montant_ht != null
-								? `${Number(contract.montant_ht).toLocaleString('fr-MA')} ${contract.devise}`
-								: '—'}
-						</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, md: 4 }}>
-						<Typography variant="caption" color="text.secondary">TVA (%)</Typography>
-						<Typography variant="body1">{contract.tva ?? '—'}</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, md: 4 }}>
-						<Typography variant="caption" color="text.secondary">Garantie</Typography>
-						<Typography variant="body1">{contract.garantie ?? '—'}</Typography>
-					</Grid>
-				</Grid>
-			</Paper>
-		</Box>
+			{/* Delete confirmation dialog */}
+			<Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+				<DialogTitle>Confirmer la suppression</DialogTitle>
+				<DialogContent>
+					<DialogContentText>
+						Voulez-vous vraiment supprimer le contrat {contract.numero_contrat} ?
+					</DialogContentText>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={() => setOpenDialog(false)}>Annuler</Button>
+					<Button onClick={handleDelete} color="error" disabled={isDeleting}>
+						{isDeleting ? 'Suppression...' : 'Supprimer'}
+					</Button>
+				</DialogActions>
+			</Dialog>
+		</Stack>
+		</Protected>
 	);
 };
 

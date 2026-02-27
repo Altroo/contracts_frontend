@@ -124,6 +124,11 @@ jest.mock('@/components/shared/paginatedDataGrid/paginatedDataGrid', () => ({
 	},
 }));
 
+// Mock Protected
+jest.mock('@/components/layouts/protected/protected', () => ({
+	Protected: ({ children }: { children: React.ReactNode }) => <div data-testid="protected">{children}</div>,
+}));
+
 // Mock ActionModals
 jest.mock('@/components/htmlElements/modals/actionModal/actionModals', () => ({
 	__esModule: true,
@@ -186,12 +191,12 @@ jest.mock('@/utils/helpers', () => ({
 jest.mock('@/utils/rawData', () => ({
 	contractStatusColors: {
 		Brouillon: 'default',
-		Envoyé: 'info',
-		Signé: 'success',
+		Envoye: 'info',
+		Signe: 'success',
 		'En cours': 'warning',
-		Terminé: 'primary',
-		Annulé: 'error',
-		Expiré: 'secondary',
+		Termine: 'primary',
+		Annule: 'error',
+		Expire: 'secondary',
 	},
 }));
 

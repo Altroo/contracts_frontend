@@ -5,7 +5,6 @@ import {
 	INPUT_MIN,
 	INPUT_MAX,
 	INPUT_PHONE,
-	INPUT_URL_INVALID,
 	MINI_INPUT_EMAIL,
 	SHORT_INPUT_REQUIRED,
 	TVA_INPUT_INVALID,
@@ -24,11 +23,6 @@ const passwordField = z.preprocess(
 const optionalEmailField = z.preprocess(
 	(val) => (val === undefined || val === null || val === '' ? undefined : val),
 	z.email({ error: MINI_INPUT_EMAIL }).optional(),
-);
-
-const optionalUrlField = z.preprocess(
-	(val) => (val === undefined || val === null || val === '' ? undefined : val),
-	z.url({ error: INPUT_URL_INVALID }).optional(),
 );
 
 const optionalPhoneField = z.preprocess(

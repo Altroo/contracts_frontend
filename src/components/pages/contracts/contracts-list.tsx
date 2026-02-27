@@ -20,7 +20,7 @@ import type { PaginationResponseType, SessionProps } from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ContractClass } from '@/models/classes';
-import { formatDate, extractApiErrorMessage, normalizeStatut } from '@/utils/helpers';
+import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
 import { contractStatusColors } from '@/utils/rawData';
 import { useToast } from '@/utils/hooks';
 import { Protected } from '@/components/layouts/protected/protected';
@@ -176,7 +176,7 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 				return (
 					<Chip
 						label={statut}
-						color={contractStatusColors[normalizeStatut(statut)] ?? 'default'}
+						color={contractStatusColors[statut] ?? 'default'}
 						size="small"
 					/>
 				);
@@ -252,6 +252,7 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 	];
 
 	return (
+		<Protected>
 		<main className={`${Styles.main} ${Styles.fixMobile}`}>
 		<Stack
 			direction="column"
@@ -335,6 +336,7 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			)}
 		</Stack>
 		</main>
+		</Protected>
 	);
 };
 

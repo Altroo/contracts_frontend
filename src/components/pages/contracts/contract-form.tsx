@@ -8,6 +8,7 @@ import {
 	Card,
 	CardContent,
 	Divider,
+	InputAdornment,
 	Stack,
 	Typography,
 	useMediaQuery,
@@ -24,6 +25,7 @@ import {
 	Description as DescriptionIcon,
 	Fingerprint as FingerprintIcon,
 	CalendarMonth as CalendarMonthIcon,
+	CalendarToday as CalendarTodayIcon,
 	LocationOn as LocationOnIcon,
 	Phone as PhoneIcon,
 	Email as EmailIcon,
@@ -36,6 +38,10 @@ import {
 	Add as AddIcon,
 	Warning as WarningIcon,
 } from '@mui/icons-material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { fr } from 'date-fns/locale';
 import { useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { setFormikAutoErrors, getLabelForKey } from '@/utils/helpers';
@@ -51,6 +57,7 @@ import { useToast } from '@/utils/hooks';
 import { useAddContractMutation, useEditContractMutation, useGetContractQuery } from '@/store/services/contract';
 import { contractSchema } from '@/utils/formValidationSchemas';
 import { textInputTheme, customDropdownTheme } from '@/utils/themes';
+import { formatLocalDate } from '@/utils/helpers';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import CustomDropDownSelect from '@/components/formikElements/customDropDownSelect/customDropDownSelect';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
@@ -63,16 +70,17 @@ import Styles from '@/styles/dashboard/dashboard.module.sass';
 
 const inputTheme = textInputTheme();
 
-interface Props extends SessionProps {
+type FormikContentProps = {
+	token: string | undefined;
 	id?: number;
-}
+};
 
-const ContractFormClient = ({ id, session }: Props) => {
-	const router = useRouter();
+const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
+	const { token, id } = props;
 	const { onSuccess, onError } = useToast();
 	const isEditMode = id !== undefined;
-	const token = getAccessTokenFromSession(session);
 	const theme = useTheme();
+	const router = useRouter();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
 	const {
@@ -209,7 +217,6 @@ const ContractFormClient = ({ id, session }: Props) => {
 	const typeContratDisplay = typeContratItems.find((t) => t.code === formik.values.type_contrat)?.value ?? formik.values.type_contrat;
 
 	return (
-		<main className={`${Styles.main} ${Styles.fixMobile}`}>
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
 			<Stack direction={isMobile ? 'column' : 'row'} pt={2} justifyContent="space-between" spacing={2}>
 				<Button
@@ -273,19 +280,27 @@ const ContractFormClient = ({ id, session }: Props) => {
 										theme={inputTheme}
 										startIcon={<FingerprintIcon fontSize="small" />}
 									/>
-									<CustomTextInput
-										id="date_contrat"
-										type="date"
-										label="Date du contrat"
-										value={formik.values.date_contrat}
-										onChange={formik.handleChange('date_contrat')}
-										onBlur={formik.handleBlur('date_contrat')}
-										fullWidth={false}
-										size="small"
-										theme={inputTheme}
-										shrink
-										startIcon={<CalendarMonthIcon fontSize="small" />}
-									/>
+									<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
+										<DatePicker
+											label="Date du contrat"
+											value={formik.values.date_contrat ? new Date(formik.values.date_contrat) : null}
+											onChange={(date) => formik.setFieldValue('date_contrat', date ? formatLocalDate(date) : '')}
+											format="dd/MM/yyyy"
+											slotProps={{
+												textField: {
+													size: 'small',
+													fullWidth: true,
+													InputProps: {
+														startAdornment: (
+															<InputAdornment position="start">
+																<CalendarTodayIcon fontSize="small" color="action" />
+															</InputAdornment>
+														),
+													},
+												},
+											}}
+										/>
+									</LocalizationProvider>
 									<Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
 										<CustomDropDownSelect
 											id="statut"
@@ -435,15 +450,18 @@ const ContractFormClient = ({ id, session }: Props) => {
 									/>
 									<CustomTextInput
 										id="surface"
-										type="number"
+										type="text"
 										label="Surface (m²)"
 										value={formik.values.surface}
-										onChange={formik.handleChange('surface')}
+										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+											if (/^\d*[.,]?\d*$/.test(e.target.value)) formik.setFieldValue('surface', e.target.value);
+										}}
 										onBlur={formik.handleBlur('surface')}
 										fullWidth={false}
 										size="small"
 										theme={inputTheme}
 										startIcon={<StraightenIcon fontSize="small" />}
+										slotProps={{ input: { inputProps: { inputMode: 'decimal' } } }}
 									/>
 									<CustomTextInput
 										id="adresse_travaux"
@@ -457,19 +475,27 @@ const ContractFormClient = ({ id, session }: Props) => {
 										theme={inputTheme}
 										startIcon={<LocationOnIcon fontSize="small" />}
 									/>
-									<CustomTextInput
-										id="date_debut"
-										type="date"
-										label="Date de début"
-										value={formik.values.date_debut}
-										onChange={formik.handleChange('date_debut')}
-										onBlur={formik.handleBlur('date_debut')}
-										fullWidth={false}
-										size="small"
-										theme={inputTheme}
-										shrink
-										startIcon={<CalendarMonthIcon fontSize="small" />}
-									/>
+									<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
+										<DatePicker
+											label="Date de début"
+											value={formik.values.date_debut ? new Date(formik.values.date_debut) : null}
+											onChange={(date) => formik.setFieldValue('date_debut', date ? formatLocalDate(date) : '')}
+											format="dd/MM/yyyy"
+											slotProps={{
+												textField: {
+													size: 'small',
+													fullWidth: true,
+													InputProps: {
+														startAdornment: (
+															<InputAdornment position="start">
+																<CalendarTodayIcon fontSize="small" color="action" />
+															</InputAdornment>
+														),
+													},
+												},
+											}}
+										/>
+									</LocalizationProvider>
 									<CustomTextInput
 										id="duree_estimee"
 										type="text"
@@ -523,10 +549,12 @@ const ContractFormClient = ({ id, session }: Props) => {
 								<Stack spacing={2.5}>
 									<CustomTextInput
 										id="montant_ht"
-										type="number"
+										type="text"
 										label="Montant HT *"
 										value={formik.values.montant_ht}
-										onChange={formik.handleChange('montant_ht')}
+										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+											if (/^\d*[.,]?\d*$/.test(e.target.value)) formik.setFieldValue('montant_ht', e.target.value);
+										}}
 										onBlur={formik.handleBlur('montant_ht')}
 										error={formik.touched.montant_ht && Boolean(formik.errors.montant_ht)}
 										helperText={formik.touched.montant_ht ? formik.errors.montant_ht : ''}
@@ -534,6 +562,7 @@ const ContractFormClient = ({ id, session }: Props) => {
 										size="small"
 										theme={inputTheme}
 										startIcon={<AttachMoneyIcon fontSize="small" />}
+										slotProps={{ input: { inputProps: { inputMode: 'decimal' } } }}
 									/>
 									<Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
 										<CustomDropDownSelect
@@ -551,12 +580,15 @@ const ContractFormClient = ({ id, session }: Props) => {
 										type="text"
 										label="TVA (%)"
 										value={formik.values.tva}
-										onChange={formik.handleChange('tva')}
+										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+											if (/^\d*[.,]?\d*$/.test(e.target.value)) formik.setFieldValue('tva', e.target.value);
+										}}
 										onBlur={formik.handleBlur('tva')}
 										fullWidth={false}
 										size="small"
 										theme={inputTheme}
 										startIcon={<AttachMoneyIcon fontSize="small" />}
+										slotProps={{ input: { inputProps: { inputMode: 'decimal' } } }}
 									/>
 								</Stack>
 							</CardContent>
@@ -632,6 +664,21 @@ const ContractFormClient = ({ id, session }: Props) => {
 				</form>
 			)}
 		</Stack>
+	);
+};
+
+interface Props extends SessionProps {
+	id?: number;
+}
+
+const ContractFormClient: React.FC<Props> = ({ session, id }: Props) => {
+	const token = getAccessTokenFromSession(session);
+
+	return (
+		<main className={`${Styles.main} ${Styles.fixMobile}`}>
+			<Box sx={{ width: '100%' }}>
+				<FormikContent token={token} id={id} />
+			</Box>
 		</main>
 	);
 };
