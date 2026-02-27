@@ -51,7 +51,7 @@ import { useToast } from '@/utils/hooks';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { contractStatusColors, contractStatutItemsList } from '@/utils/rawData';
+import { getContractStatusColor, contractStatutItemsList } from '@/utils/rawData';
 import type { ContractStatutType } from '@/types/contractTypes';
 
 interface InfoRowProps {
@@ -177,7 +177,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 		},
 	];
 
-	const statusColor = contract ? (contractStatusColors[contract.statut] ?? 'default') : 'default';
+	const statusColor = contract ? getContractStatusColor(contract.statut) : 'default';
 
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
@@ -278,7 +278,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 												<Chip
 													key={statut}
 													label={statut}
-													color={contract?.statut === statut ? (contractStatusColors[statut] ?? 'default') : 'default'}
+													color={contract?.statut === statut ? getContractStatusColor(statut) : 'default'}
 													variant={contract?.statut === statut ? 'filled' : 'outlined'}
 													onClick={() => {
 														if (contract?.statut !== statut) {

@@ -13,14 +13,18 @@ export const contractStatutItemsList: string[] = [
 	'Brouillon', 'Envoyé', 'Signé', 'En cours', 'Terminé', 'Annulé', 'Expiré',
 ];
 
-export const contractStatusColors: Record<string, ChipColor> = {
-	'Brouillon': 'default',
-	'Envoyé': 'info',
-	'Signé': 'primary',
-	'En cours': 'warning',
-	'Terminé': 'success',
-	'Annulé': 'error',
-	'Expiré': 'error',
+const contractStatusColorsList: Array<{ code: string; color: ChipColor }> = [
+	{ code: 'Brouillon', color: 'default' },
+	{ code: 'Envoyé', color: 'info' },
+	{ code: 'Signé', color: 'primary' },
+	{ code: 'En cours', color: 'warning' },
+	{ code: 'Terminé', color: 'success' },
+	{ code: 'Annulé', color: 'error' },
+	{ code: 'Expiré', color: 'error' },
+];
+
+export const getContractStatusColor = (statut: string): ChipColor => {
+	return contractStatusColorsList.find((item) => item.code === statut)?.color ?? 'default';
 };
 
 /* ── Contract types ── */

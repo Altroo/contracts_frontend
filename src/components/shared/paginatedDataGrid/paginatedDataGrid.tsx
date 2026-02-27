@@ -362,6 +362,8 @@ const PaginatedDataGrid = <T,>({
 							width: '100%',
 							WebkitOverflowScrolling: 'touch',
 							overscrollBehavior: 'contain',
+							px: { xs: 1, sm: 2, md: 3 },
+							mb: { xs: 1, sm: 2, md: 3 },
 						}}
 					>
 						<Box

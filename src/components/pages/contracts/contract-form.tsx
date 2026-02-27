@@ -24,7 +24,6 @@ import {
 	Gavel as GavelIcon,
 	Description as DescriptionIcon,
 	Fingerprint as FingerprintIcon,
-	CalendarMonth as CalendarMonthIcon,
 	CalendarToday as CalendarTodayIcon,
 	LocationOn as LocationOnIcon,
 	Phone as PhoneIcon,

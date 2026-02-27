@@ -196,14 +196,12 @@ jest.mock('@/utils/helpers', () => ({
 }));
 
 jest.mock('@/utils/rawData', () => ({
-	contractStatusColors: {
-		Brouillon: 'default',
-		Envoye: 'info',
-		Signe: 'success',
-		'En cours': 'warning',
-		Termine: 'primary',
-		Annule: 'error',
-		Expire: 'secondary',
+	getContractStatusColor: (statut: string) => {
+		const map: Record<string, string> = {
+			Brouillon: 'default',
+			'En cours': 'warning',
+		};
+		return map[statut] ?? 'default';
 	},
 }));
 

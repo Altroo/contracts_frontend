@@ -21,7 +21,7 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ContractClass } from '@/models/classes';
 import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
-import { contractStatusColors } from '@/utils/rawData';
+import { getContractStatusColor } from '@/utils/rawData';
 import { useToast } from '@/utils/hooks';
 import { Protected } from '@/components/layouts/protected/protected';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
@@ -177,7 +177,7 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 				return (
 					<Chip
 						label={statut}
-						color={contractStatusColors[statut] ?? 'default'}
+						color={getContractStatusColor(statut)}
 						size="small"
 					/>
 				);

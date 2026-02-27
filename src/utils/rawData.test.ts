@@ -1,7 +1,7 @@
 import {
 	genderItemsList,
 	contractStatutItemsList,
-	contractStatusColors,
+	getContractStatusColor,
 	typeContratItemsList,
 	deviseItemsList,
 	confidentialiteItemsList,
@@ -43,18 +43,22 @@ describe('items lists', () => {
 		});
 	});
 
-	describe('contractStatusColors', () => {
-		it('maps every status in contractStatutItemsList', () => {
+	describe('getContractStatusColor', () => {
+		it('returns a color for every status in contractStatutItemsList', () => {
 			for (const statut of contractStatutItemsList) {
-				expect(contractStatusColors[statut]).toBeDefined();
+				expect(getContractStatusColor(statut)).toBeDefined();
 			}
 		});
 
-		it('returns a valid MUI chip color for each entry', () => {
+		it('returns a valid MUI chip color for each status', () => {
 			const validColors = ['default', 'warning', 'success', 'error', 'info', 'primary', 'secondary'];
-			for (const color of Object.values(contractStatusColors)) {
-				expect(validColors).toContain(color);
+			for (const statut of contractStatutItemsList) {
+				expect(validColors).toContain(getContractStatusColor(statut));
 			}
+		});
+
+		it('returns default for unknown status', () => {
+			expect(getContractStatusColor('unknown')).toBe('default');
 		});
 	});
 
