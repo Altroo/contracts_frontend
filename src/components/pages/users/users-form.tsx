@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
+import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import {
 	Box,
 	Button,
@@ -441,15 +442,20 @@ interface Props extends SessionProps {
 
 const UsersFormClient: React.FC<Props> = ({ session, id }: Props) => {
 	const token = getAccessTokenFromSession(session);
+	const isEditMode = id !== undefined;
 
 	return (
-		<Protected>
-			<main className={`${Styles.main} ${Styles.fixMobile}`}>
-				<Box sx={{ width: '100%' }}>
-					<FormikContent token={token} id={id} />
-				</Box>
-			</main>
-		</Protected>
+		<Stack direction="column" sx={{ position: 'relative' }}>
+			<NavigationBar title={isEditMode ? "Modifier l'utilisateur" : 'Ajouter un utilisateur'}>
+				<main className={`${Styles.main} ${Styles.fixMobile}`}>
+					<Protected>
+						<Box sx={{ width: '100%' }}>
+							<FormikContent token={token} id={id} />
+						</Box>
+					</Protected>
+				</main>
+			</NavigationBar>
+		</Stack>
 	);
 };
 

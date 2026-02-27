@@ -49,6 +49,7 @@ jest.mock('@/store/services/contract', () => ({
 	__esModule: true,
 	useGetContractQuery: (params: { id: number }, options: { skip: boolean }) =>
 		mockUseGetContractQuery(params, options),
+	useGetCodeReferenceQuery: () => ({ data: { numero_contrat: 'CTR-AUTO-001' }, isLoading: false }),
 	useAddContractMutation: () => [mockAddContractMutation, { isLoading: false, error: undefined }],
 	useEditContractMutation: () => [mockEditContractMutation, { isLoading: false, error: undefined }],
 }));
@@ -95,6 +96,18 @@ jest.mock('@/utils/themes', () => ({
 	textInputTheme: jest.fn(() => ({})),
 	customDropdownTheme: jest.fn(() => ({})),
 }));
+
+// Mock Protected
+jest.mock('@/components/layouts/protected/protected', () => ({
+	Protected: ({ children }: { children: React.ReactNode }) => <div data-testid="protected">{children}</div>,
+}));
+
+// Mock NavigationBar
+jest.mock('@/components/layouts/navigationBar/navigationBar', () => {
+	const Mock = ({ children }: { children: React.ReactNode }) => <div data-testid="navigation-bar">{children}</div>;
+	Mock.displayName = 'NavigationBar';
+	return { __esModule: true, default: Mock };
+});
 
 jest.mock('@/utils/helpers', () => ({
 	getLabelForKey: jest.fn((labels: Record<string, string>, key: string) => labels[key] || key),

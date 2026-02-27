@@ -54,7 +54,7 @@ import {
 import { CONTRACTS_LIST, CONTRACTS_VIEW } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/utils/hooks';
-import { useAddContractMutation, useEditContractMutation, useGetContractQuery } from '@/store/services/contract';
+import { useAddContractMutation, useEditContractMutation, useGetContractQuery, useGetCodeReferenceQuery } from '@/store/services/contract';
 import { contractSchema } from '@/utils/formValidationSchemas';
 import { textInputTheme, customDropdownTheme } from '@/utils/themes';
 import { formatLocalDate } from '@/utils/helpers';
@@ -67,6 +67,8 @@ import type { ContractFormValuesType } from '@/types/contractTypes';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
+import { Protected } from '@/components/layouts/protected/protected';
+import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 
 const inputTheme = textInputTheme();
 
@@ -89,6 +91,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		error: dataError,
 	} = useGetContractQuery({ id: id! }, { skip: !isEditMode || !token });
 
+	const {
+		data: generatedCodeData,
+		isLoading: isCodeLoading,
+	} = useGetCodeReferenceQuery(undefined, { skip: !token || isEditMode });
+
 	const [addContract, { isLoading: isAddLoading, error: addError }] = useAddContractMutation();
 	const [editContract, { isLoading: isEditLoading, error: editError }] = useEditContractMutation();
 
@@ -103,7 +110,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const formik = useFormik<ContractFormValuesType>({
 		initialValues: {
-			numero_contrat: rawData?.numero_contrat ?? '',
+			numero_contrat: isEditMode ? (rawData?.numero_contrat ?? '') : (generatedCodeData?.numero_contrat ?? ''),
 			date_contrat: rawData?.date_contrat ?? '',
 			statut: rawData?.statut ?? 'Brouillon',
 			type_contrat: rawData?.type_contrat ?? 'travaux_finition',
@@ -210,7 +217,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	}, [formik.errors, hasAttemptedSubmit]);
 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
-	const isLoading = isAddLoading || isEditLoading || isPending || (isEditMode && isDataLoading);
+	const isLoading = isAddLoading || isEditLoading || isPending || (isEditMode && isDataLoading) || (!isEditMode && isCodeLoading);
 	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
 	/* ── helper: resolve display value for code-based dropdowns ── */
@@ -673,13 +680,20 @@ interface Props extends SessionProps {
 
 const ContractFormClient: React.FC<Props> = ({ session, id }: Props) => {
 	const token = getAccessTokenFromSession(session);
+	const isEditMode = id !== undefined;
 
 	return (
-		<main className={`${Styles.main} ${Styles.fixMobile}`}>
-			<Box sx={{ width: '100%' }}>
-				<FormikContent token={token} id={id} />
-			</Box>
-		</main>
+		<Stack direction="column" sx={{ position: 'relative' }}>
+			<NavigationBar title={isEditMode ? 'Modifier le contrat' : 'Ajouter un contrat'}>
+				<main className={`${Styles.main} ${Styles.fixMobile}`}>
+					<Protected>
+						<Box sx={{ width: '100%' }}>
+							<FormikContent token={token} id={id} />
+						</Box>
+					</Protected>
+				</main>
+			</NavigationBar>
+		</Stack>
 	);
 };
 

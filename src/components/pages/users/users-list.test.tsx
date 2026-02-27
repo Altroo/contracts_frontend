@@ -78,6 +78,13 @@ jest.mock('@/components/layouts/protected/protected', () => ({
 	Protected: ({ children }: { children: React.ReactNode }) => <div data-testid="protected">{children}</div>,
 }));
 
+// Mock NavigationBar
+jest.mock('@/components/layouts/navigationBar/navigationBar', () => {
+	const Mock = ({ children }: { children: React.ReactNode }) => <div data-testid="navigation-bar">{children}</div>;
+	Mock.displayName = 'NavigationBar';
+	return { __esModule: true, default: Mock };
+});
+
 // Enhanced PaginatedDataGrid mock that calls renderCell
 jest.mock('@/components/shared/paginatedDataGrid/paginatedDataGrid', () => ({
 	__esModule: true,

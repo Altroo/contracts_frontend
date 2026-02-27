@@ -61,6 +61,13 @@ jest.mock('@/components/layouts/protected/protected', () => ({
 	Protected: ({ children }: { children: React.ReactNode }) => <div data-testid="protected">{children}</div>,
 }));
 
+// Mock NavigationBar
+jest.mock('@/components/layouts/navigationBar/navigationBar', () => {
+	const Mock = ({ children }: { children: React.ReactNode }) => <div data-testid="navigation-bar">{children}</div>;
+	Mock.displayName = 'NavigationBar';
+	return { __esModule: true, default: Mock };
+});
+
 // Mock form sub-components
 jest.mock('@/components/formikElements/customTextInput/customTextInput', () => ({
 	__esModule: true,

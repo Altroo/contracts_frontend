@@ -32,6 +32,16 @@ jest.mock('@/components/formikElements/apiLoading/apiProgress/apiProgress', () =
 	return { __esModule: true, default: Mock };
 });
 
+jest.mock('@/components/layouts/navigationBar/navigationBar', () => {
+	const Mock = ({ children }: { children: React.ReactNode }) => <div data-testid="navigation-bar">{children}</div>;
+	Mock.displayName = 'NavigationBar';
+	return { __esModule: true, default: Mock };
+});
+
+jest.mock('@/components/layouts/protected/protected', () => ({
+	Protected: ({ children }: { children: React.ReactNode }) => <div data-testid="protected">{children}</div>,
+}));
+
 describe('UsersViewClient', () => {
 	it('shows error when user not found', () => {
 		render(

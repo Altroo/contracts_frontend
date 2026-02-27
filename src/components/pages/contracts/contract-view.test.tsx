@@ -19,6 +19,7 @@ jest.mock('@/store/services/contract', () => ({
 	...jest.requireActual('@/store/services/contract'),
 	useGetContractQuery: jest.fn(() => ({ data: undefined, isLoading: false })),
 	useDeleteContractMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+	usePatchContractStatutMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }));
 
 jest.mock('@/utils/routes', () => ({
@@ -31,6 +32,16 @@ jest.mock('@/components/formikElements/apiLoading/apiProgress/apiProgress', () =
 	Mock.displayName = 'ApiProgress';
 	return { __esModule: true, default: Mock };
 });
+
+jest.mock('@/components/layouts/navigationBar/navigationBar', () => {
+	const Mock = ({ children }: { children: React.ReactNode }) => <div data-testid="navigation-bar">{children}</div>;
+	Mock.displayName = 'NavigationBar';
+	return { __esModule: true, default: Mock };
+});
+
+jest.mock('@/components/layouts/protected/protected', () => ({
+	Protected: ({ children }: { children: React.ReactNode }) => <div data-testid="protected">{children}</div>,
+}));
 
 describe('ContractViewClient', () => {
 	it('shows error when contract not found', () => {

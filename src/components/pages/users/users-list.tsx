@@ -15,6 +15,7 @@ import {
 import { GridColDef, GridRenderCellParams, GridFilterModel, GridLogicOperator } from '@mui/x-data-grid';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
+import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useDeleteUserMutation, useGetUsersListQuery, useBulkDeleteUsersMutation } from '@/store/services/account';
 import { USERS_VIEW, USERS_EDIT, USERS_ADD } from '@/utils/routes';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
@@ -339,91 +340,96 @@ const UsersListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	];
 
 	return (
-		<Protected>
-			<main className={`${Styles.main} ${Styles.fixMobile}`}>
-			<Stack
-				direction="column"
-				spacing={2}
-				className={Styles.flexRootStack}
-				sx={{ p: { xs: 2, md: 3 }, overflowX: 'auto', overflowY: 'hidden' }}
-			>
-				<Box
-					sx={{
-						width: '100%',
-						display: 'flex',
-						justifyContent: 'flex-start',
-						gap: 2,
-						pt: 2,
-					}}
-				>
-					<Button
-						variant="contained"
-						onClick={() => router.push(USERS_ADD)}
-						sx={{
-							whiteSpace: 'nowrap',
-							px: { xs: 1.5, sm: 2, md: 3 },
-							py: { xs: 0.8, sm: 1, md: 1 },
-							fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
-						}}
-						startIcon={<AddIcon fontSize="small" />}
-					>
-						Nouveau utilisateur
-					</Button>
-					{selectedUserIds.length > 0 && (
-						<Button
-							variant="outlined"
-							color="error"
-							onClick={() => setShowBulkDeleteModal(true)}
-							startIcon={<DeleteIcon fontSize="small" />}
+		<Stack
+			direction="column"
+			spacing={2}
+			className={Styles.flexRootStack}
+			mt="48px"
+			sx={{ overflowX: 'auto', overflowY: 'hidden' }}
+		>
+			<NavigationBar title="Liste des utilisateurs">
+				<Protected>
+					<>
+						<Box
 							sx={{
-								whiteSpace: 'nowrap',
-								px: { xs: 1.5, sm: 2, md: 3 },
-								py: { xs: 0.8, sm: 1, md: 1 },
-								fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+								width: '100%',
+								display: 'flex',
+								justifyContent: 'flex-start',
+								gap: 2,
+								px: { xs: 1, sm: 2, md: 3 },
+								mt: { xs: 1, sm: 2, md: 3 },
+								mb: { xs: 1, sm: 2, md: 3 },
 							}}
 						>
-							Supprimer ({selectedUserIds.length})
-						</Button>
-					)}
-				</Box>
+							<Button
+								variant="contained"
+								onClick={() => router.push(USERS_ADD)}
+								sx={{
+									whiteSpace: 'nowrap',
+									px: { xs: 1.5, sm: 2, md: 3 },
+									py: { xs: 0.8, sm: 1, md: 1 },
+									fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+								}}
+								startIcon={<AddIcon fontSize="small" />}
+							>
+								Nouveau utilisateur
+							</Button>
+							{selectedUserIds.length > 0 && (
+								<Button
+									variant="outlined"
+									color="error"
+									onClick={() => setShowBulkDeleteModal(true)}
+									startIcon={<DeleteIcon fontSize="small" />}
+									sx={{
+										whiteSpace: 'nowrap',
+										px: { xs: 1.5, sm: 2, md: 3 },
+										py: { xs: 0.8, sm: 1, md: 1 },
+										fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+									}}
+								>
+									Supprimer ({selectedUserIds.length})
+								</Button>
+							)}
+						</Box>
 
-				<PaginatedDataGrid
-					data={data}
-					isLoading={isLoading}
-					columns={columns}
-					paginationModel={paginationModel}
-					setPaginationModel={setPaginationModel}
-					searchTerm={searchTerm}
-					setSearchTerm={setSearchTerm}
-					filterModel={filterModel}
-					onFilterModelChange={setFilterModel}
-					onCustomFilterParamsChange={setCustomFilterParams}
-					toolbar={{ quickFilter: true, debounceMs: 500 }}
-					checkboxSelection
-					onSelectionChange={handleSelectionChange}
-					selectedIds={selectedUserIds}
-				/>
-				{showDeleteModal && (
-					<ActionModals
-						title="Supprimer ce utilisateur ?"
-						body="Êtes‑vous sûr de vouloir supprimer ce utilisateur?"
-						actions={deleteModalActions}
-						titleIcon={<DeleteIcon />}
-						titleIconColor="#D32F2F"
-					/>
-				)}
-				{showBulkDeleteModal && (
-					<ActionModals
-						title={`Supprimer ${selectedUserIds.length} utilisateur(s) ?`}
-						body={`Êtes-vous sûr de vouloir supprimer les ${selectedUserIds.length} utilisateur(s) sélectionné(s) ?`}
-						actions={bulkDeleteModalActions}
-						titleIcon={<DeleteIcon />}
-						titleIconColor="#D32F2F"
-					/>
-				)}
-			</Stack>
-			</main>
-		</Protected>
+						<PaginatedDataGrid
+							data={data}
+							isLoading={isLoading}
+							columns={columns}
+							paginationModel={paginationModel}
+							setPaginationModel={setPaginationModel}
+							searchTerm={searchTerm}
+							setSearchTerm={setSearchTerm}
+							filterModel={filterModel}
+							onFilterModelChange={setFilterModel}
+							onCustomFilterParamsChange={setCustomFilterParams}
+							toolbar={{ quickFilter: true, debounceMs: 500 }}
+							checkboxSelection
+							onSelectionChange={handleSelectionChange}
+							selectedIds={selectedUserIds}
+						/>
+						{showDeleteModal && (
+							<ActionModals
+								title="Supprimer ce utilisateur ?"
+								body="Êtes‑vous sûr de vouloir supprimer ce utilisateur?"
+								actions={deleteModalActions}
+								titleIcon={<DeleteIcon />}
+								titleIconColor="#D32F2F"
+							/>
+						)}
+						{showBulkDeleteModal && (
+							<ActionModals
+								title={`Supprimer ${selectedUserIds.length} utilisateur(s) ?`}
+								body={`Êtes-vous sûr de vouloir supprimer les ${selectedUserIds.length} utilisateur(s) sélectionné(s) ?`}
+								actions={bulkDeleteModalActions}
+								titleIcon={<DeleteIcon />}
+								titleIconColor="#D32F2F"
+							/>
+						)}
+					</>
+				</Protected>
+			</NavigationBar>
+		</Stack>
 	);
 };
 

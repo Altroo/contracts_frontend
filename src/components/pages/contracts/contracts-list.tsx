@@ -24,6 +24,7 @@ import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
 import { contractStatusColors } from '@/utils/rawData';
 import { useToast } from '@/utils/hooks';
 import { Protected } from '@/components/layouts/protected/protected';
+import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import {
 	createDropdownFilterOperators,
@@ -252,23 +253,27 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 	];
 
 	return (
-		<Protected>
-		<main className={`${Styles.main} ${Styles.fixMobile}`}>
 		<Stack
 			direction="column"
 			spacing={2}
 			className={Styles.flexRootStack}
-			sx={{ p: { xs: 2, md: 3 }, overflowX: 'auto', overflowY: 'hidden' }}
+			mt="48px"
+			sx={{ overflowX: 'auto', overflowY: 'hidden' }}
 		>
-			<Box
-				sx={{
-					width: '100%',
-					display: 'flex',
-					justifyContent: 'flex-start',
-					gap: 2,
-					pt: 2,
-				}}
-			>
+			<NavigationBar title="Liste des contrats">
+				<Protected>
+					<>
+						<Box
+							sx={{
+								width: '100%',
+								display: 'flex',
+								justifyContent: 'flex-start',
+								gap: 2,
+								px: { xs: 1, sm: 2, md: 3 },
+								mt: { xs: 1, sm: 2, md: 3 },
+								mb: { xs: 1, sm: 2, md: 3 },
+							}}
+						>
 				<Button
 					variant="contained"
 					onClick={() => router.push(CONTRACTS_ADD)}
@@ -316,27 +321,28 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 				onSelectionChange={handleSelectionChange}
 				selectedIds={selectedContractIds}
 			/>
-			{showDeleteModal && (
-				<ActionModals
-					title="Supprimer ce contrat ?"
-					body="Êtes‑vous sûr de vouloir supprimer ce contrat ?"
-					actions={deleteModalActions}
-					titleIcon={<DeleteIcon />}
-					titleIconColor="#D32F2F"
-				/>
-			)}
-			{showBulkDeleteModal && (
-				<ActionModals
-					title={`Supprimer ${selectedContractIds.length} contrat(s) ?`}
-					body={`Êtes-vous sûr de vouloir supprimer les ${selectedContractIds.length} contrat(s) sélectionné(s) ?`}
-					actions={bulkDeleteModalActions}
-					titleIcon={<DeleteIcon />}
-					titleIconColor="#D32F2F"
-				/>
-			)}
+						{showDeleteModal && (
+							<ActionModals
+								title="Supprimer ce contrat ?"
+								body="Êtes‑vous sûr de vouloir supprimer ce contrat ?"
+								actions={deleteModalActions}
+								titleIcon={<DeleteIcon />}
+								titleIconColor="#D32F2F"
+							/>
+						)}
+						{showBulkDeleteModal && (
+							<ActionModals
+								title={`Supprimer ${selectedContractIds.length} contrat(s) ?`}
+								body={`Êtes-vous sûr de vouloir supprimer les ${selectedContractIds.length} contrat(s) sélectionné(s) ?`}
+								actions={bulkDeleteModalActions}
+								titleIcon={<DeleteIcon />}
+								titleIconColor="#D32F2F"
+							/>
+						)}
+					</>
+				</Protected>
+			</NavigationBar>
 		</Stack>
-		</main>
-		</Protected>
 	);
 };
 

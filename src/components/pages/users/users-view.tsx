@@ -1,182 +1,421 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, isValidElement, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
+import { getAccessTokenFromSession } from '@/store/session';
+import { useGetUserQuery, useDeleteUserMutation } from '@/store/services/account';
+import Styles from '@/styles/dashboard/dashboard.module.sass';
+import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import {
+	Stack,
+	Typography,
 	Avatar,
+	useTheme,
+	useMediaQuery,
 	Button,
 	Card,
 	CardContent,
 	Chip,
-	Dialog,
-	DialogActions,
-	DialogContent,
-	DialogContentText,
-	DialogTitle,
 	Divider,
-	Stack,
-	Typography,
+	Box,
+	Alert,
 } from '@mui/material';
 import {
-	Person as PersonIcon,
-	Email as EmailIcon,
-	Wc as WcIcon,
-	Edit as EditIcon,
+	ArrowBack as ArrowBackIcon,
 	Delete as DeleteIcon,
+	Edit as EditIcon,
+	Email as EmailIcon,
+	Person as PersonIcon,
+	AdminPanelSettings as AdminPanelSettingsIcon,
+	CheckCircle as CheckCircleIcon,
+	Cancel as CancelIcon,
+	CalendarToday as CalendarTodayIcon,
+	Login as LoginIcon,
+	Badge as BadgeIcon,
+	Public as PublicIcon,
+	Security as SecurityIcon,
 } from '@mui/icons-material';
 import { USERS_LIST, USERS_EDIT } from '@/utils/routes';
-import { useRouter } from 'next/navigation';
-import { useToast } from '@/utils/hooks';
-import { useGetUserQuery, useDeleteUserMutation } from '@/store/services/account';
-import { getAccessTokenFromSession } from '@/store/session';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
+import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
+import { useToast } from '@/utils/hooks';
+import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { Protected } from '@/components/layouts/protected/protected';
-import type { SessionProps } from '@/types/_initTypes';
-import Styles from '@/styles/dashboard/dashboard.module.sass';
+import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
+
+interface InfoRowProps {
+	icon: React.ReactNode;
+	label: string;
+	value: string | number | null | undefined | React.ReactNode;
+}
+
+const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value }) => {
+	const theme = useTheme();
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+	const displayValue = React.isValidElement(value) ? value : value && value.toString().length > 1 ? value : '-';
+
+	return (
+		<Stack
+			direction="row"
+			alignItems="flex-start"
+			spacing={2}
+			sx={{
+				py: 1.5,
+				flexWrap: 'wrap',
+			}}
+		>
+			<Box
+				sx={{
+					color: 'primary.main',
+					display: 'flex',
+					alignItems: 'center',
+					minWidth: 40,
+				}}
+			>
+				{icon}
+			</Box>
+
+			<Stack
+				direction="row"
+				alignItems="center"
+				spacing={isMobile ? 0 : 2}
+				sx={{
+					flex: 1,
+					flexWrap: 'wrap',
+				}}
+			>
+				<Typography
+					fontWeight={600}
+					color="text.secondary"
+					sx={{
+						minWidth: { xs: '100%', sm: 200 },
+						wordBreak: 'break-word',
+					}}
+				>
+					{label}
+				</Typography>
+
+				<Box sx={{ flex: 1 }}>
+					{isValidElement(displayValue) ? (
+						displayValue
+					) : (
+						<Typography sx={{ color: 'text.primary' }}>{displayValue}</Typography>
+					)}
+				</Box>
+			</Stack>
+		</Stack>
+	);
+};
 
 interface Props extends SessionProps {
 	id: number;
 }
 
-const InfoRow = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
-	<Stack direction="row" spacing={2} alignItems="center" sx={{ py: 1 }}>
-		{icon}
-		<Typography variant="body2" color="text.secondary" sx={{ minWidth: 120, fontWeight: 600 }}>
-			{label}
-		</Typography>
-		<Typography variant="body1">{value || '—'}</Typography>
-	</Stack>
-);
-
-const UsersViewClient = ({ id, session }: Props) => {
+const UsersViewClient: React.FC<Props> = ({ session, id }) => {
 	const router = useRouter();
-	const { onSuccess, onError } = useToast();
 	const token = getAccessTokenFromSession(session);
-	const { data: rawData, isLoading: isDataLoading } = useGetUserQuery({ id }, { skip: !token });
-	const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
-	const [openDialog, setOpenDialog] = useState(false);
+	const { data: userData, isLoading, error } = useGetUserQuery({ id }, { skip: !token });
+	const axiosError = useMemo(
+		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
+		[error],
+	);
+	const theme = useTheme();
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-	if (isDataLoading) {
-		return <ApiProgress backdropColor="#FFFFFF" circularColor="#0274D7" />;
-	}
-
-	if (!rawData) {
-		return (
-			<Stack className={Styles.main as string} spacing={3}>
-				<Typography variant="h6" color="error">
-					Utilisateur introuvable.
-				</Typography>
-				<Button variant="outlined" onClick={() => router.push(USERS_LIST)}>
-					Retour à la liste
-				</Button>
-			</Stack>
-		);
-	}
+	const [deleteRecord] = useDeleteUserMutation();
+	const { onSuccess, onError } = useToast();
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
 
 	const handleDelete = async () => {
 		try {
-			await deleteUser({ id }).unwrap();
-			onSuccess('Utilisateur supprimé.');
+			await deleteRecord({ id }).unwrap();
+			onSuccess('Utilisateur supprimé avec succès');
 			router.push(USERS_LIST);
-		} catch {
-			onError('Échec de la suppression.');
+		} catch (err) {
+			onError(extractApiErrorMessage(err, 'Erreur lors de la suppression de l\u2019utilisateur'));
+		} finally {
+			setShowDeleteModal(false);
 		}
-		setOpenDialog(false);
 	};
 
-	const genderLabel = rawData.gender === 'H' ? 'Homme' : rawData.gender === 'F' ? 'Femme' : '—';
+	const deleteModalActions = [
+		{
+			text: 'Annuler',
+			active: false,
+			onClick: () => setShowDeleteModal(false),
+			icon: <ArrowBackIcon />,
+			color: '#6B6B6B',
+		},
+		{
+			text: 'Supprimer',
+			active: true,
+			onClick: handleDelete,
+			icon: <DeleteIcon />,
+			color: '#D32F2F',
+		},
+	];
 
 	return (
-		<Protected>
-		<Stack className={Styles.main as string} spacing={3}>
-			{/* Header */}
-			<Stack direction="row" spacing={3} alignItems="center">
-				<Avatar
-					src={(rawData.avatar_cropped || rawData.avatar || undefined) as string | undefined}
-					sx={{ width: 72, height: 72, bgcolor: '#0274D7' }}
-				>
-					{rawData.first_name?.charAt(0)}
-					{rawData.last_name?.charAt(0)}
-				</Avatar>
-				<Stack>
-					<Typography variant="h5" fontWeight={700}>
-						{rawData.first_name} {rawData.last_name}
-					</Typography>
-					<Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-						{rawData.is_staff && <Chip label="Admin" color="primary" size="small" />}
-						{rawData.is_active && <Chip label="Actif" color="success" size="small" />}
-						{!rawData.is_active && <Chip label="Inactif" color="default" size="small" />}
+		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
+			<NavigationBar title="Détails de l&apos;utilisateur">
+				<Protected>
+					<Stack spacing={3} sx={{ p: { xs: 2, md: 3 }, mt: 2 }}>
+						<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" alignItems={isMobile ? 'stretch' : 'center'} spacing={2}>
+							<Button
+								variant="outlined"
+								startIcon={<ArrowBackIcon />}
+								onClick={() => router.push(USERS_LIST)}
+								sx={{ width: isMobile ? '100%' : 'auto' }}
+							>
+								Liste des utilisateurs
+							</Button>
+							{!isLoading && !error && (
+								<Stack direction="row" gap={1} flexWrap="wrap">
+									<Button
+										variant="outlined"
+										size="small"
+										startIcon={<EditIcon />}
+										onClick={() => router.push(USERS_EDIT(id))}
+									>
+										Modifier
+									</Button>
+									<Button
+										variant="outlined"
+										color="error"
+										size="small"
+										startIcon={<DeleteIcon />}
+										onClick={() => setShowDeleteModal(true)}
+									>
+										Supprimer
+									</Button>
+								</Stack>
+							)}
+						</Stack>
+						{isLoading ? (
+							<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
+						) : (axiosError?.status as number) > 400 ? (
+							<ApiAlert
+								errorDetails={axiosError?.data.details}
+								cssStyle={{
+									position: 'absolute',
+									top: '50%',
+									left: '50%',
+									transform: 'translate(-50%, -50%)',
+								}}
+							/>
+						) : !userData ? (
+							<Alert severity="warning">Utilisateur introuvable</Alert>
+						) : (
+							<Stack spacing={3}>
+								<Card elevation={2} sx={{ borderRadius: 2 }}>
+									<CardContent sx={{ p: 3 }}>
+										<Stack
+											direction={isMobile ? 'column' : 'row'}
+											spacing={3}
+											alignItems={isMobile ? 'center' : 'flex-start'}
+										>
+											<Avatar
+												src={`${userData?.avatar}`}
+												alt={userData?.email}
+												sx={{
+													width: isMobile ? 100 : 120,
+													height: isMobile ? 100 : 120,
+													border: '4px solid',
+													borderColor: 'primary.light',
+													boxShadow: 3,
+													'& img': {
+														objectFit: 'contain',
+													},
+												}}
+											/>
+											<Stack spacing={2} sx={{ flex: 1, width: '100%' }}>
+												<Stack spacing={1} alignItems={isMobile ? 'center' : 'flex-start'}>
+													<Typography
+														variant="h4"
+														textAlign={isMobile ? 'center' : 'inherit'}
+														fontSize={isMobile ? '20px' : '25px'}
+														fontWeight={700}
+													>
+														{[userData?.first_name, userData?.last_name].filter(Boolean).join(' ') || userData?.email || "Nom de l'utilisateur"}
+													</Typography>
+													<Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+														<Chip icon={<BadgeIcon />} label={`ID: ${userData?.id}`} size="small" variant="outlined" />
+														{userData?.is_staff && (
+															<Chip
+																icon={<AdminPanelSettingsIcon />}
+																label="Administrateur"
+																color="primary"
+																size="small"
+															/>
+														)}
+														{userData?.is_active ? (
+															<Chip icon={<CheckCircleIcon />} label="Actif" color="success" size="small" />
+														) : (
+															<Chip icon={<CancelIcon />} label="Inactif" color="error" size="small" />
+														)}
+													</Stack>
+												</Stack>
+											</Stack>
+										</Stack>
+									</CardContent>
+								</Card>
+
+								<Card elevation={2} sx={{ borderRadius: 2 }}>
+									<CardContent
+										sx={{
+											px: { xs: 2, md: 3 },
+											py: { xs: 2, md: 3 },
+										}}
+									>
+										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+											<PublicIcon color="primary" />
+											<Typography variant="h6" fontWeight={700}>
+												Informations générales
+											</Typography>
+										</Stack>
+
+										<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+
+										<Stack spacing={0}>
+											<InfoRow icon={<EmailIcon />} label="Email" value={userData?.email} />
+											<Divider />
+											<InfoRow icon={<PersonIcon />} label="Sexe" value={userData?.gender} />
+											<Divider />
+											<InfoRow
+												icon={<AdminPanelSettingsIcon />}
+												label="Admin"
+												value={
+													userData?.is_staff ? (
+														<Chip icon={<CheckCircleIcon />} label="Oui" color="primary" size="small" />
+													) : (
+														<Chip icon={<CancelIcon />} label="Non" size="small" variant="outlined" />
+													)
+												}
+											/>
+											<Divider />
+											<InfoRow
+												icon={<CheckCircleIcon />}
+												label="Active"
+												value={
+													userData?.is_active ? (
+														<Chip icon={<CheckCircleIcon />} label="Oui" color="success" size="small" />
+													) : (
+														<Chip icon={<CancelIcon />} label="Non" color="error" size="small" />
+													)
+												}
+											/>
+											<Divider />
+											<InfoRow
+												icon={<CalendarTodayIcon />}
+												label="Date d&apos;inscription"
+												value={userData?.date_joined && formatDate(userData?.date_joined)}
+											/>
+											<Divider />
+											<InfoRow
+												icon={<CalendarTodayIcon />}
+												label="Dernière mise à jour"
+												value={userData?.date_updated && formatDate(userData?.date_updated)}
+											/>
+											<Divider />
+											<InfoRow
+												icon={<LoginIcon />}
+												label="Dernière connexion"
+												value={userData?.last_login && formatDate(userData?.last_login)}
+											/>
+										</Stack>
+									</CardContent>
+								</Card>
+
+								{/* Permissions */}
+								<Card elevation={2} sx={{ borderRadius: 2 }}>
+									<CardContent sx={{ p: 3 }}>
+										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+											<SecurityIcon color="primary" />
+											<Typography variant="h6" fontWeight={700}>
+												Permissions
+											</Typography>
+										</Stack>
+										<Divider sx={{ mb: 2 }} />
+										<Stack spacing={0}>
+											<InfoRow
+												icon={<CheckCircleIcon />}
+												label="Peut voir"
+												value={
+													userData?.can_view ? (
+														<Chip icon={<CheckCircleIcon />} label="Oui" color="success" size="small" />
+													) : (
+														<Chip icon={<CancelIcon />} label="Non" size="small" variant="outlined" />
+													)
+												}
+											/>
+											<Divider />
+											<InfoRow
+												icon={<CheckCircleIcon />}
+												label="Peut imprimer"
+												value={
+													userData?.can_print ? (
+														<Chip icon={<CheckCircleIcon />} label="Oui" color="success" size="small" />
+													) : (
+														<Chip icon={<CancelIcon />} label="Non" size="small" variant="outlined" />
+													)
+												}
+											/>
+											<Divider />
+											<InfoRow
+												icon={<CheckCircleIcon />}
+												label="Peut créer"
+												value={
+													userData?.can_create ? (
+														<Chip icon={<CheckCircleIcon />} label="Oui" color="success" size="small" />
+													) : (
+														<Chip icon={<CancelIcon />} label="Non" size="small" variant="outlined" />
+													)
+												}
+											/>
+											<Divider />
+											<InfoRow
+												icon={<CheckCircleIcon />}
+												label="Peut modifier"
+												value={
+													userData?.can_edit ? (
+														<Chip icon={<CheckCircleIcon />} label="Oui" color="success" size="small" />
+													) : (
+														<Chip icon={<CancelIcon />} label="Non" size="small" variant="outlined" />
+													)
+												}
+											/>
+											<Divider />
+											<InfoRow
+												icon={<CheckCircleIcon />}
+												label="Peut supprimer"
+												value={
+													userData?.can_delete ? (
+														<Chip icon={<CheckCircleIcon />} label="Oui" color="success" size="small" />
+													) : (
+														<Chip icon={<CancelIcon />} label="Non" size="small" variant="outlined" />
+													)
+												}
+											/>
+										</Stack>
+									</CardContent>
+								</Card>
+							</Stack>
+						)}
 					</Stack>
-				</Stack>
-			</Stack>
-
-			{/* Informations */}
-			<Card elevation={2} sx={{ borderRadius: 2 }}>
-				<CardContent sx={{ p: 3 }}>
-					<Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
-						Informations générales
-					</Typography>
-					<Divider sx={{ mb: 2 }} />
-					<InfoRow icon={<PersonIcon color="action" />} label="Prénom" value={rawData.first_name ?? ''} />
-					<InfoRow icon={<PersonIcon color="action" />} label="Nom" value={rawData.last_name ?? ''} />
-					<InfoRow icon={<EmailIcon color="action" />} label="Email" value={rawData.email ?? ''} />
-					<InfoRow icon={<WcIcon color="action" />} label="Genre" value={genderLabel} />
-				</CardContent>
-			</Card>
-
-			{/* Permissions */}
-			<Card elevation={2} sx={{ borderRadius: 2 }}>
-				<CardContent sx={{ p: 3 }}>
-					<Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
-						Permissions
-					</Typography>
-					<Divider sx={{ mb: 2 }} />
-					<Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-						<Chip label="Administrateur" color={rawData.is_staff ? 'primary' : 'default'} variant={rawData.is_staff ? 'filled' : 'outlined'} />
-						<Chip label="Peut voir" color={rawData.can_view ? 'primary' : 'default'} variant={rawData.can_view ? 'filled' : 'outlined'} />
-						<Chip label="Peut imprimer" color={rawData.can_print ? 'primary' : 'default'} variant={rawData.can_print ? 'filled' : 'outlined'} />
-						<Chip label="Peut créer" color={rawData.can_create ? 'primary' : 'default'} variant={rawData.can_create ? 'filled' : 'outlined'} />
-						<Chip label="Peut modifier" color={rawData.can_edit ? 'primary' : 'default'} variant={rawData.can_edit ? 'filled' : 'outlined'} />
-						<Chip label="Peut supprimer" color={rawData.can_delete ? 'primary' : 'default'} variant={rawData.can_delete ? 'filled' : 'outlined'} />
-					</Stack>
-				</CardContent>
-			</Card>
-
-			{/* Actions */}
-			<Stack direction="row" spacing={2} justifyContent="center">
-				<Button
-					variant="contained"
-					startIcon={<EditIcon />}
-					onClick={() => router.push(USERS_EDIT(id))}
-				>
-					Modifier
-				</Button>
-				<Button
-					variant="outlined"
-					color="error"
-					startIcon={<DeleteIcon />}
-					onClick={() => setOpenDialog(true)}
-				>
-					Supprimer
-				</Button>
-			</Stack>
-
-			{/* Delete confirmation dialog */}
-			<Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-				<DialogTitle>Confirmer la suppression</DialogTitle>
-				<DialogContent>
-					<DialogContentText>
-						Voulez-vous vraiment supprimer l&apos;utilisateur {rawData.first_name} {rawData.last_name} ?
-					</DialogContentText>
-				</DialogContent>
-				<DialogActions>
-					<Button onClick={() => setOpenDialog(false)}>Annuler</Button>
-					<Button onClick={handleDelete} color="error" disabled={isDeleting}>
-						{isDeleting ? 'Suppression...' : 'Supprimer'}
-					</Button>
-				</DialogActions>
-			</Dialog>
+				</Protected>
+			</NavigationBar>
+		{showDeleteModal && (
+			<ActionModals
+				title="Supprimer cet utilisateur ?"
+				body="Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible."
+				actions={deleteModalActions}
+				titleIcon={<DeleteIcon />}
+				titleIconColor="#D32F2F"
+			/>
+		)}
 		</Stack>
-		</Protected>
 	);
 };
 
