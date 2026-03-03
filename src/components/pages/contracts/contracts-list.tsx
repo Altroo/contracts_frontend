@@ -24,10 +24,11 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ContractClass } from '@/models/classes';
 import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
-import { getContractStatusColor } from '@/utils/rawData';
+import { getContractStatusColor, companyItemsList } from '@/utils/rawData';
 import { useToast } from '@/utils/hooks';
 import { fetchFileBlob } from '@/utils/apiHelpers';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
+import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import { Protected } from '@/components/layouts/protected/protected';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
@@ -36,6 +37,8 @@ import {
 } from '@/components/shared/dropdownFilter/dropdownFilter';
 import { createDateRangeFilterOperator } from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 import { createNumericFilterOperators } from '@/components/shared/numericFilter/numericFilterOperator';
+import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
+import type { ChipFilterConfig } from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 
 const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) => {
 	const router = useRouter();
@@ -51,6 +54,7 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 	const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
 	const [selectedContractId, setSelectedContractId] = useState<number | null>(null);
 	const [customFilterParams, setCustomFilterParams] = useState<Record<string, string>>({});
+	const [chipFilterParams, setChipFilterParams] = useState<Record<string, string>>({});
 
 	// Bulk selection state
 	const [selectedContractIds, setSelectedContractIds] = useState<number[]>([]);
@@ -61,7 +65,7 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 	const [printMenuItemId, setPrintMenuItemId] = useState<number | null>(null);
 	const [showLanguageModal, setShowLanguageModal] = useState(false);
 	const [pendingDocFormat, setPendingDocFormat] = useState<'pdf' | 'docx' | null>(null);
-
+	const [isDocLoading, setIsDocLoading] = useState(false);
 	const {
 		data: rawData,
 		isLoading,
@@ -73,6 +77,7 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			pageSize: paginationModel.pageSize,
 			search: searchTerm,
 			...customFilterParams,
+			...chipFilterParams,
 		},
 		{ skip: !token },
 	);
@@ -145,8 +150,11 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		async (language: 'fr' | 'en') => {
 			setShowLanguageModal(false);
 			if (!pendingDocFormat || printMenuItemId === null) return;
+			setIsDocLoading(true);
 			try {
-				const url = pendingDocFormat === 'pdf' ? CONTRACT_PDF(printMenuItemId, language) : CONTRACT_DOC(printMenuItemId, language);
+				let url: string;
+				if (pendingDocFormat === 'pdf') url = CONTRACT_PDF(printMenuItemId, language);
+				else url = CONTRACT_DOC(printMenuItemId, language);
 				const blob = await fetchFileBlob(url, token!);
 				const blobUrl = window.URL.createObjectURL(blob);
 				window.open(blobUrl, '_blank');
@@ -156,6 +164,7 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			} finally {
 				setPendingDocFormat(null);
 				setPrintMenuItemId(null);
+				setIsDocLoading(false);
 			}
 		},
 		[pendingDocFormat, printMenuItemId, token, onError],
@@ -167,6 +176,14 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		setPrintMenuItemId(null);
 	}, []);
 
+	const companyFilterOptions = React.useMemo(
+		() => [
+			{ value: 'casa_di_lusso', label: 'Casa di Lusso', color: 'warning' as const },
+			{ value: 'blueline_works', label: 'Blueline Works', color: 'info' as const },
+		],
+		[],
+	);
+
 	const statutFilterOptions = React.useMemo(
 		() => [
 			{ value: 'Brouillon', label: 'Brouillon', color: 'default' as const },
@@ -176,6 +193,18 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			{ value: 'Terminé', label: 'Terminé', color: 'success' as const },
 			{ value: 'Annulé', label: 'Annulé', color: 'error' as const },
 			{ value: 'Expiré', label: 'Expiré', color: 'warning' as const },
+		],
+		[],
+	);
+
+	const chipFilters = React.useMemo<ChipFilterConfig[]>(
+		() => [
+			{
+				key: 'company',
+				label: 'Société',
+				paramName: 'company',
+				options: companyItemsList.map((c) => ({ id: c.code, nom: c.value })),
+			},
 		],
 		[],
 	);
@@ -206,6 +235,26 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 					</Typography>
 				</DarkTooltip>
 			),
+		},
+		{
+			field: 'company',
+			headerName: 'Société',
+			flex: 0.9,
+			minWidth: 120,
+			filterOperators: createDropdownFilterOperators(companyFilterOptions, 'Toutes les sociétés', true),
+			renderCell: (params: GridRenderCellParams<ContractClass>) => {
+				const label = params.row.company_display ?? params.value ?? '—';
+				return (
+					<DarkTooltip title={label}>
+						<Chip
+							label={label}
+							size="small"
+							variant="outlined"
+							color={params.row.company === 'blueline_works' ? 'info' : 'warning'}
+						/>
+					</DarkTooltip>
+				);
+			},
 		},
 		{
 			field: 'type_contrat_display',
@@ -291,6 +340,12 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 						color: 'info' as const,
 					},
 					{
+						label: 'Modifier',
+						icon: <EditIcon />,
+						onClick: () => router.push(CONTRACTS_EDIT(params.row.id)),
+						color: 'primary' as const,
+					},
+					{
 						label: 'Afficher',
 						icon: <PrintIcon />,
 						onClick: (e?: React.MouseEvent<HTMLElement>) => {
@@ -299,12 +354,6 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 							}
 						},
 						color: 'info' as const,
-					},
-					{
-						label: 'Modifier',
-						icon: <EditIcon />,
-						onClick: () => router.push(CONTRACTS_EDIT(params.row.id)),
-						color: 'primary' as const,
 					},
 					{
 						label: 'Supprimer',
@@ -372,6 +421,8 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 				)}
 			</Box>
 
+			<ChipSelectFilterBar filters={chipFilters} onFilterChange={setChipFilterParams} columns={1} />
+
 			<PaginatedDataGrid
 				data={data}
 				isLoading={isLoading}
@@ -420,11 +471,12 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 							<Divider />
 							<MenuItem onClick={() => handlePrintMenuItemClick('docx')}>
 								<ListItemIcon sx={{ color: '#1976d2' }}><DescriptionIcon /></ListItemIcon>
-								<ListItemText>Afficher en DOCX</ListItemText>
+							<ListItemText>Afficher en DOCX</ListItemText>
 							</MenuItem>
 						</Menu>
 
-						{showLanguageModal && <PdfLanguageModal onSelectLanguage={handleLanguageSelect} onClose={handleLanguageModalClose} />}
+						{isDocLoading && <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />}
+				{showLanguageModal && <PdfLanguageModal onSelectLanguage={handleLanguageSelect} onClose={handleLanguageModalClose} />}
 					</>
 				</Protected>
 			</NavigationBar>

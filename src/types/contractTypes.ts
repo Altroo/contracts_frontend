@@ -1,3 +1,5 @@
+export type ContractCompanyType = 'casa_di_lusso' | 'blueline_works';
+
 export type ContractStatutType =
 	| 'Brouillon'
 	| 'Envoyé'
@@ -19,9 +21,12 @@ export type ContractTypeType =
 export type ContractTypeBienType =
 	| 'appartement'
 	| 'villa'
+	| 'duplex'
 	| 'riad_maison_traditionnelle'
 	| 'bureau_local_commercial'
+	| 'commerce_local'
 	| 'hotel_riad_hotelier'
+	| 'immeuble'
 	| 'autre';
 
 export type ContractClientQualiteType =
@@ -40,7 +45,9 @@ export type ContractModePaiementTexteType =
 	| 'Virement Bancaire'
 	| 'Chèque Certifié'
 	| 'Espèces'
-	| 'Paiement Mixte';
+	| 'Paiement Mixte'
+	| 'Mobile Money'
+	| 'Virement ou Chèque';
 
 export type ContractDeviseType = 'MAD' | 'EUR' | 'USD';
 
@@ -49,7 +56,73 @@ export type ContractTrancheType = {
 	pourcentage: number;
 };
 
+/* ── Blueline-specific types ── */
+
+export type ContractFournituresType = 'non_incluses' | 'incluses' | 'partielles';
+export type ContractEauElectriciteType = 'client' | 'entreprise' | 'partage' | 'selon_cas';
+export type ContractGarantieUniteType = 'mois' | 'ans';
+export type ContractGarantieTypeType = 'defauts' | 'bonne_fin' | 'decennale' | 'aucune';
+export type ContractClauseResiliationType = '30j' | '15j' | 'mutuel' | 'aucune';
+
+export type ContractPrestationType = {
+	nom: string;
+	description: string;
+	quantite: number;
+	unite: string;
+	prix_unitaire: number;
+};
+
+export type ContractSchemaType = {
+	company: ContractCompanyType;
+	numero_contrat: string;
+	client_nom: string;
+	montant_ht: number;
+	date_contrat?: string;
+	statut?: string;
+	type_contrat?: string;
+	ville_signature?: string;
+	client_cin?: string;
+	client_qualite?: string;
+	client_adresse?: string;
+	client_tel?: string;
+	client_email?: string;
+	type_bien?: string;
+	surface?: number;
+	adresse_travaux?: string;
+	date_debut?: string;
+	duree_estimee?: string;
+	description_travaux?: string;
+	devise?: string;
+	tva?: number | null;
+	penalite_retard?: number;
+	garantie?: string;
+	tribunal?: string;
+	responsable_projet?: string;
+	confidentialite?: string;
+	mode_paiement_texte?: string;
+	rib?: string;
+	/* ── Blueline-specific fields ── */
+	client_ville?: string;
+	client_cp?: string;
+	chantier_ville?: string;
+	chantier_etage?: string;
+	prestations?: ContractPrestationType[];
+	fournitures?: string;
+	materiaux_detail?: string;
+	eau_electricite?: string;
+	garantie_nb?: number;
+	garantie_unite?: string;
+	garantie_type?: string;
+	exclusions_garantie?: string;
+	acompte?: number;
+	tranche2?: number;
+	clause_resiliation?: string;
+	notes?: string;
+	globalError?: string;
+};
+
 export type ContractFormValuesType = {
+	company: ContractCompanyType;
 	numero_contrat: string;
 	date_contrat: string;
 	statut: ContractStatutType;
@@ -70,9 +143,29 @@ export type ContractFormValuesType = {
 	montant_ht: string;
 	devise: string;
 	tva: string;
+	penalite_retard: string;
 	garantie: string;
 	tribunal: string;
 	responsable_projet: string;
 	confidentialite: string;
+	mode_paiement_texte: string;
+	rib: string;
+	/* ── Blueline-specific fields ── */
+	client_ville: string;
+	client_cp: string;
+	chantier_ville: string;
+	chantier_etage: string;
+	prestations: ContractPrestationType[];
+	fournitures: string;
+	materiaux_detail: string;
+	eau_electricite: string;
+	garantie_nb: string;
+	garantie_unite: string;
+	garantie_type: string;
+	exclusions_garantie: string;
+	acompte: string;
+	tranche2: string;
+	clause_resiliation: string;
+	notes: string;
 	globalError: string;
 };

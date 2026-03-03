@@ -201,10 +201,25 @@ jest.mock('@/components/shared/dateRangeFilter/dateRangeFilterOperator', () => (
 	createDateRangeFilterOperator: jest.fn(() => []),
 }));
 
+jest.mock('@/components/shared/numericFilter/numericFilterOperator', () => ({
+	createNumericFilterOperators: jest.fn(() => []),
+}));
+
+jest.mock('@/components/shared/chipSelectFilter/chipSelectFilterBar', () => ({
+	__esModule: true,
+	default: () => <div data-testid="chip-filter-bar" />,
+}));
+
+jest.mock('@/components/formikElements/apiLoading/apiProgress/apiProgress', () => ({
+	__esModule: true,
+	default: () => <div data-testid="api-progress" />,
+}));
+
 jest.mock('@/utils/helpers', () => ({
 	formatDate: (date: string | null) => (date ? new Date(date).toLocaleDateString('fr-FR') : '—'),
 	extractApiErrorMessage: (error: unknown, fallback: string) => fallback,
 	normalizeStatut: (statut: string) => statut,
+	hexToRGB: (hex: string, alpha?: number) => (alpha !== undefined ? `rgba(0,0,0,${alpha})` : 'rgb(0,0,0)'),
 }));
 
 jest.mock('@/utils/rawData', () => ({
@@ -215,6 +230,11 @@ jest.mock('@/utils/rawData', () => ({
 		};
 		return map[statut] ?? 'default';
 	},
+	contractStatutItemsList: ['Brouillon', 'Envoyé', 'Signé', 'En cours', 'Terminé', 'Annulé', 'Expiré'],
+	companyItemsList: [
+		{ code: 'casa_di_lusso', value: 'Casa di Lusso' },
+		{ code: 'blueline_works', value: 'Blueline Works' },
+	],
 }));
 
 jest.mock('@/styles/dashboard/dashboard.module.sass', () => ({
@@ -223,23 +243,29 @@ jest.mock('@/styles/dashboard/dashboard.module.sass', () => ({
 
 import ContractsListClient from './contracts-list';
 
+const mockSession = {
+	user: { name: 'Test', email: 'test@test.com' },
+	expires: '2099-01-01',
+	accessToken: 'mock-token',
+};
+
 describe('ContractsListClient', () => {
 	beforeEach(() => jest.clearAllMocks());
 	afterEach(() => cleanup());
 
 	describe('Rendering', () => {
 		it('renders paginated data grid', () => {
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
 		});
 
 		it('renders Nouveau contrat button', () => {
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			expect(screen.getByText('Nouveau contrat')).toBeInTheDocument();
 		});
 
 		it('renders data rows', () => {
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			expect(screen.getByTestId('row-1')).toBeInTheDocument();
 			expect(screen.getByTestId('row-2')).toBeInTheDocument();
 		});
@@ -247,13 +273,13 @@ describe('ContractsListClient', () => {
 
 	describe('Column renderCell', () => {
 		it('renders numero_contrat values', () => {
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			expect(screen.getByText('CTR-001')).toBeInTheDocument();
 			expect(screen.getByText('CTR-002')).toBeInTheDocument();
 		});
 
 		it('renders client_nom with null showing dash', () => {
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			expect(screen.getByText('Ali Ben')).toBeInTheDocument();
 			// null client_nom renders as "—"
 			const dashes = screen.getAllByText('—');
@@ -261,33 +287,33 @@ describe('ContractsListClient', () => {
 		});
 
 		it('renders type_contrat_display values', () => {
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			expect(screen.getByText('Travaux de finition')).toBeInTheDocument();
 			expect(screen.getByText('Gros œuvre')).toBeInTheDocument();
 		});
 
 		it('renders statut as Chip text', () => {
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			expect(screen.getByText('Brouillon')).toBeInTheDocument();
 			expect(screen.getByText('Signé')).toBeInTheDocument();
 		});
 
 		it('renders date_contrat with null showing dash', () => {
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			// formatDate('2024-01-15') → localized date; formatDate(null) → '—'
 			const dashes = screen.getAllByText('—');
 			expect(dashes.length).toBeGreaterThanOrEqual(1);
 		});
 
 		it('renders montant_ht with devise or dash for null', () => {
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			// null montant_ht → '—'
 			const dashes = screen.getAllByText('—');
 			expect(dashes.length).toBeGreaterThanOrEqual(1);
 		});
 
 		it('renders action buttons for each row', () => {
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			expect(screen.getAllByText('Voir').length).toBeGreaterThanOrEqual(2);
 			expect(screen.getAllByText('Modifier').length).toBeGreaterThanOrEqual(2);
 			expect(screen.getAllByText('Supprimer').length).toBeGreaterThanOrEqual(2);
@@ -296,39 +322,39 @@ describe('ContractsListClient', () => {
 
 	describe('Action handlers', () => {
 		it('navigates to add page', () => {
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			fireEvent.click(screen.getByText('Nouveau contrat'));
 			expect(mockPush).toHaveBeenCalledWith('/contracts/new');
 		});
 
 		it('navigates to view page', () => {
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			fireEvent.click(screen.getAllByText('Voir')[0]);
 			expect(mockPush).toHaveBeenCalledWith('/contracts/1');
 		});
 
 		it('navigates to edit page', () => {
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			fireEvent.click(screen.getAllByText('Modifier')[0]);
 			expect(mockPush).toHaveBeenCalledWith('/contracts/1/edit');
 		});
 
 		it('opens delete modal', async () => {
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			await act(async () => { fireEvent.click(screen.getAllByText('Supprimer')[0]); });
 			expect(screen.getByTestId('action-modal')).toBeInTheDocument();
 			expect(screen.getByText('Supprimer ce contrat ?')).toBeInTheDocument();
 		});
 
 		it('closes delete modal on Annuler', async () => {
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			await act(async () => { fireEvent.click(screen.getAllByText('Supprimer')[0]); });
 			await act(async () => { fireEvent.click(screen.getByText('Annuler')); });
 			expect(screen.queryByTestId('action-modal')).not.toBeInTheDocument();
 		});
 
 		it('deletes contract on confirm', async () => {
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			await act(async () => { fireEvent.click(screen.getAllByText('Supprimer')[0]); });
 			const btns = screen.getAllByText('Supprimer');
 			await act(async () => { fireEvent.click(btns[btns.length - 1]); });
@@ -340,7 +366,7 @@ describe('ContractsListClient', () => {
 
 		it('handles delete error', async () => {
 			mockDeleteContract.mockReturnValueOnce({ unwrap: () => Promise.reject(new Error('fail')) });
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			await act(async () => { fireEvent.click(screen.getAllByText('Supprimer')[0]); });
 			const btns = screen.getAllByText('Supprimer');
 			await act(async () => { fireEvent.click(btns[btns.length - 1]); });
@@ -352,7 +378,7 @@ describe('ContractsListClient', () => {
 
 	describe('Column headers', () => {
 		it('renders all expected column headers', () => {
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			for (const h of ['Référence', 'Client', 'Type de contrat', 'Statut', 'Date du contrat', 'Montant HT', 'Actions']) {
 				expect(screen.getByText(h)).toBeInTheDocument();
 			}
@@ -362,13 +388,13 @@ describe('ContractsListClient', () => {
 	describe('Loading and empty states', () => {
 		it('renders grid when loading', () => {
 			mockUseGetContractsListQuery.mockReturnValueOnce({ data: { results: [], count: 0, next: null, previous: null }, isLoading: true, refetch: mockRefetch });
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
 		});
 
 		it('renders grid when empty', () => {
 			mockUseGetContractsListQuery.mockReturnValueOnce({ data: { results: [], count: 0, next: null, previous: null }, isLoading: false, refetch: mockRefetch });
-			render(<ContractsListClient />);
+			render(<ContractsListClient session={mockSession} />);
 			expect(screen.getByTestId('paginated-data-grid')).toBeInTheDocument();
 		});
 	});

@@ -231,6 +231,7 @@ describe('Zod Schema Validation', () => {
 	// ── contractSchema ──
 	describe('contractSchema', () => {
 		const validContract = {
+			company: 'casa_di_lusso',
 			numero_contrat: 'CTR-001',
 			date_contrat: '2024-01-01',
 			statut: 'Brouillon',
@@ -273,20 +274,23 @@ describe('Zod Schema Validation', () => {
 		// Undefined handling (the preprocess helpers)
 		it('handles undefined optional fields via preprocess', () => {
 			const minimalContract = {
+				company: 'casa_di_lusso',
 				numero_contrat: 'CTR-001',
 				client_nom: 'Jean Dupont',
 				montant_ht: '50000',
+				type_contrat: 'travaux_finition',
 			};
 			expect(() => contractSchema.parse(minimalContract)).not.toThrow();
 		});
 		it('handles all optional fields as undefined', () => {
 			const result = contractSchema.safeParse({
+				company: 'casa_di_lusso',
 				numero_contrat: 'CTR-001',
 				client_nom: 'Jean',
 				montant_ht: '100',
+				type_contrat: 'travaux_finition',
 				date_contrat: undefined,
 				statut: undefined,
-				type_contrat: undefined,
 				ville_signature: undefined,
 				client_cin: undefined,
 				client_qualite: undefined,
@@ -310,11 +314,12 @@ describe('Zod Schema Validation', () => {
 		});
 		it('handles null optional fields via preprocess', () => {
 			const result = contractSchema.safeParse({
+				company: 'casa_di_lusso',
 				numero_contrat: 'CTR-001',
 				client_nom: 'Jean',
 				montant_ht: '100',
+				type_contrat: 'travaux_finition',
 				statut: null,
-				type_contrat: null,
 				devise: null,
 				confidentialite: null,
 			});
@@ -322,11 +327,12 @@ describe('Zod Schema Validation', () => {
 		});
 		it('handles empty string optional choice fields via preprocess', () => {
 			const result = contractSchema.safeParse({
+				company: 'casa_di_lusso',
 				numero_contrat: 'CTR-001',
 				client_nom: 'Jean',
 				montant_ht: '100',
+				type_contrat: 'travaux_finition',
 				statut: '',
-				type_contrat: '',
 				devise: '',
 				confidentialite: '',
 			});
@@ -334,6 +340,7 @@ describe('Zod Schema Validation', () => {
 		});
 		it('fails when required field is undefined (preprocess converts to empty)', () => {
 			const result = contractSchema.safeParse({
+				company: 'casa_di_lusso',
 				numero_contrat: undefined,
 				client_nom: 'Jean',
 				montant_ht: '100',

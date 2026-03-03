@@ -92,6 +92,10 @@ describe('ContractClass', () => {
 			5,                          // client
 			'Dupont SAS',               // client_name
 
+			// Company
+			'casa_di_lusso',            // company
+			'Casa di Lusso',            // company_display (readonly)
+
 			// Client embedded fields
 			'Dupont Jean',              // client_nom
 			'AB123456',                 // client_cin
@@ -142,6 +146,25 @@ describe('ContractClass', () => {
 			'Confidentiel',             // confidentialite
 			'1.0',                      // version_document
 			'',                         // annexes
+
+			// Blueline-specific fields
+			'',                         // client_ville
+			'',                         // client_cp
+			'',                         // chantier_ville
+			'',                         // chantier_etage
+			null,                       // prestations
+			'',                         // fournitures
+			'',                         // materiaux_detail
+			'',                         // eau_electricite
+			null,                       // garantie_nb
+			'',                         // garantie_unite
+			'',                         // garantie_type
+			'',                         // exclusions_garantie
+			null,                       // acompte
+			null,                       // tranche2
+			null,                       // solde (readonly)
+			'',                         // clause_resiliation
+			'',                         // notes
 
 			// Meta audit
 			3,                          // created_by_user (readonly)

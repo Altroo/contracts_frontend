@@ -247,6 +247,83 @@ export const codeTextInputTheme = (error: boolean | undefined) => {
 	});
 };
 
+export const chipSelectFilterTheme = (primaryColor: string | undefined = undefined) => {
+	const defaultTheme = getDefaultTheme(primaryColor);
+	const blueColor = '#0274d7';
+
+	return createTheme({
+		...defaultTheme,
+		components: {
+			MuiAutocomplete: {
+				styleOverrides: {
+					root: {
+						'& .MuiOutlinedInput-root': {
+							backgroundColor: '#FFFFFF',
+							borderRadius: '16px',
+							fontFamily: 'Poppins',
+							fontSize: '14px',
+							'& fieldset': {
+								borderColor: '#A3A3AD',
+								borderWidth: '1px',
+								borderRadius: '16px',
+							},
+							'&:hover fieldset': {
+								borderColor: blueColor,
+							},
+							'&.Mui-focused fieldset': {
+								borderColor: blueColor,
+								borderWidth: '2px',
+							},
+						},
+					},
+					inputRoot: {
+						flexWrap: 'wrap',
+					},
+					paper: {
+						borderRadius: '16px',
+						boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.1)',
+						marginTop: '4px',
+					},
+					option: {
+						fontFamily: 'Poppins',
+						fontSize: '14px',
+					},
+				},
+			},
+			MuiInputBase: {
+				styleOverrides: {
+					input: {
+						fontFamily: 'Poppins',
+						fontSize: '14px',
+						caretColor: blueColor,
+					},
+				},
+			},
+			MuiChip: {
+				styleOverrides: {
+					root: {
+						fontFamily: 'Poppins',
+						fontSize: '12px',
+						borderRadius: '8px',
+					},
+				},
+			},
+			MuiFormLabel: {
+				styleOverrides: {
+					root: {
+						fontFamily: 'Poppins',
+						fontSize: '14px',
+						color: '#A3A3AD',
+						'&.Mui-focused': {
+							color: blueColor,
+						},
+					},
+				},
+			},
+		},
+	});
+};
+
 export const customToastTheme = (primaryColor: string | undefined = undefined) => {
 	const defaultTheme = getDefaultTheme(primaryColor);
 	return createTheme({
@@ -280,6 +357,110 @@ export const customToastTheme = (primaryColor: string | undefined = undefined) =
 						'&.MuiAlert-outlinedInfo': {
 							border: '1px solid rgba(2, 116, 215, 0.2)',
 						},
+					},
+				},
+			},
+		},
+	});
+};
+
+export const gridInputTheme = (primaryColor: string | undefined = undefined) => {
+	const defaultTheme = getDefaultTheme(primaryColor);
+	const blueColor = '#0274d7';
+	return createTheme({
+		...defaultTheme,
+		components: {
+			MuiInputBase: {
+				styleOverrides: {
+					root: {
+						'& fieldset > legend': {
+							fontFamily: 'Poppins',
+							fontSize: '0.875rem',
+						},
+					},
+					input: {
+						fontFamily: 'Poppins',
+						fontSize: '0.875rem',
+						caretColor: blueColor,
+					},
+				},
+			},
+			MuiFormControl: {
+				styleOverrides: {
+					root: {
+						'& .MuiFormLabel-root': {
+							fontFamily: 'Poppins',
+							fontSize: '0.875rem',
+							color: '#A3A3AD',
+						},
+						'& .MuiFormLabel-root.Mui-focused': {
+							fontFamily: 'Poppins',
+							fontSize: '0.875rem',
+							color: blueColor,
+						},
+					},
+				},
+			},
+		},
+	});
+};
+
+export const customGridDropdownTheme = (primaryColor: string | undefined = undefined) => {
+	const defaultTheme = getDefaultTheme(primaryColor);
+	const blueColor = '#0274d7';
+	return createTheme({
+		...defaultTheme,
+		components: {
+			MuiInputBase: {
+				styleOverrides: {
+					root: {
+						'&:not(.Mui-error) fieldset': {
+							border: 'none',
+						},
+						'& fieldset > legend': {
+							fontFamily: 'Poppins',
+							fontSize: '0.875rem',
+						},
+					},
+					input: {
+						fontFamily: 'Poppins',
+						fontSize: '0.875rem',
+						caretColor: blueColor,
+					},
+				},
+			},
+			MuiFormControl: {
+				styleOverrides: {
+					root: {
+						'& .MuiFormLabel-root': {
+							fontFamily: 'Poppins',
+							fontSize: '0.875rem',
+							color: '#A3A3AD',
+						},
+						'& .MuiFormLabel-root.Mui-focused': {
+							fontFamily: 'Poppins',
+							fontSize: '0.875rem',
+							color: blueColor,
+						},
+					},
+				},
+			},
+			MuiMenuItem: {
+				styleOverrides: {
+					gutters: {
+						fontFamily: 'Poppins',
+						fontSize: '0.875rem',
+						paddingTop: '10px',
+						paddingBottom: '10px',
+					},
+				},
+			},
+			MuiPaper: {
+				styleOverrides: {
+					root: {
+						border: `1px solid ${blueColor}`,
+						borderBottomLeftRadius: '21px',
+						borderBottomRightRadius: '21px',
 					},
 				},
 			},

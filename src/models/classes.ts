@@ -1,4 +1,5 @@
 import type {
+	ContractCompanyType,
 	ContractStatutType,
 	ContractTypeType,
 	ContractTypeBienType,
@@ -9,6 +10,12 @@ import type {
 	ContractModePaiementTexteType,
 	ContractDeviseType,
 	ContractTrancheType,
+	ContractFournituresType,
+	ContractEauElectriciteType,
+	ContractGarantieUniteType,
+	ContractGarantieTypeType,
+	ContractClauseResiliationType,
+	ContractPrestationType,
 } from '@/types/contractTypes';
 
 export class UserClass {
@@ -42,6 +49,10 @@ export class ContractClass {
 		public numero_contrat: string,
 		public client: number | null,
 		public readonly client_name: string | null,
+
+		// Company
+		public company: ContractCompanyType | string,
+		public readonly company_display: string,
 
 		// Client embedded fields
 		public client_nom: string,
@@ -95,6 +106,25 @@ export class ContractClass {
 		public confidentialite: ContractConfidentialiteType | string,
 		public version_document: string,
 		public annexes: string,
+
+		// Blueline-specific fields
+		public client_ville: string,
+		public client_cp: string,
+		public chantier_ville: string,
+		public chantier_etage: string,
+		public prestations: ContractPrestationType[] | null,
+		public fournitures: ContractFournituresType | string,
+		public materiaux_detail: string,
+		public eau_electricite: ContractEauElectriciteType | string,
+		public garantie_nb: number | null,
+		public garantie_unite: ContractGarantieUniteType | string,
+		public garantie_type: ContractGarantieTypeType | string,
+		public exclusions_garantie: string,
+		public acompte: number | null,
+		public tranche2: number | null,
+		public readonly solde: number | null,
+		public clause_resiliation: ContractClauseResiliationType | string,
+		public notes: string,
 
 		// Meta audit
 		public readonly created_by_user: number | null,

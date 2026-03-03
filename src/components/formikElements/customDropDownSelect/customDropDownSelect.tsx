@@ -47,7 +47,7 @@ type Props = {
 const CustomDropDownSelect: React.FC<Props> = (props: Props) => {
 	return (
 		<ThemeProvider theme={props.theme}>
-			<FormControl className={`${Styles.formControl} ${props.cssClass}`} disabled={props.disabled}>
+			<FormControl className={`${Styles.formControl} ${props.cssClass}`} disabled={props.disabled} error={props.error}>
 				<InputLabel id={`${props.id}-label`}>{props.label}</InputLabel>
 				<Select
 					labelId={`${props.id}-label`}

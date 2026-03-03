@@ -19,6 +19,13 @@ import {
 	Divider,
 	Box,
 	Alert,
+	Table,
+	TableBody,
+	TableCell,
+	TableContainer,
+	TableHead,
+	TableRow,
+	Paper,
 } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
@@ -44,6 +51,12 @@ import {
 	Build as BuildIcon,
 	Gavel as GavelIcon,
 	PictureAsPdf as PictureAsPdfIcon,
+	Business as BusinessIcon,
+	Plumbing as PlumbingIcon,
+	Water as WaterIcon,
+	Timer as TimerIcon,
+	Notes as NotesIcon,
+	ListAlt as ListAltIcon,
 } from '@mui/icons-material';
 import { CONTRACTS_LIST, CONTRACTS_EDIT, CONTRACT_PDF, CONTRACT_DOC } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -54,7 +67,7 @@ import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageMo
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { getContractStatusColor, contractStatutItemsList } from '@/utils/rawData';
+import { getContractStatusColor, contractStatutItemsList, companyItemsList, fournituresItemsList, eauElectriciteItemsList, garantieUniteItemsList, garantieTypeItemsList, clauseResiliationItemsList, prestationNomItemsList, prestationUniteItemsList } from '@/utils/rawData';
 import type { ContractStatutType } from '@/types/contractTypes';
 
 interface InfoRowProps {
@@ -147,6 +160,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [showLanguageModal, setShowLanguageModal] = useState(false);
 	const [pendingDocFormat, setPendingDocFormat] = useState<'pdf' | 'docx' | null>(null);
+	const [isDocLoading, setIsDocLoading] = useState(false);
 
 	const openDocument = (format: 'pdf' | 'docx') => {
 		setPendingDocFormat(format);
@@ -156,8 +170,11 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 	const handleLanguageSelect = async (language: 'fr' | 'en') => {
 		setShowLanguageModal(false);
 		if (!token || !pendingDocFormat) return;
+		setIsDocLoading(true);
 		try {
-			const url = pendingDocFormat === 'pdf' ? CONTRACT_PDF(id, language) : CONTRACT_DOC(id, language);
+			let url: string;
+			if (pendingDocFormat === 'pdf') url = CONTRACT_PDF(id, language);
+			else url = CONTRACT_DOC(id, language);
 			const blob = await fetchFileBlob(url, token);
 			const blobUrl = window.URL.createObjectURL(blob);
 			window.open(blobUrl, '_blank');
@@ -166,6 +183,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 			onError("Erreur lors de l'ouverture du document.");
 		} finally {
 			setPendingDocFormat(null);
+			setIsDocLoading(false);
 		}
 	};
 
@@ -208,6 +226,10 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 	];
 
 	const statusColor = contract ? getContractStatusColor(contract.statut) : 'default';
+	const isBlueline = contract?.company === 'blueline_works';
+
+	const resolveLabel = (list: Array<{ code: string; value: string }>, code: string | null | undefined) =>
+		list.find((i) => i.code === code)?.value ?? code ?? '-';
 
 	return (
 		<Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
@@ -231,6 +253,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 										size="small"
 										startIcon={<PictureAsPdfIcon />}
 										onClick={() => openDocument('pdf')}
+										disabled={isDocLoading}
 									>
 										PDF
 									</Button>
@@ -240,6 +263,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 										size="small"
 										startIcon={<DescriptionIcon />}
 										onClick={() => openDocument('docx')}
+										disabled={isDocLoading}
 									>
 										DOCX
 									</Button>
@@ -263,6 +287,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 								</Stack>
 							)}
 						</Stack>
+						{isDocLoading && <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />}
 						{isLoading ? (
 							<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
 						) : (axiosError?.status as number) > 400 ? (
@@ -359,8 +384,19 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 
 										<Stack spacing={0}>
 											<InfoRow icon={<DescriptionIcon />} label="N° contrat" value={contract?.numero_contrat} />
-											<Divider />
-											<InfoRow icon={<CalendarTodayIcon />} label="Date contrat" value={contract?.date_contrat && formatDate(contract.date_contrat)} />
+											<Divider />										<InfoRow
+											icon={<BusinessIcon />}
+											label="Société"
+											value={
+												<Chip
+													label={contract?.company_display ?? resolveLabel(companyItemsList, contract?.company)}
+													color={isBlueline ? 'info' : 'warning'}
+													variant="outlined"
+													size="small"
+												/>
+											}
+										/>
+										<Divider />											<InfoRow icon={<CalendarTodayIcon />} label="Date contrat" value={contract?.date_contrat && formatDate(contract.date_contrat)} />
 											<Divider />
 											<InfoRow icon={<CategoryIcon />} label="Type contrat" value={contract?.type_contrat_display ?? contract?.type_contrat} />
 											<Divider />
@@ -459,6 +495,8 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 											<Divider />
 											<InfoRow icon={<PercentIcon />} label="TVA (%)" value={contract?.tva != null ? String(contract.tva) : undefined} />
 											<Divider />
+											<InfoRow icon={<PercentIcon />} label="Pénalité de retard (%/j)" value={contract?.penalite_retard != null ? String(contract.penalite_retard) : undefined} />
+											<Divider />
 											<InfoRow icon={<ShieldIcon />} label="Garantie" value={contract?.garantie} />
 										</Stack>
 									</CardContent>
@@ -490,6 +528,145 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 										</Stack>
 									</CardContent>
 								</Card>
+							{/* ── Blueline-specific sections ── */}
+							{isBlueline && (
+								<>
+									{/* Client (Blueline extra) */}
+									<Card elevation={2} sx={{ borderRadius: 2 }}>
+										<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+											<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+												<PersonIcon color="primary" />
+												<Typography variant="h6" fontWeight={700}>
+													Client (Blueline)
+												</Typography>
+											</Stack>
+											<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+											<Stack spacing={0}>
+												<InfoRow icon={<CityIcon />} label="Ville du client" value={contract?.client_ville} />
+												<Divider />
+												<InfoRow icon={<HomeIcon />} label="Code postal" value={contract?.client_cp} />
+												<Divider />
+												<InfoRow icon={<CityIcon />} label="Ville du chantier" value={contract?.chantier_ville} />
+												<Divider />
+												<InfoRow icon={<ApartmentIcon />} label="Étage" value={contract?.chantier_etage} />
+											</Stack>
+										</CardContent>
+									</Card>
+
+									{/* Prestations */}
+									{contract?.prestations && contract.prestations.length > 0 && (
+										<Card elevation={2} sx={{ borderRadius: 2 }}>
+											<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+												<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+													<ListAltIcon color="primary" />
+													<Typography variant="h6" fontWeight={700}>
+														Prestations
+													</Typography>
+												</Stack>
+												<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+												<TableContainer component={Paper} variant="outlined">
+													<Table size="small">
+														<TableHead>
+															<TableRow>
+																<TableCell sx={{ fontWeight: 700 }}>Prestation</TableCell>
+																<TableCell sx={{ fontWeight: 700 }}>Description</TableCell>
+																<TableCell sx={{ fontWeight: 700 }} align="right">Qté</TableCell>
+																<TableCell sx={{ fontWeight: 700 }}>Unité</TableCell>
+																<TableCell sx={{ fontWeight: 700 }} align="right">Prix unit.</TableCell>
+																<TableCell sx={{ fontWeight: 700 }} align="right">Total</TableCell>
+															</TableRow>
+														</TableHead>
+														<TableBody>
+															{contract.prestations.map((p, idx) => (
+																<TableRow key={idx}>
+																	<TableCell>{resolveLabel(prestationNomItemsList, p.nom)}</TableCell>
+																	<TableCell>{p.description || '-'}</TableCell>
+																	<TableCell align="right">{p.quantite}</TableCell>
+																	<TableCell>{resolveLabel(prestationUniteItemsList, p.unite)}</TableCell>
+																	<TableCell align="right">{Number(p.prix_unitaire).toLocaleString('fr-MA')}</TableCell>
+																	<TableCell align="right">{(p.quantite * p.prix_unitaire).toLocaleString('fr-MA')}</TableCell>
+																</TableRow>
+															))}
+														</TableBody>
+													</Table>
+												</TableContainer>
+											</CardContent>
+										</Card>
+									)}
+
+									{/* Fournitures & Eau/Électricité */}
+									<Card elevation={2} sx={{ borderRadius: 2 }}>
+										<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+											<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+												<PlumbingIcon color="primary" />
+												<Typography variant="h6" fontWeight={700}>
+													Fournitures & Eau / Électricité
+												</Typography>
+											</Stack>
+											<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+											<Stack spacing={0}>
+												<InfoRow icon={<PlumbingIcon />} label="Fournitures" value={resolveLabel(fournituresItemsList, contract?.fournitures)} />
+												<Divider />
+												<InfoRow icon={<DescriptionIcon />} label="Détail matériaux" value={contract?.materiaux_detail} />
+												<Divider />
+												<InfoRow icon={<WaterIcon />} label="Eau & Électricité" value={resolveLabel(eauElectriciteItemsList, contract?.eau_electricite)} />
+											</Stack>
+										</CardContent>
+									</Card>
+
+									{/* Garantie (Blueline) */}
+									<Card elevation={2} sx={{ borderRadius: 2 }}>
+										<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+											<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+												<ShieldIcon color="primary" />
+												<Typography variant="h6" fontWeight={700}>
+													Garantie (Blueline)
+												</Typography>
+											</Stack>
+											<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+											<Stack spacing={0}>
+												<InfoRow
+													icon={<TimerIcon />}
+													label="Durée garantie"
+													value={
+														contract?.garantie_nb != null
+															? `${contract.garantie_nb} ${resolveLabel(garantieUniteItemsList, contract?.garantie_unite)}`
+															: undefined
+													}
+												/>
+												<Divider />
+												<InfoRow icon={<ShieldIcon />} label="Type de garantie" value={resolveLabel(garantieTypeItemsList, contract?.garantie_type)} />
+												<Divider />
+												<InfoRow icon={<DescriptionIcon />} label="Exclusions" value={contract?.exclusions_garantie} />
+											</Stack>
+										</CardContent>
+									</Card>
+
+									{/* Échéancier & Résiliation */}
+									<Card elevation={2} sx={{ borderRadius: 2 }}>
+										<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+											<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+												<PercentIcon color="primary" />
+												<Typography variant="h6" fontWeight={700}>
+													Échéancier & Résiliation
+												</Typography>
+											</Stack>
+											<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+											<Stack spacing={0}>
+												<InfoRow icon={<PercentIcon />} label="Acompte (%)" value={contract?.acompte != null ? `${contract.acompte}%` : undefined} />
+												<Divider />
+												<InfoRow icon={<PercentIcon />} label="Tranche 2 (%)" value={contract?.tranche2 != null ? `${contract.tranche2}%` : undefined} />
+												<Divider />
+												<InfoRow icon={<PercentIcon />} label="Solde (%)" value={contract?.solde != null ? `${contract.solde}%` : undefined} />
+												<Divider />
+												<InfoRow icon={<GavelIcon />} label="Clause résiliation" value={resolveLabel(clauseResiliationItemsList, contract?.clause_resiliation)} />
+												<Divider />
+												<InfoRow icon={<NotesIcon />} label="Notes" value={contract?.notes} />
+											</Stack>
+										</CardContent>
+									</Card>
+								</>
+							)}
 							</Stack>
 						)}
 					</Stack>

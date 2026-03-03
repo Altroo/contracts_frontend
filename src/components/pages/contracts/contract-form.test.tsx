@@ -95,6 +95,8 @@ jest.mock('@/components/formikElements/apiLoading/apiAlert/apiAlert', () => ({
 jest.mock('@/utils/themes', () => ({
 	textInputTheme: jest.fn(() => ({})),
 	customDropdownTheme: jest.fn(() => ({})),
+	gridInputTheme: jest.fn(() => ({})),
+	customGridDropdownTheme: jest.fn(() => ({})),
 }));
 
 // Mock Protected
@@ -123,10 +125,53 @@ jest.mock('@/utils/rawData', () => ({
 	],
 	deviseItemsList: ['MAD', 'EUR', 'USD'],
 	confidentialiteItemsList: ['CONFIDENTIEL', 'PUBLIC'],
+	companyItemsList: [
+		{ code: 'casa_di_lusso', value: 'Casa di Lusso' },
+		{ code: 'blueline_works', value: 'Blueline Works' },
+	],
+	fournituresItemsList: [
+		{ code: 'non_incluses', value: 'Non incluses' },
+		{ code: 'incluses', value: 'Incluses' },
+		{ code: 'partielles', value: 'Partielles' },
+	],
+	eauElectriciteItemsList: [
+		{ code: 'client', value: 'À la charge du client' },
+		{ code: 'entreprise', value: 'À la charge de l\'entreprise' },
+	],
+	garantieUniteItemsList: [
+		{ code: 'mois', value: 'Mois' },
+		{ code: 'ans', value: 'Ans' },
+	],
+	garantieTypeItemsList: [
+		{ code: 'defauts', value: 'Défauts' },
+		{ code: 'bonne_fin', value: 'Bonne fin' },
+	],
+	clauseResiliationItemsList: [
+		{ code: '30j', value: '30 jours' },
+		{ code: '15j', value: '15 jours' },
+	],
+	prestationNomItemsList: [
+		{ code: 'carrelage', value: 'Carrelage' },
+		{ code: 'peinture', value: 'Peinture' },
+	],
+	prestationUniteItemsList: [
+		{ code: 'm2', value: 'm²' },
+		{ code: 'ml', value: 'ml' },
+	],
+	modePaiementTexteItemsList: [
+		{ code: 'Virement Bancaire', value: 'Virement Bancaire' },
+		{ code: 'Espèces', value: 'Espèces' },
+	],
+	typeBienItemsList: [
+		{ code: 'appartement', value: 'Appartement' },
+		{ code: 'villa', value: 'Villa' },
+	],
 }));
 
 jest.mock('@/utils/formValidationSchemas', () => ({
 	contractSchema: { parse: jest.fn() },
+	bluelineRequired: ['fournitures', 'eau_electricite', 'acompte', 'tranche2', 'clause_resiliation'] as const,
+	casaDiLussoRequired: ['type_contrat'] as const,
 }));
 
 jest.mock('zod-formik-adapter', () => ({
@@ -220,7 +265,7 @@ describe('ContractFormClient', () => {
 			});
 
 			renderWithProviders(<ContractFormClient session={mockSession} id={1} />);
-			expect(screen.getByText('Retour au contrat')).toBeInTheDocument();
+			expect(screen.getByText('Liste des contrats')).toBeInTheDocument();
 		});
 
 		it('renders submit button with update text', () => {
@@ -290,7 +335,7 @@ describe('ContractFormClient', () => {
 				error: undefined,
 			});
 			renderWithProviders(<ContractFormClient session={mockSession} id={10} />);
-			expect(screen.getByText('Retour au contrat')).toBeInTheDocument();
+			expect(screen.getByText('Liste des contrats')).toBeInTheDocument();
 		});
 
 		it('handles add mutation loading state', () => {

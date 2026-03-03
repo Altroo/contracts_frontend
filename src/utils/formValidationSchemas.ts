@@ -9,6 +9,7 @@ import {
 	SHORT_INPUT_REQUIRED,
 	TVA_INPUT_INVALID,
 } from '@/utils/formValidationErrorMessages';
+import type { ContractSchemaType } from '@/types/contractTypes';
 
 const base64ImageField = z.url().or(z.string().startsWith('data:image/')).nullable().optional();
 
@@ -169,32 +170,94 @@ export const changePasswordSchema = z
 		path: ['new_password2'],
 	});
 
-export const contractSchema = z.object({
-	// REQUIRED FIELDS
-	numero_contrat: requiredTextField(1, 255),
-	client_nom: requiredTextField(1, 255),
-	montant_ht: requiredNumberField(0),
-	// OPTIONAL FIELDS
-	date_contrat: optionalTextField(1, 255),
-	statut: optionalChoiceField(),
-	type_contrat: optionalChoiceField(),
-	ville_signature: optionalTextField(1, 255),
-	client_cin: optionalTextField(1, 255),
-	client_qualite: optionalTextField(1, 255),
-	client_adresse: optionalTextField(1, 500),
-	client_tel: optionalPhoneField,
-	client_email: optionalEmailField,
-	type_bien: optionalTextField(1, 255),
-	surface: optionalNumberField(0),
-	adresse_travaux: optionalTextField(1, 500),
-	date_debut: optionalTextField(1, 255),
-	duree_estimee: optionalTextField(1, 255),
-	description_travaux: optionalTextField(1, 2000),
-	devise: optionalChoiceField(),
-	tva: optionalTVANumberField(0, 100),
-	garantie: optionalTextField(1, 255),
-	tribunal: optionalTextField(1, 255),
-	responsable_projet: optionalTextField(1, 255),
-	confidentialite: optionalChoiceField(),
-	globalError: optionalTextField(1, 500),
-});
+export const casaDiLussoRequired = ['type_contrat'] as const;
+export const bluelineRequired = ['fournitures', 'eau_electricite', 'acompte', 'tranche2', 'clause_resiliation'] as const;
+
+export const contractSchema = z
+	.object({
+		// COMMON REQUIRED FIELDS
+		company: z.enum(['casa_di_lusso', 'blueline_works']),
+		numero_contrat: requiredTextField(1, 255),
+		client_nom: requiredTextField(1, 255),
+		montant_ht: requiredNumberField(0),
+		// OPTIONAL FIELDS (conditionally required via superRefine)
+		date_contrat: optionalTextField(1, 255),
+		statut: optionalChoiceField(),
+		type_contrat: optionalChoiceField(),
+		ville_signature: optionalTextField(1, 255),
+		client_cin: optionalTextField(1, 255),
+		client_qualite: optionalTextField(1, 255),
+		client_adresse: optionalTextField(1, 500),
+		client_tel: optionalPhoneField,
+		client_email: optionalEmailField,
+		type_bien: optionalTextField(1, 255),
+		surface: optionalNumberField(0),
+		adresse_travaux: optionalTextField(1, 500),
+		date_debut: optionalTextField(1, 255),
+		duree_estimee: optionalTextField(1, 255),
+		description_travaux: optionalTextField(1, 2000),
+		devise: optionalChoiceField(),
+		tva: optionalTVANumberField(0, 100),
+		penalite_retard: optionalNumberField(0, 100),
+		garantie: optionalTextField(1, 255),
+		tribunal: optionalTextField(1, 255),
+		responsable_projet: optionalTextField(1, 255),
+		confidentialite: optionalChoiceField(),
+		mode_paiement_texte: optionalChoiceField(),
+		rib: optionalTextField(1, 200),
+		/* ── Blueline-specific fields (optional at base, required for Blueline via superRefine) ── */
+		client_ville: optionalTextField(1, 255),
+		client_cp: optionalTextField(1, 20),
+		chantier_ville: optionalTextField(1, 255),
+		chantier_etage: optionalTextField(1, 100),
+		prestations: z
+			.array(
+				z.object({
+					nom: z.string({ error: INPUT_REQUIRED }).min(1, { error: INPUT_REQUIRED }),
+					description: z.preprocess((val) => (val == null ? '' : val), z.string()),
+					quantite: z.number({ error: INPUT_REQUIRED }).refine((val) => val > 0, { error: INPUT_REQUIRED }),
+					unite: z.preprocess((val) => (val == null ? '' : val), z.string()),
+					prix_unitaire: z.number({ error: INPUT_REQUIRED }).refine((val) => val > 0, { error: INPUT_REQUIRED }),
+				}),
+			)
+			.optional(),
+		fournitures: optionalChoiceField(),
+		materiaux_detail: optionalTextField(1, 2000),
+		eau_electricite: optionalChoiceField(),
+		garantie_nb: optionalNumberField(0, 100),
+		garantie_unite: optionalChoiceField(),
+		garantie_type: optionalChoiceField(),
+		exclusions_garantie: optionalTextField(1, 2000),
+		acompte: optionalNumberField(0, 100),
+		tranche2: optionalNumberField(0, 100),
+		clause_resiliation: optionalChoiceField(),
+		notes: optionalTextField(1, 5000),
+		globalError: optionalTextField(1, 500),
+	})
+	.superRefine((data: ContractSchemaType, ctx) => {
+		const isEmpty = (val: unknown): boolean =>
+			val === undefined ||
+			val === null ||
+			(typeof val === 'string' && val.trim() === '') ||
+			(typeof val === 'number' && Number.isNaN(val));
+
+		if (data.company === 'casa_di_lusso') {
+			casaDiLussoRequired.forEach((key) => {
+				const val = data[key];
+				if (isEmpty(val)) {
+					ctx.addIssue({ path: [key], code: 'custom', message: INPUT_REQUIRED });
+				}
+			});
+		} else if (data.company === 'blueline_works') {
+			bluelineRequired.forEach((key) => {
+				const val = data[key];
+				if (isEmpty(val)) {
+					ctx.addIssue({ path: [key], code: 'custom', message: INPUT_REQUIRED });
+				}
+			});
+			// Require at least one prestation for Blueline contracts
+			if (!data.prestations || data.prestations.length === 0) {
+				ctx.addIssue({ path: ['prestations'], code: 'custom', message: INPUT_REQUIRED });
+			}
+		}
+	});
