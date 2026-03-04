@@ -460,7 +460,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
 	const isLoading = isAddLoading || isEditLoading || isPending || (isEditMode && isDataLoading) || (!isEditMode && isCodeLoading);
-	const shouldShowError = (axiosError?.status ?? 0) >= 400 && !isLoading;
+	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
 
 	/* ── helper: resolve display value for code-based dropdowns ── */
 	const typeContratDisplay = typeContratItems.find((t) => t.code === formik.values.type_contrat)?.value ?? formik.values.type_contrat;
@@ -844,21 +844,23 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											theme={customDropdownTheme()}
 											startIcon={<FlagIcon fontSize="small" />}
 										/>
-										<CustomDropDownSelect
-											id="type_contrat"
-											label={`Type de contrat${isRequired('type_contrat') ? ' *' : ''}`}
-											items={typeContratItems.map((t) => t.value)}
-											value={typeContratDisplay}
-											onChange={(e: SelectChangeEvent) => {
-												const selected = typeContratItems.find((t) => t.value === e.target.value);
-												formik.setFieldValue('type_contrat', selected?.code ?? e.target.value);
-											}}
-											size="small"
-											theme={customDropdownTheme()}
-											startIcon={<DescriptionIcon fontSize="small" />}
-											error={formik.touched.type_contrat && Boolean(formik.errors.type_contrat)}
-											helperText={formik.touched.type_contrat ? (formik.errors.type_contrat as string) : ''}
-										/>
+										{!isBlueline && (
+											<CustomDropDownSelect
+												id="type_contrat"
+												label={`Type de contrat${isRequired('type_contrat') ? ' *' : ''}`}
+												items={typeContratItems.map((t) => t.value)}
+												value={typeContratDisplay}
+												onChange={(e: SelectChangeEvent) => {
+													const selected = typeContratItems.find((t) => t.value === e.target.value);
+													formik.setFieldValue('type_contrat', selected?.code ?? e.target.value);
+												}}
+												size="small"
+												theme={customDropdownTheme()}
+												startIcon={<DescriptionIcon fontSize="small" />}
+												error={formik.touched.type_contrat && Boolean(formik.errors.type_contrat)}
+												helperText={formik.touched.type_contrat ? (formik.errors.type_contrat as string) : ''}
+											/>
+										)}
 									</Stack>
 									<CustomTextInput
 										id="ville_signature"
@@ -1046,18 +1048,20 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										theme={inputTheme}
 										startIcon={<TimerIcon fontSize="small" />}
 									/>
-									<CustomTextInput
-										id="responsable_projet"
-										type="text"
-										label="Responsable projet"
-										value={formik.values.responsable_projet}
-										onChange={formik.handleChange('responsable_projet')}
-										onBlur={formik.handleBlur('responsable_projet')}
-										fullWidth={false}
-										size="small"
-										theme={inputTheme}
-										startIcon={<PersonIcon fontSize="small" />}
-									/>
+									{!isBlueline && (
+										<CustomTextInput
+											id="responsable_projet"
+											type="text"
+											label="Responsable projet"
+											value={formik.values.responsable_projet}
+											onChange={formik.handleChange('responsable_projet')}
+											onBlur={formik.handleBlur('responsable_projet')}
+											fullWidth={false}
+											size="small"
+											theme={inputTheme}
+											startIcon={<PersonIcon fontSize="small" />}
+										/>
+									)}
 									<CustomTextInput
 										id="description_travaux"
 										type="text"
@@ -1198,19 +1202,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
 								<Stack spacing={2.5}>
-									<CustomDropDownSelect
-										id="garantie"
-										label="Garantie"
-										items={garantieItemsList.map((g) => g.value)}
-										value={garantieItemsList.find((g) => g.code === formik.values.garantie)?.value ?? formik.values.garantie}
-										onChange={(e: SelectChangeEvent) => {
-											const selected = garantieItemsList.find((g) => g.value === e.target.value);
-											formik.setFieldValue('garantie', selected?.code ?? e.target.value);
-										}}
-										size="small"
-										theme={customDropdownTheme()}
-										startIcon={<GavelIcon fontSize="small" />}
-									/>
+									{!isBlueline && (
+										<CustomDropDownSelect
+											id="garantie"
+											label="Garantie"
+											items={garantieItemsList.map((g) => g.value)}
+											value={garantieItemsList.find((g) => g.code === formik.values.garantie)?.value ?? formik.values.garantie}
+											onChange={(e: SelectChangeEvent) => {
+												const selected = garantieItemsList.find((g) => g.value === e.target.value);
+												formik.setFieldValue('garantie', selected?.code ?? e.target.value);
+											}}
+											size="small"
+											theme={customDropdownTheme()}
+											startIcon={<GavelIcon fontSize="small" />}
+										/>
+									)}
 									<CustomDropDownSelect
 										id="tribunal"
 										label="Tribunal compétent"
@@ -1224,16 +1230,18 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										theme={customDropdownTheme()}
 										startIcon={<GavelIcon fontSize="small" />}
 									/>
-									<CustomDropDownSelect
-										id="confidentialite"
-										label="Confidentialité"
-										items={confidentialiteItems}
-										value={formik.values.confidentialite}
-										onChange={(e: SelectChangeEvent) => formik.setFieldValue('confidentialite', e.target.value)}
-										size="small"
-										theme={customDropdownTheme()}
-										startIcon={<LockIcon fontSize="small" />}
-									/>
+									{!isBlueline && (
+										<CustomDropDownSelect
+											id="confidentialite"
+											label="Confidentialité"
+											items={confidentialiteItems}
+											value={formik.values.confidentialite}
+											onChange={(e: SelectChangeEvent) => formik.setFieldValue('confidentialite', e.target.value)}
+											size="small"
+											theme={customDropdownTheme()}
+											startIcon={<LockIcon fontSize="small" />}
+										/>
+									)}
 								</Stack>
 							</CardContent>
 						</Card>

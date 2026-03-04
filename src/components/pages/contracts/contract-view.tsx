@@ -64,7 +64,7 @@ import {
 } from '@mui/icons-material';
 import { CONTRACTS_LIST, CONTRACTS_EDIT, CONTRACT_PDF, CONTRACT_DOC } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
-import { formatDateShort, extractApiErrorMessage } from '@/utils/helpers';
+import { formatDate, formatDateShort, extractApiErrorMessage } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import { fetchFileBlob } from '@/utils/apiHelpers';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
@@ -294,7 +294,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 						{isDocLoading && <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />}
 						{isLoading ? (
 							<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
-						) : (axiosError?.status as number) >= 400 ? (
+						) : (axiosError?.status as number) > 400 ? (
 							<ApiAlert
 								errorDetails={axiosError?.data.details}
 								cssStyle={{
@@ -514,8 +514,12 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 											/>
 											<Divider />
 											<InfoRow icon={<PercentIcon />} label="Pénalité de retard (%/j)" value={contract?.penalite_retard != null ? String(contract.penalite_retard) : undefined} />
-											<Divider />
-											<InfoRow icon={<ShieldIcon />} label="Garantie" value={resolveLabel(garantieItemsList, contract?.garantie)} />
+											{!isBlueline && (
+												<>
+													<Divider />
+													<InfoRow icon={<ShieldIcon />} label="Garantie" value={resolveLabel(garantieItemsList, contract?.garantie)} />
+												</>
+											)}
 										<Divider />
 										<InfoRow icon={<MoneyIcon />} label="Mode de paiement" value={resolveLabel(modePaiementTexteItemsList, contract?.mode_paiement_texte)} />
 										<Divider />
@@ -543,10 +547,14 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 
 										<Stack spacing={0}>
 											<InfoRow icon={<GavelIcon />} label="Tribunal compétent" value={contract?.tribunal} />
-											<Divider />
-											<InfoRow icon={<PersonIcon />} label="Responsable projet" value={contract?.responsable_projet} />
-											<Divider />
-											<InfoRow icon={<ShieldIcon />} label="Confidentialité" value={contract?.confidentialite} />
+											{!isBlueline && (
+												<>
+													<Divider />
+													<InfoRow icon={<PersonIcon />} label="Responsable projet" value={contract?.responsable_projet} />
+													<Divider />
+													<InfoRow icon={<ShieldIcon />} label="Confidentialité" value={contract?.confidentialite} />
+												</>
+											)}
 										</Stack>
 									</CardContent>
 								</Card>
@@ -822,6 +830,34 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 									</Card>
 								</>
 							)}
+
+							{/* ── Meta / Audit info ── */}
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<DescriptionIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>
+											Informations système
+										</Typography>
+									</Stack>
+									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+									<Stack spacing={0}>
+										<InfoRow
+											icon={<CalendarTodayIcon />}
+											label="Date de création"
+											value={formatDate(contract?.date_created ?? null)}
+										/>
+										<Divider />
+										<InfoRow
+											icon={<CalendarTodayIcon />}
+											label="Dernière modification"
+											value={formatDate(contract?.date_updated ?? null)}
+										/>
+										<Divider />
+										<InfoRow icon={<PersonIcon />} label="Créé par" value={contract?.created_by_user_name} />
+									</Stack>
+								</CardContent>
+							</Card>
 							</Stack>
 						)}
 					</Stack>
