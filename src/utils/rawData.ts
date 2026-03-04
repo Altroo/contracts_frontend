@@ -65,6 +65,30 @@ export const typeBienItemsList: Array<{ code: string; value: string }> = [
 export const deviseItemsList: string[] = ['MAD', 'EUR', 'USD'];
 export const confidentialiteItemsList: string[] = ['CONFIDENTIEL', 'USAGE INTERNE', 'STANDARD'];
 
+export const clientQualiteItemsList: Array<{ code: string; value: string }> = [
+	{ code: 'particulier', value: 'Particulier' },
+	{ code: 'entreprise_societe', value: 'Entreprise / Société' },
+	{ code: 'investisseur_immobilier', value: 'Investisseur Immobilier' },
+	{ code: 'administration_institution', value: 'Administration / Institution' },
+];
+
+export const garantieItemsList: Array<{ code: string; value: string }> = [
+	{ code: '6 mois', value: '6 mois' },
+	{ code: '1 an', value: '1 an' },
+	{ code: '2 ans', value: '2 ans' },
+	{ code: '3 ans', value: '3 ans' },
+	{ code: 'sans_garantie', value: 'Sans garantie contractuelle' },
+];
+
+export const tribunalItemsList: Array<{ code: string; value: string }> = [
+	{ code: 'Tanger', value: 'Tanger' },
+	{ code: 'Casablanca', value: 'Casablanca' },
+	{ code: 'Rabat', value: 'Rabat' },
+	{ code: 'Marrakech', value: 'Marrakech' },
+	{ code: 'Fès', value: 'Fès' },
+	{ code: 'Agadir', value: 'Agadir' },
+];
+
 /* ── Blueline-specific choices ── */
 
 export const fournituresItemsList: Array<{ code: string; value: string }> = [

@@ -18,6 +18,9 @@ import {
 	ToggleButtonGroup,
 	IconButton,
 	Tooltip,
+	Chip,
+	Checkbox,
+	FormControlLabel,
 } from '@mui/material';
 import {
 	ArrowBack as ArrowBackIcon,
@@ -52,6 +55,10 @@ import {
 	ShoppingCart as ShoppingCartIcon,
 	Category as CategoryIcon,
 	AccountBalance as AccountBalanceIcon,
+	Checklist as ChecklistIcon,
+	Architecture as ArchitectureIcon,
+	Attachment as AttachmentIcon,
+	PlaylistAddCheck as PlaylistAddCheckIcon,
 } from '@mui/icons-material';
 import { DataGrid } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales';
@@ -78,6 +85,9 @@ import {
 	prestationNomItemsList,
 	prestationUniteItemsList,
 	modePaiementTexteItemsList,
+	clientQualiteItemsList,
+	garantieItemsList,
+	tribunalItemsList,
 } from '@/utils/rawData';
 import { CONTRACTS_LIST, CONTRACTS_VIEW } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
@@ -92,7 +102,7 @@ import CustomDropDownSelect from '@/components/formikElements/customDropDownSele
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import type { ContractFormValuesType, ContractPrestationType, ContractCompanyType } from '@/types/contractTypes';
+import type { ContractFormValuesType, ContractPrestationType, ContractCompanyType, ContractTrancheType } from '@/types/contractTypes';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
@@ -171,6 +181,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			confidentialite: rawData?.confidentialite ?? 'CONFIDENTIEL',
 			mode_paiement_texte: rawData?.mode_paiement_texte ?? '',
 			rib: rawData?.rib ?? '',
+			/* ── Casa Di Lusso fields ── */
+			services: rawData?.services ?? [],
+			conditions_acces: rawData?.conditions_acces ?? '',
+			tranches: rawData?.tranches ?? [],
+			delai_retard: rawData?.delai_retard != null ? String(rawData.delai_retard) : '5',
+			frais_redemarrage: rawData?.frais_redemarrage != null ? String(rawData.frais_redemarrage) : '',
+			delai_reserves: rawData?.delai_reserves != null ? String(rawData.delai_reserves) : '7',
+			clauses_actives: rawData?.clauses_actives ?? [],
+			clause_spec: rawData?.clause_spec ?? '',
+			exclusions: rawData?.exclusions ?? '',
+			architecte: rawData?.architecte ?? '',
+			version_document: rawData?.version_document ?? 'v1.0 \u2013 D\u00e9finitif',
+			annexes: rawData?.annexes ?? '',
 			/* ── Blueline fields ── */
 			client_ville: rawData?.client_ville ?? '',
 			client_cp: rawData?.client_cp ?? '',
@@ -226,8 +249,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				penalite_retard: fields.penalite_retard ? parseFloat(fields.penalite_retard) : undefined,
 				mode_paiement_texte: fields.mode_paiement_texte || null,
 				rib: fields.rib || null,
+				/* CDL numeric conversions */
+				delai_retard: !isBlueline && fields.delai_retard ? parseInt(fields.delai_retard, 10) : isBlueline ? null : 5,
+				frais_redemarrage: !isBlueline && fields.frais_redemarrage ? parseFloat(fields.frais_redemarrage) : null,
+				delai_reserves: !isBlueline && fields.delai_reserves ? parseInt(fields.delai_reserves, 10) : isBlueline ? null : 7,
+				services: !isBlueline ? fields.services : [],
+				tranches: !isBlueline ? fields.tranches : [],
+				clauses_actives: !isBlueline ? fields.clauses_actives : [],
 				/* Blueline numeric conversions */
-				garantie_nb: isBlueline && fields.garantie_nb ? parseFloat(fields.garantie_nb) : null,
+				garantie_nb: isBlueline && fields.garantie_nb ? parseInt(fields.garantie_nb, 10) : null,
 				acompte: isBlueline && fields.acompte ? parseFloat(fields.acompte) : null,
 				tranche2: isBlueline && fields.tranche2 ? parseFloat(fields.tranche2) : null,
 				prestations: isBlueline ? fields.prestations : null,
@@ -250,6 +280,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				payload.tranche2 = null;
 				payload.clause_resiliation = '';
 				payload.notes = '';
+			}
+			/* Clear CDL fields when Blueline */
+			if (isBlueline) {
+				payload.services = [];
+				payload.conditions_acces = '';
+				payload.tranches = [];
+				payload.delai_retard = 5;
+				payload.frais_redemarrage = null;
+				payload.delai_reserves = 7;
+				payload.clauses_actives = [];
+				payload.clause_spec = '';
+				payload.exclusions = '';
+				payload.architecte = '';
+				payload.version_document = '';
+				payload.annexes = '';
 			}
 			try {
 				if (isEditMode) {
@@ -304,6 +349,18 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			confidentialite: 'Confidentialité',
 			mode_paiement_texte: 'Mode de paiement',
 			rib: 'RIB / Coordonnées bancaires',
+			services: 'Services convenus',
+			conditions_acces: 'Conditions d\u2019acc\u00e8s',
+			tranches: '\u00c9ch\u00e9ancier de paiement',
+			delai_retard: 'D\u00e9lai de retard tol\u00e9r\u00e9',
+			frais_redemarrage: 'Frais de red\u00e9marrage',
+			delai_reserves: 'D\u00e9lai r\u00e9serves',
+			clauses_actives: 'Clauses actives',
+			clause_spec: 'Clauses sp\u00e9cifiques',
+			exclusions: 'Exclusions contractuelles',
+			architecte: 'Architecte / Designer',
+			version_document: 'Version du document',
+			annexes: 'Annexes',
 			client_ville: 'Ville du client',
 			client_cp: 'Code postal du client',
 			chantier_ville: 'Ville du chantier',
@@ -324,6 +381,63 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		}),
 		[],
 	);
+
+	/* ── CDL: Available services and clauses ── */
+	const cdlServiceOptions = useMemo(() => [
+		'Design d\'intérieur', 'Travaux de finition', 'Gros œuvre',
+		'Ameublement', 'Suivi de chantier', 'Plans & Visuels 3D',
+		'Coordination corps de métier', 'Livraison clé en main',
+	], []);
+
+	const cdlClauseOptions = useMemo(() => [
+		{ key: 'c-comportement', label: 'Clause de comportement' },
+		{ key: 'c-prop-intel', label: 'Propriété intellectuelle' },
+		{ key: 'c-image', label: 'Droit à l\'image' },
+		{ key: 'c-confidential', label: 'Confidentialité' },
+		{ key: 'c-sous-traiter', label: 'Droit de sous-traitance' },
+		{ key: 'c-materiau-prix', label: 'Révision des prix matériaux' },
+		{ key: 'c-force-maj', label: 'Force majeure' },
+		{ key: 'c-abandon-chant', label: 'Abandon de chantier' },
+		{ key: 'c-non-debauch', label: 'Non-débauchage du personnel' },
+		{ key: 'c-anti-litige', label: 'Médiation & règlement des litiges' },
+	], []);
+
+	/* ── CDL: Tranches helpers ── */
+	const addTranche = useCallback(() => {
+		const current = formik.values.tranches ?? [];
+		formik.setFieldValue('tranches', [...current, { label: '', pourcentage: 0 }]);
+	}, [formik]);
+
+	const removeTranche = useCallback((index: number) => {
+		const current = formik.values.tranches ?? [];
+		formik.setFieldValue('tranches', current.filter((_, i) => i !== index));
+	}, [formik]);
+
+	const updateTranche = useCallback((index: number, field: keyof ContractTrancheType, value: string | number) => {
+		const current = [...(formik.values.tranches ?? [])];
+		current[index] = { ...current[index], [field]: value };
+		formik.setFieldValue('tranches', current);
+	}, [formik]);
+
+	/* ── CDL: Services toggle ── */
+	const toggleService = useCallback((svc: string) => {
+		const current = formik.values.services ?? [];
+		if (current.includes(svc)) {
+			formik.setFieldValue('services', current.filter((s) => s !== svc));
+		} else {
+			formik.setFieldValue('services', [...current, svc]);
+		}
+	}, [formik]);
+
+	/* ── CDL: Clauses toggle ── */
+	const toggleClause = useCallback((key: string) => {
+		const current = formik.values.clauses_actives ?? [];
+		if (current.includes(key)) {
+			formik.setFieldValue('clauses_actives', current.filter((c) => c !== key));
+		} else {
+			formik.setFieldValue('clauses_actives', [...current, key]);
+		}
+	}, [formik]);
 
 	const validationErrors = useMemo(() => {
 		const errors: Record<string, string> = {};
@@ -797,16 +911,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										theme={inputTheme}
 										startIcon={<BadgeIcon fontSize="small" />}
 									/>
-									<CustomTextInput
+									<CustomDropDownSelect
 										id="client_qualite"
-										type="text"
 										label="Qualité"
-										value={formik.values.client_qualite}
-										onChange={formik.handleChange('client_qualite')}
-										onBlur={formik.handleBlur('client_qualite')}
-										fullWidth={false}
+										items={clientQualiteItemsList.map((q) => q.value)}
+										value={clientQualiteItemsList.find((q) => q.code === formik.values.client_qualite)?.value ?? formik.values.client_qualite}
+										onChange={(e: SelectChangeEvent) => {
+											const selected = clientQualiteItemsList.find((q) => q.value === e.target.value);
+											formik.setFieldValue('client_qualite', selected?.code ?? e.target.value);
+										}}
 										size="small"
-										theme={inputTheme}
+										theme={customDropdownTheme()}
 										startIcon={<DescriptionIcon fontSize="small" />}
 									/>
 									<CustomTextInput
@@ -1081,28 +1196,30 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								</Stack>
 								<Divider sx={{ mb: 3 }} />
 								<Stack spacing={2.5}>
-									<CustomTextInput
+									<CustomDropDownSelect
 										id="garantie"
-										type="text"
 										label="Garantie"
-										value={formik.values.garantie}
-										onChange={formik.handleChange('garantie')}
-										onBlur={formik.handleBlur('garantie')}
-										fullWidth={false}
+										items={garantieItemsList.map((g) => g.value)}
+										value={garantieItemsList.find((g) => g.code === formik.values.garantie)?.value ?? formik.values.garantie}
+										onChange={(e: SelectChangeEvent) => {
+											const selected = garantieItemsList.find((g) => g.value === e.target.value);
+											formik.setFieldValue('garantie', selected?.code ?? e.target.value);
+										}}
 										size="small"
-										theme={inputTheme}
+										theme={customDropdownTheme()}
 										startIcon={<GavelIcon fontSize="small" />}
 									/>
-									<CustomTextInput
+									<CustomDropDownSelect
 										id="tribunal"
-										type="text"
 										label="Tribunal compétent"
-										value={formik.values.tribunal}
-										onChange={formik.handleChange('tribunal')}
-										onBlur={formik.handleBlur('tribunal')}
-										fullWidth={false}
+										items={tribunalItemsList.map((t) => t.value)}
+										value={tribunalItemsList.find((t) => t.code === formik.values.tribunal)?.value ?? formik.values.tribunal}
+										onChange={(e: SelectChangeEvent) => {
+											const selected = tribunalItemsList.find((t) => t.value === e.target.value);
+											formik.setFieldValue('tribunal', selected?.code ?? e.target.value);
+										}}
 										size="small"
-										theme={inputTheme}
+										theme={customDropdownTheme()}
 										startIcon={<GavelIcon fontSize="small" />}
 									/>
 									<CustomDropDownSelect
@@ -1118,6 +1235,269 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 								</Stack>
 							</CardContent>
 						</Card>
+
+						{/* ── CDL: Services ── */}
+						{!isBlueline && (
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<ChecklistIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>Services CDL</Typography>
+									</Stack>
+									<Divider sx={{ mb: 3 }} />
+									<Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+										{cdlServiceOptions.map((svc) => (
+											<Chip
+												key={svc}
+												label={svc}
+												color={(formik.values.services ?? []).includes(svc) ? 'primary' : 'default'}
+												variant={(formik.values.services ?? []).includes(svc) ? 'filled' : 'outlined'}
+												onClick={() => toggleService(svc)}
+												sx={{ fontFamily: 'Poppins', cursor: 'pointer' }}
+											/>
+										))}
+									</Box>
+								</CardContent>
+							</Card>
+						)}
+
+						{/* ── CDL: Projet ── */}
+						{!isBlueline && (
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<ArchitectureIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>Projet CDL</Typography>
+									</Stack>
+									<Divider sx={{ mb: 3 }} />
+									<Stack spacing={2.5}>
+										<CustomTextInput
+											id="architecte"
+											type="text"
+											label="Architecte"
+											value={formik.values.architecte}
+											onChange={formik.handleChange('architecte')}
+											onBlur={formik.handleBlur('architecte')}
+											fullWidth
+											size="small"
+											theme={inputTheme}
+											startIcon={<ArchitectureIcon fontSize="small" />}
+										/>
+										<CustomTextInput
+											id="conditions_acces"
+											type="text"
+											label="Conditions d'accès"
+											multiline
+											rows={3}
+											value={formik.values.conditions_acces}
+											onChange={formik.handleChange('conditions_acces')}
+											onBlur={formik.handleBlur('conditions_acces')}
+											fullWidth
+											size="small"
+											theme={inputTheme}
+										/>
+									</Stack>
+								</CardContent>
+							</Card>
+						)}
+
+						{/* ── CDL: Échéancier (Tranches) ── */}
+						{!isBlueline && (
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+										<Stack direction="row" spacing={2} alignItems="center">
+											<PlaylistAddCheckIcon color="primary" />
+											<Typography variant="h6" fontWeight={700}>Échéancier CDL</Typography>
+										</Stack>
+										<Button
+											variant="contained"
+											size="small"
+											startIcon={<AddIcon />}
+											onClick={() => addTranche()}
+										>
+											Ajouter une tranche
+										</Button>
+									</Stack>
+									<Divider sx={{ mb: 3 }} />
+									{(formik.values.tranches ?? []).length === 0 ? (
+										<Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', textAlign: 'center', py: 2 }}>
+											Aucune tranche ajoutée
+										</Typography>
+									) : (
+										<Stack spacing={2}>
+											{(formik.values.tranches ?? []).map((tr, idx) => (
+												<Stack key={idx} direction="row" spacing={2} alignItems="center">
+													<CustomTextInput
+														id={`tranches.${idx}.label`}
+														type="text"
+														label={`Tranche ${idx + 1} – Libellé`}
+														value={tr.label}
+														onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateTranche(idx, 'label', e.target.value)}
+														fullWidth
+														size="small"
+														theme={inputTheme}
+													/>
+													<Box sx={{ width: 120 }}>
+													<CustomTextInput
+														id={`tranches.${idx}.pourcentage`}
+														type="text"
+														label="%"
+														value={String(tr.pourcentage)}
+														onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateTranche(idx, 'pourcentage', e.target.value)}
+														fullWidth
+														size="small"
+														theme={inputTheme}
+													/>
+												</Box>
+													<IconButton color="error" onClick={() => removeTranche(idx)} size="small">
+														<DeleteIcon fontSize="small" />
+													</IconButton>
+												</Stack>
+											))}
+										</Stack>
+									)}
+									<Divider sx={{ my: 3 }} />
+									<Stack spacing={2.5}>
+										<Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+											<Box sx={{ width: 200 }}>
+												<CustomTextInput
+													id="delai_retard"
+													type="text"
+													label="Délai de retard (jours)"
+													value={formik.values.delai_retard}
+													onChange={formik.handleChange('delai_retard')}
+													onBlur={formik.handleBlur('delai_retard')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+												/>
+											</Box>
+											<Box sx={{ width: 200 }}>
+												<CustomTextInput
+													id="frais_redemarrage"
+													type="text"
+													label="Frais de redémarrage (€)"
+													value={formik.values.frais_redemarrage}
+													onChange={formik.handleChange('frais_redemarrage')}
+													onBlur={formik.handleBlur('frais_redemarrage')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+												/>
+											</Box>
+											<Box sx={{ width: 200 }}>
+												<CustomTextInput
+													id="delai_reserves"
+													type="text"
+													label="Délai levée réserves (jours)"
+													value={formik.values.delai_reserves}
+													onChange={formik.handleChange('delai_reserves')}
+													onBlur={formik.handleBlur('delai_reserves')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+												/>
+											</Box>
+										</Box>
+									</Stack>
+								</CardContent>
+							</Card>
+						)}
+
+						{/* ── CDL: Clauses actives ── */}
+						{!isBlueline && (
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<GavelIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>Clauses actives CDL</Typography>
+									</Stack>
+									<Divider sx={{ mb: 3 }} />
+									<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1 }}>
+										{cdlClauseOptions.map((opt) => (
+											<FormControlLabel
+												key={opt.key}
+												control={
+													<Checkbox
+														checked={(formik.values.clauses_actives ?? []).includes(opt.key)}
+														onChange={() => toggleClause(opt.key)}
+														size="small"
+													/>
+												}
+												label={<Typography variant="body2" sx={{ fontFamily: 'Poppins' }}>{opt.label}</Typography>}
+											/>
+										))}
+									</Box>
+								</CardContent>
+							</Card>
+						)}
+
+						{/* ── CDL: Clauses additionnelles ── */}
+						{!isBlueline && (
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<AttachmentIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>Détails additionnels CDL</Typography>
+									</Stack>
+									<Divider sx={{ mb: 3 }} />
+									<Stack spacing={2.5}>
+										<CustomTextInput
+											id="clause_spec"
+											type="text"
+											label="Clause spécifique"
+											multiline
+											rows={3}
+											value={formik.values.clause_spec}
+											onChange={formik.handleChange('clause_spec')}
+											onBlur={formik.handleBlur('clause_spec')}
+											fullWidth
+											size="small"
+											theme={inputTheme}
+										/>
+										<CustomTextInput
+											id="exclusions"
+											type="text"
+											label="Exclusions"
+											multiline
+											rows={3}
+											value={formik.values.exclusions}
+											onChange={formik.handleChange('exclusions')}
+											onBlur={formik.handleBlur('exclusions')}
+											fullWidth
+											size="small"
+											theme={inputTheme}
+										/>
+										<CustomTextInput
+											id="version_document"
+											type="text"
+											label="Version du document"
+											value={formik.values.version_document}
+											onChange={formik.handleChange('version_document')}
+											onBlur={formik.handleBlur('version_document')}
+											fullWidth={false}
+											size="small"
+											theme={inputTheme}
+											startIcon={<AttachmentIcon fontSize="small" />}
+										/>
+										<CustomTextInput
+											id="annexes"
+											type="text"
+											label="Annexes"
+											multiline
+											rows={3}
+											value={formik.values.annexes}
+											onChange={formik.handleChange('annexes')}
+											onBlur={formik.handleBlur('annexes')}
+											fullWidth
+											size="small"
+											theme={inputTheme}
+										/>
+									</Stack>
+								</CardContent>
+							</Card>
+						)}
 
 						{/* ── Blueline: Prestations ── */}
 						{isBlueline && (

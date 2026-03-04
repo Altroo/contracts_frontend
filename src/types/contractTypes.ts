@@ -101,6 +101,19 @@ export type ContractSchemaType = {
 	confidentialite?: string;
 	mode_paiement_texte?: string;
 	rib?: string;
+	/* ── Casa Di Lusso-specific fields ── */
+	services?: string[];
+	conditions_acces?: string;
+	tranches?: ContractTrancheType[];
+	delai_retard?: number;
+	frais_redemarrage?: number;
+	delai_reserves?: number;
+	clauses_actives?: string[];
+	clause_spec?: string;
+	exclusions?: string;
+	architecte?: string;
+	version_document?: string;
+	annexes?: string;
 	/* ── Blueline-specific fields ── */
 	client_ville?: string;
 	client_cp?: string;
@@ -150,6 +163,19 @@ export type ContractFormValuesType = {
 	confidentialite: string;
 	mode_paiement_texte: string;
 	rib: string;
+	/* ── Casa Di Lusso-specific fields ── */
+	services: string[];
+	conditions_acces: string;
+	tranches: ContractTrancheType[];
+	delai_retard: string;
+	frais_redemarrage: string;
+	delai_reserves: string;
+	clauses_actives: string[];
+	clause_spec: string;
+	exclusions: string;
+	architecte: string;
+	version_document: string;
+	annexes: string;
 	/* ── Blueline-specific fields ── */
 	client_ville: string;
 	client_cp: string;

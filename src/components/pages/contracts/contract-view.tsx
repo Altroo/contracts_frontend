@@ -57,6 +57,10 @@ import {
 	Timer as TimerIcon,
 	Notes as NotesIcon,
 	ListAlt as ListAltIcon,
+	Checklist as ChecklistIcon,
+	Architecture as ArchitectureIcon,
+	Attachment as AttachmentIcon,
+	PlaylistAddCheck as PlaylistAddCheckIcon,
 } from '@mui/icons-material';
 import { CONTRACTS_LIST, CONTRACTS_EDIT, CONTRACT_PDF, CONTRACT_DOC } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -528,6 +532,127 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 										</Stack>
 									</CardContent>
 								</Card>
+
+							{/* ── CDL-specific sections ── */}
+							{!isBlueline && (
+								<>
+									{/* Services CDL */}
+									{contract?.services && contract.services.length > 0 && (
+										<Card elevation={2} sx={{ borderRadius: 2 }}>
+											<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+												<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+													<ChecklistIcon color="primary" />
+													<Typography variant="h6" fontWeight={700}>Services CDL</Typography>
+												</Stack>
+												<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+												<Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+													{contract.services.map((svc, idx) => (
+														<Chip key={idx} label={svc} color="primary" variant="outlined" size="small" />
+													))}
+												</Box>
+											</CardContent>
+										</Card>
+									)}
+
+									{/* Projet CDL */}
+									{(contract?.architecte || contract?.conditions_acces) && (
+										<Card elevation={2} sx={{ borderRadius: 2 }}>
+											<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+												<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+													<ArchitectureIcon color="primary" />
+													<Typography variant="h6" fontWeight={700}>Projet CDL</Typography>
+												</Stack>
+												<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+												<Stack spacing={0}>
+													<InfoRow icon={<ArchitectureIcon />} label="Architecte" value={contract?.architecte} />
+													<Divider />
+													<InfoRow icon={<HomeIcon />} label="Conditions d'accès" value={contract?.conditions_acces} />
+												</Stack>
+											</CardContent>
+										</Card>
+									)}
+
+									{/* Échéancier CDL (Tranches) */}
+									{contract?.tranches && contract.tranches.length > 0 && (
+										<Card elevation={2} sx={{ borderRadius: 2 }}>
+											<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+												<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+													<PlaylistAddCheckIcon color="primary" />
+													<Typography variant="h6" fontWeight={700}>Échéancier CDL</Typography>
+												</Stack>
+												<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+												<TableContainer component={Paper} variant="outlined">
+													<Table size="small">
+														<TableHead>
+															<TableRow>
+																<TableCell sx={{ fontWeight: 700 }}>Tranche</TableCell>
+																<TableCell sx={{ fontWeight: 700 }} align="right">Pourcentage</TableCell>
+															</TableRow>
+														</TableHead>
+														<TableBody>
+															{contract.tranches.map((tr, idx) => (
+																<TableRow key={idx}>
+																	<TableCell>{tr.label || `Tranche ${idx + 1}`}</TableCell>
+																	<TableCell align="right">{tr.pourcentage}%</TableCell>
+																</TableRow>
+															))}
+														</TableBody>
+													</Table>
+												</TableContainer>
+												<Divider sx={{ my: 2 }} />
+												<Stack spacing={0}>
+													<InfoRow icon={<TimerIcon />} label="Délai de retard (jours)" value={contract?.delai_retard != null ? String(contract.delai_retard) : undefined} />
+													<Divider />
+													<InfoRow icon={<MoneyIcon />} label="Frais de redémarrage (€)" value={contract?.frais_redemarrage != null ? Number(contract.frais_redemarrage).toLocaleString('fr-MA') : undefined} />
+													<Divider />
+													<InfoRow icon={<TimerIcon />} label="Délai levée réserves (jours)" value={contract?.delai_reserves != null ? String(contract.delai_reserves) : undefined} />
+												</Stack>
+											</CardContent>
+										</Card>
+									)}
+
+									{/* Clauses actives CDL */}
+									{contract?.clauses_actives && contract.clauses_actives.length > 0 && (
+										<Card elevation={2} sx={{ borderRadius: 2 }}>
+											<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+												<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+													<GavelIcon color="primary" />
+													<Typography variant="h6" fontWeight={700}>Clauses actives CDL</Typography>
+												</Stack>
+												<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+												<Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+													{contract.clauses_actives.map((clause, idx) => (
+														<Chip key={idx} label={clause} color="secondary" variant="outlined" size="small" />
+													))}
+												</Box>
+											</CardContent>
+										</Card>
+									)}
+
+									{/* Détails additionnels CDL */}
+									{(contract?.clause_spec || contract?.exclusions || contract?.version_document || contract?.annexes) && (
+										<Card elevation={2} sx={{ borderRadius: 2 }}>
+											<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+												<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+													<AttachmentIcon color="primary" />
+													<Typography variant="h6" fontWeight={700}>Détails additionnels CDL</Typography>
+												</Stack>
+												<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+												<Stack spacing={0}>
+													<InfoRow icon={<GavelIcon />} label="Clause spécifique" value={contract?.clause_spec} />
+													<Divider />
+													<InfoRow icon={<GavelIcon />} label="Exclusions" value={contract?.exclusions} />
+													<Divider />
+													<InfoRow icon={<AttachmentIcon />} label="Version du document" value={contract?.version_document} />
+													<Divider />
+													<InfoRow icon={<AttachmentIcon />} label="Annexes" value={contract?.annexes} />
+												</Stack>
+											</CardContent>
+										</Card>
+									)}
+								</>
+							)}
+
 							{/* ── Blueline-specific sections ── */}
 							{isBlueline && (
 								<>

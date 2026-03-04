@@ -207,7 +207,7 @@ export const contractSchema = z
 		rib: optionalTextField(1, 200),
 		/* ── Blueline-specific fields (optional at base, required for Blueline via superRefine) ── */
 		client_ville: optionalTextField(1, 255),
-		client_cp: optionalTextField(1, 20),
+		client_cp: optionalTextField(1, 10),
 		chantier_ville: optionalTextField(1, 255),
 		chantier_etage: optionalTextField(1, 100),
 		prestations: z
