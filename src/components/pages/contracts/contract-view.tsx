@@ -64,7 +64,7 @@ import {
 } from '@mui/icons-material';
 import { CONTRACTS_LIST, CONTRACTS_EDIT, CONTRACT_PDF, CONTRACT_DOC } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
-import { formatDate, formatDateShort, extractApiErrorMessage } from '@/utils/helpers';
+import { formatDateShort, extractApiErrorMessage } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import { fetchFileBlob } from '@/utils/apiHelpers';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
@@ -359,7 +359,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 													variant={contract?.statut === statut ? 'filled' : 'outlined'}
 													onClick={() => {
 														if (contract?.statut !== statut) {
-															handleStatusChange(statut as ContractStatutType);
+															handleStatusChange(statut as ContractStatutType).then();
 														}
 													}}
 													sx={{ cursor: contract?.statut === statut ? 'default' : 'pointer' }}
