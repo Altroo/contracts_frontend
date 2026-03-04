@@ -260,7 +260,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				garantie_nb: isBlueline && fields.garantie_nb ? parseInt(fields.garantie_nb, 10) : null,
 				acompte: isBlueline && fields.acompte ? parseFloat(fields.acompte) : null,
 				tranche2: isBlueline && fields.tranche2 ? parseFloat(fields.tranche2) : null,
-				prestations: isBlueline ? fields.prestations : null,
+				prestations: isBlueline ? fields.prestations : [],
 			};
 			/* Clear Blueline fields when Casa di Lusso */
 			if (!isBlueline) {
@@ -268,7 +268,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				payload.client_cp = '';
 				payload.chantier_ville = '';
 				payload.chantier_etage = '';
-				payload.prestations = null;
+				payload.prestations = [];
 				payload.fournitures = '';
 				payload.materiaux_detail = '';
 				payload.eau_electricite = '';
@@ -1131,6 +1131,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											fullWidth
 											size="small"
 											theme={inputTheme}
+											startIcon={<PercentIcon fontSize="small" />}
 											endIcon="%"
 										/>
 										<CustomTextInput
@@ -1149,6 +1150,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											fullWidth
 											size="small"
 											theme={inputTheme}
+											startIcon={<PercentIcon fontSize="small" />}
 											endIcon="%"
 										/>
 									</Stack>
@@ -1295,6 +1297,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											fullWidth
 											size="small"
 											theme={inputTheme}
+											startIcon={<LockIcon fontSize="small" />}
 										/>
 									</Stack>
 								</CardContent>
@@ -1344,7 +1347,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 														type="text"
 														label="%"
 														value={String(tr.pourcentage)}
-														onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateTranche(idx, 'pourcentage', e.target.value)}
+														onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+															if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) {
+																updateTranche(idx, 'pourcentage', parseFloat(e.target.value.replace(',', '.')) || 0);
+															}
+														}}
 														fullWidth
 														size="small"
 														theme={inputTheme}
@@ -1371,6 +1378,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													fullWidth
 													size="small"
 													theme={inputTheme}
+													startIcon={<TimerIcon fontSize="small" />}
 												/>
 											</Box>
 											<Box sx={{ width: 200 }}>
@@ -1384,6 +1392,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													fullWidth
 													size="small"
 													theme={inputTheme}
+													startIcon={<AttachMoneyIcon fontSize="small" />}
 												/>
 											</Box>
 											<Box sx={{ width: 200 }}>
@@ -1397,6 +1406,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 													fullWidth
 													size="small"
 													theme={inputTheme}
+													startIcon={<TimerIcon fontSize="small" />}
 												/>
 											</Box>
 										</Box>
@@ -1455,6 +1465,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											fullWidth
 											size="small"
 											theme={inputTheme}
+											startIcon={<GavelIcon fontSize="small" />}
 										/>
 										<CustomTextInput
 											id="exclusions"
@@ -1468,6 +1479,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											fullWidth
 											size="small"
 											theme={inputTheme}
+											startIcon={<ShieldIcon fontSize="small" />}
 										/>
 										<CustomTextInput
 											id="version_document"
@@ -1493,6 +1505,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											fullWidth
 											size="small"
 											theme={inputTheme}
+											startIcon={<AttachmentIcon fontSize="small" />}
 										/>
 									</Stack>
 								</CardContent>
@@ -1709,6 +1722,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												fullWidth
 												size="small"
 												theme={inputTheme}
+												startIcon={<PercentIcon fontSize="small" />}
 												endIcon="%"
 											/>
 											</Box>
@@ -1729,6 +1743,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												fullWidth
 												size="small"
 												theme={inputTheme}
+												startIcon={<PercentIcon fontSize="small" />}
 												endIcon="%"
 											/>
 											</Box>

@@ -75,9 +75,9 @@ export type ContractPrestationType = {
 export type ContractSchemaType = {
 	company: ContractCompanyType;
 	numero_contrat: string;
+	date_contrat: string;
 	client_nom: string;
 	montant_ht: number;
-	date_contrat?: string;
 	statut?: string;
 	type_contrat?: string;
 	ville_signature?: string;

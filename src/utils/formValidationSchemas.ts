@@ -178,10 +178,10 @@ export const contractSchema = z
 		// COMMON REQUIRED FIELDS
 		company: z.enum(['casa_di_lusso', 'blueline_works']),
 		numero_contrat: requiredTextField(1, 255),
+		date_contrat: requiredTextField(1, 255),
 		client_nom: requiredTextField(1, 255),
 		montant_ht: requiredNumberField(0),
 		// OPTIONAL FIELDS (conditionally required via superRefine)
-		date_contrat: optionalTextField(1, 255),
 		statut: optionalChoiceField(),
 		type_contrat: optionalChoiceField(),
 		ville_signature: optionalTextField(1, 255),
@@ -205,6 +205,26 @@ export const contractSchema = z
 		confidentialite: optionalChoiceField(),
 		mode_paiement_texte: optionalChoiceField(),
 		rib: optionalTextField(1, 200),
+		/* ── Casa Di Lusso fields (optional at base, managed by CDL form sections) ── */
+		services: z.array(z.string()).optional(),
+		conditions_acces: optionalTextField(1, 2000),
+		tranches: z
+			.array(
+				z.object({
+					label: z.string().min(1, { error: INPUT_REQUIRED }),
+					pourcentage: z.number().min(0).max(100),
+				}),
+			)
+			.optional(),
+		delai_retard: optionalNumberField(0, 365),
+		frais_redemarrage: optionalNumberField(0),
+		delai_reserves: optionalNumberField(0, 365),
+		clauses_actives: z.array(z.string()).optional(),
+		clause_spec: optionalTextField(1, 5000),
+		exclusions: optionalTextField(1, 5000),
+		architecte: optionalTextField(1, 255),
+		version_document: optionalTextField(1, 255),
+		annexes: optionalTextField(1, 5000),
 		/* ── Blueline-specific fields (optional at base, required for Blueline via superRefine) ── */
 		client_ville: optionalTextField(1, 255),
 		client_cp: optionalTextField(1, 10),

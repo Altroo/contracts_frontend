@@ -64,14 +64,14 @@ import {
 } from '@mui/icons-material';
 import { CONTRACTS_LIST, CONTRACTS_EDIT, CONTRACT_PDF, CONTRACT_DOC } from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
-import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
+import { formatDate, formatDateShort, extractApiErrorMessage } from '@/utils/helpers';
 import { useToast } from '@/utils/hooks';
 import { fetchFileBlob } from '@/utils/apiHelpers';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { getContractStatusColor, contractStatutItemsList, companyItemsList, fournituresItemsList, eauElectriciteItemsList, garantieUniteItemsList, garantieTypeItemsList, clauseResiliationItemsList, prestationNomItemsList, prestationUniteItemsList } from '@/utils/rawData';
+import { getContractStatusColor, contractStatutItemsList, companyItemsList, fournituresItemsList, eauElectriciteItemsList, garantieUniteItemsList, garantieTypeItemsList, clauseResiliationItemsList, prestationNomItemsList, prestationUniteItemsList, clientQualiteItemsList, typeBienItemsList, garantieItemsList, modePaiementTexteItemsList } from '@/utils/rawData';
 import type { ContractStatutType } from '@/types/contractTypes';
 
 interface InfoRowProps {
@@ -400,7 +400,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 												/>
 											}
 										/>
-										<Divider />											<InfoRow icon={<CalendarTodayIcon />} label="Date contrat" value={contract?.date_contrat && formatDate(contract.date_contrat)} />
+										<Divider />											<InfoRow icon={<CalendarTodayIcon />} label="Date contrat" value={contract?.date_contrat && formatDateShort(contract.date_contrat)} />
 											<Divider />
 											<InfoRow icon={<CategoryIcon />} label="Type contrat" value={contract?.type_contrat_display ?? contract?.type_contrat} />
 											<Divider />
@@ -431,7 +431,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 											<Divider />
 											<InfoRow icon={<BadgeIcon />} label="CIN / N° ent." value={contract?.client_cin} />
 											<Divider />
-											<InfoRow icon={<WorkIcon />} label="Qualité" value={contract?.client_qualite} />
+											<InfoRow icon={<WorkIcon />} label="Qualité" value={resolveLabel(clientQualiteItemsList, contract?.client_qualite)} />
 											<Divider />
 											<InfoRow icon={<PhoneIcon />} label="Téléphone" value={contract?.client_tel} />
 											<Divider />
@@ -460,15 +460,17 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 										<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 
 										<Stack spacing={0}>
-											<InfoRow icon={<ApartmentIcon />} label="Type de bien" value={contract?.type_bien} />
+											<InfoRow icon={<ApartmentIcon />} label="Type de bien" value={resolveLabel(typeBienItemsList, contract?.type_bien)} />
 											<Divider />
 											<InfoRow icon={<SquareFootIcon />} label="Surface (m²)" value={contract?.surface != null ? String(contract.surface) : undefined} />
 											<Divider />
 											<InfoRow icon={<HomeIcon />} label="Adresse travaux" value={contract?.adresse_travaux} />
 											<Divider />
-											<InfoRow icon={<CalendarTodayIcon />} label="Date début" value={contract?.date_debut && formatDate(contract.date_debut)} />
+											<InfoRow icon={<CalendarTodayIcon />} label="Date début" value={contract?.date_debut && formatDateShort(contract.date_debut)} />
 											<Divider />
 											<InfoRow icon={<ConstructionIcon />} label="Description" value={contract?.description_travaux} />
+										<Divider />
+										<InfoRow icon={<TimerIcon />} label="Durée estimée" value={contract?.duree_estimee} />
 										</Stack>
 									</CardContent>
 								</Card>
@@ -501,7 +503,11 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 											<Divider />
 											<InfoRow icon={<PercentIcon />} label="Pénalité de retard (%/j)" value={contract?.penalite_retard != null ? String(contract.penalite_retard) : undefined} />
 											<Divider />
-											<InfoRow icon={<ShieldIcon />} label="Garantie" value={contract?.garantie} />
+											<InfoRow icon={<ShieldIcon />} label="Garantie" value={resolveLabel(garantieItemsList, contract?.garantie)} />
+										<Divider />
+										<InfoRow icon={<MoneyIcon />} label="Mode de paiement" value={resolveLabel(modePaiementTexteItemsList, contract?.mode_paiement_texte)} />
+										<Divider />
+										<InfoRow icon={<MoneyIcon />} label="RIB / Coordonnées bancaires" value={contract?.rib} />
 										</Stack>
 									</CardContent>
 								</Card>

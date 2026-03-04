@@ -276,6 +276,7 @@ describe('Zod Schema Validation', () => {
 			const minimalContract = {
 				company: 'casa_di_lusso',
 				numero_contrat: 'CTR-001',
+				date_contrat: '2024-01-01',
 				client_nom: 'Jean Dupont',
 				montant_ht: '50000',
 				type_contrat: 'travaux_finition',
@@ -286,10 +287,10 @@ describe('Zod Schema Validation', () => {
 			const result = contractSchema.safeParse({
 				company: 'casa_di_lusso',
 				numero_contrat: 'CTR-001',
+				date_contrat: '2024-01-01',
 				client_nom: 'Jean',
 				montant_ht: '100',
 				type_contrat: 'travaux_finition',
-				date_contrat: undefined,
 				statut: undefined,
 				ville_signature: undefined,
 				client_cin: undefined,
@@ -316,6 +317,7 @@ describe('Zod Schema Validation', () => {
 			const result = contractSchema.safeParse({
 				company: 'casa_di_lusso',
 				numero_contrat: 'CTR-001',
+				date_contrat: '2024-01-01',
 				client_nom: 'Jean',
 				montant_ht: '100',
 				type_contrat: 'travaux_finition',
@@ -329,6 +331,7 @@ describe('Zod Schema Validation', () => {
 			const result = contractSchema.safeParse({
 				company: 'casa_di_lusso',
 				numero_contrat: 'CTR-001',
+				date_contrat: '2024-01-01',
 				client_nom: 'Jean',
 				montant_ht: '100',
 				type_contrat: 'travaux_finition',

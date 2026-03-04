@@ -207,6 +207,20 @@ export const formatLocalDate = (date: Date): string => {
 	return `${year}-${month}-${day}`;
 };
 
+export const formatDateShort = (value: string | null): string => {
+	if (!value) return '—';
+	// Parse YYYY-MM-DD as local date to avoid timezone shift
+	const parts = value.split('-');
+	if (parts.length !== 3) return '—';
+	const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+	if (Number.isNaN(date.getTime())) return '—';
+	return new Intl.DateTimeFormat('fr-FR', {
+		year: 'numeric',
+		month: 'short',
+		day: '2-digit',
+	}).format(date);
+};
+
 export const formatNumber = (value: string | number | null | undefined): string => {
 	if (value === null || value === undefined) return '0,00';
 	const num = typeof value === 'string' ? parseFloat(value) : value;
