@@ -47,7 +47,6 @@ export class ContractClass {
 		// Meta identifiers
 		public readonly id: number,
 		public numero_contrat: string,
-		public client: number | null,
 		public readonly client_name: string | null,
 
 		// Company

@@ -89,7 +89,6 @@ describe('ContractClass', () => {
 			// Meta identifiers
 			1,                          // id
 			'CTR-2024-001',             // numero_contrat
-			5,                          // client
 			'Dupont SAS',               // client_name
 
 			// Company
@@ -178,7 +177,6 @@ describe('ContractClass', () => {
 		const contract = makeContract();
 		expect(contract.id).toBe(1);
 		expect(contract.numero_contrat).toBe('CTR-2024-001');
-		expect(contract.client).toBe(5);
 		expect(contract.client_name).toBe('Dupont SAS');
 	});
 

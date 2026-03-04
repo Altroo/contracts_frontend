@@ -280,4 +280,11 @@ export const contractSchema = z
 				ctx.addIssue({ path: ['prestations'], code: 'custom', message: INPUT_REQUIRED });
 			}
 		}
-	});
+		// Cross-field: acompte + tranche2 must not exceed 100%
+		const a = typeof data.acompte === 'number' ? data.acompte : 0;
+		const t = typeof data.tranche2 === 'number' ? data.tranche2 : 0;
+		if (a + t > 100) {
+			const msg = 'La somme de l\'acompte et de la tranche 2 ne peut pas dépasser 100%.';
+			ctx.addIssue({ path: ['acompte'], code: 'custom', message: msg });
+			ctx.addIssue({ path: ['tranche2'], code: 'custom', message: msg });
+		}	});

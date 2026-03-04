@@ -294,7 +294,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 						{isDocLoading && <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />}
 						{isLoading ? (
 							<ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
-						) : (axiosError?.status as number) > 400 ? (
+						) : (axiosError?.status as number) >= 400 ? (
 							<ApiAlert
 								errorDetails={axiosError?.data.details}
 								cssStyle={{
@@ -501,6 +501,18 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 											<Divider />
 											<InfoRow icon={<PercentIcon />} label="TVA (%)" value={contract?.tva != null ? String(contract.tva) : undefined} />
 											<Divider />
+											<InfoRow
+												icon={<MoneyIcon />}
+												label="Montant TVA"
+												value={contract?.montant_tva != null ? `${Number(contract.montant_tva).toLocaleString('fr-MA')} ${contract.devise}` : undefined}
+											/>
+											<Divider />
+											<InfoRow
+												icon={<MoneyIcon />}
+												label="Montant TTC"
+												value={contract?.montant_ttc != null ? `${Number(contract.montant_ttc).toLocaleString('fr-MA')} ${contract.devise}` : undefined}
+											/>
+											<Divider />
 											<InfoRow icon={<PercentIcon />} label="Pénalité de retard (%/j)" value={contract?.penalite_retard != null ? String(contract.penalite_retard) : undefined} />
 											<Divider />
 											<InfoRow icon={<ShieldIcon />} label="Garantie" value={resolveLabel(garantieItemsList, contract?.garantie)} />
@@ -605,11 +617,23 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 														</TableBody>
 													</Table>
 												</TableContainer>
-												<Divider sx={{ my: 2 }} />
+											</CardContent>
+										</Card>
+									)}
+
+									{/* CDL penalty/delay fields (shown independently of tranches) */}
+									{(contract?.delai_retard != null || contract?.frais_redemarrage != null || contract?.delai_reserves != null) && (
+										<Card elevation={2} sx={{ borderRadius: 2 }}>
+											<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+												<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+													<TimerIcon color="primary" />
+													<Typography variant="h6" fontWeight={700}>Pénalités et délais CDL</Typography>
+												</Stack>
+												<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 												<Stack spacing={0}>
 													<InfoRow icon={<TimerIcon />} label="Délai de retard (jours)" value={contract?.delai_retard != null ? String(contract.delai_retard) : undefined} />
 													<Divider />
-													<InfoRow icon={<MoneyIcon />} label="Frais de redémarrage (€)" value={contract?.frais_redemarrage != null ? Number(contract.frais_redemarrage).toLocaleString('fr-MA') : undefined} />
+													<InfoRow icon={<MoneyIcon />} label={`Frais de redémarrage (${contract?.devise ?? 'MAD'})`} value={contract?.frais_redemarrage != null ? Number(contract.frais_redemarrage).toLocaleString('fr-MA') : undefined} />
 													<Divider />
 													<InfoRow icon={<TimerIcon />} label="Délai levée réserves (jours)" value={contract?.delai_reserves != null ? String(contract.delai_reserves) : undefined} />
 												</Stack>

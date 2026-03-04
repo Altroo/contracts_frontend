@@ -460,7 +460,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
 	const isLoading = isAddLoading || isEditLoading || isPending || (isEditMode && isDataLoading) || (!isEditMode && isCodeLoading);
-	const shouldShowError = (axiosError?.status ?? 0) > 400 && !isLoading;
+	const shouldShowError = (axiosError?.status ?? 0) >= 400 && !isLoading;
 
 	/* ── helper: resolve display value for code-based dropdowns ── */
 	const typeContratDisplay = typeContratItems.find((t) => t.code === formik.values.type_contrat)?.value ?? formik.values.type_contrat;
@@ -1126,7 +1126,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											helperText={
 												formik.touched.tva && formik.errors.tva
 													? (formik.errors.tva as string)
-													: 'Entre 0.01 et 100'
+													: 'Entre 0 et 100'
 											}
 											fullWidth
 											size="small"
@@ -1145,7 +1145,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											helperText={
 												formik.touched.penalite_retard && formik.errors.penalite_retard
 													? (formik.errors.penalite_retard as string)
-													: 'Entre 0.01 et 100'
+													: 'Entre 0 et 100'
 											}
 											fullWidth
 											size="small"
@@ -1385,7 +1385,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												<CustomTextInput
 													id="frais_redemarrage"
 													type="text"
-													label="Frais de redémarrage (€)"
+													label={`Frais de redémarrage (${formik.values.devise || 'MAD'})`}
 													value={formik.values.frais_redemarrage}
 													onChange={formik.handleChange('frais_redemarrage')}
 													onBlur={formik.handleBlur('frais_redemarrage')}
@@ -1717,7 +1717,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												helperText={
 													formik.touched.acompte && formik.errors.acompte
 														? (formik.errors.acompte as string)
-														: 'Entre 0.01 et 100'
+														: 'Entre 0 et 100'
 												}
 												fullWidth
 												size="small"
@@ -1738,7 +1738,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												helperText={
 													formik.touched.tranche2 && formik.errors.tranche2
 														? (formik.errors.tranche2 as string)
-														: 'Entre 0.01 et 100'
+														: 'Entre 0 et 100'
 												}
 												fullWidth
 												size="small"

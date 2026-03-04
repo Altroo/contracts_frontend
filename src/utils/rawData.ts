@@ -37,13 +37,13 @@ export const getContractStatusColor = (statut: string): ChipColor => {
 /* ── Contract types ── */
 
 export const typeContratItemsList: Array<{ code: string; value: string }> = [
-	{ code: 'travaux_finition', value: 'Travaux de finition' },
-	{ code: 'travaux_gros_oeuvre', value: 'Travaux gros oeuvre' },
-	{ code: 'design_interieur', value: 'Design interieur' },
-	{ code: 'cle_en_main', value: 'Cle en main' },
+	{ code: 'travaux_finition', value: 'Travaux de Finition' },
+	{ code: 'travaux_gros_oeuvre', value: 'Travaux Gros Œuvre' },
+	{ code: 'design_interieur', value: 'Design Intérieur' },
+	{ code: 'cle_en_main', value: 'Clé en Main' },
 	{ code: 'ameublement', value: 'Ameublement' },
 	{ code: 'maintenance', value: 'Maintenance' },
-	{ code: 'suivi_chantier', value: 'Suivi de chantier' },
+	{ code: 'suivi_chantier', value: 'Suivi Chantier' },
 ];
 
 /* ── Type de bien ── */
