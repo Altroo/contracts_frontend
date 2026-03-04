@@ -242,11 +242,24 @@ jest.mock('@/styles/dashboard/dashboard.module.sass', () => ({
 }));
 
 import ContractsListClient from './contracts-list';
+import {AppSession} from "@/types/_initTypes";
 
-const mockSession = {
-	user: { name: 'Test', email: 'test@test.com' },
-	expires: '2099-01-01',
+const mockSession: AppSession = {
 	accessToken: 'mock-token',
+	refreshToken: 'mock-refresh-token',
+	accessTokenExpiration: '2099-12-31T23:59:59Z',
+	refreshTokenExpiration: '2099-12-31T23:59:59Z',
+	expires: '2099-12-31T23:59:59Z',
+	user: {
+		accessToken: 'mock-token',
+		pk: 1,
+		email: 'test@example.com',
+		first_name: 'Test',
+		last_name: 'User',
+		id: '1',
+		emailVerified: null,
+		name: 'Test User',
+	},
 };
 
 describe('ContractsListClient', () => {

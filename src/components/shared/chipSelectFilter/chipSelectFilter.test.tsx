@@ -9,9 +9,9 @@ const renderWithTheme = (ui: React.ReactElement) =>
 	render(<ThemeProvider theme={createTheme()}>{ui}</ThemeProvider>);
 
 const options: ChipSelectOption[] = [
-	{ id: 1, nom: 'Céramique' },
-	{ id: 2, nom: 'Bois' },
-	{ id: 3, nom: 'Métal' },
+	{ id: "1", nom: 'Céramique' },
+	{ id: "2", nom: 'Bois' },
+	{ id: "3", nom: 'Métal' },
 ];
 
 describe('ChipSelectFilter component', () => {
@@ -61,7 +61,7 @@ describe('ChipSelectFilter component', () => {
 			<ChipSelectFilter
 				label="Catégorie"
 				options={options}
-				selectedIds={[1, 3]}
+				selectedIds={["1", "3"]}
 				onChange={jest.fn()}
 			/>,
 		);
@@ -107,7 +107,7 @@ describe('ChipSelectFilter component', () => {
 			<ChipSelectFilter
 				label="Catégorie"
 				options={options}
-				selectedIds={[1, 2]}
+				selectedIds={["1", "2"]}
 				onChange={onChangeMock}
 			/>,
 		);
@@ -152,7 +152,7 @@ describe('ChipSelectFilter component', () => {
 			<ChipSelectFilter
 				label="Catégorie"
 				options={options}
-				selectedIds={[1]}
+				selectedIds={["1"]}
 				onChange={onChangeMock}
 			/>,
 		);
