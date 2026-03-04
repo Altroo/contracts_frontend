@@ -166,6 +166,18 @@ jest.mock('@/utils/rawData', () => ({
 		{ code: 'appartement', value: 'Appartement' },
 		{ code: 'villa', value: 'Villa' },
 	],
+	clientQualiteItemsList: [
+		{ code: 'particulier', value: 'Particulier' },
+		{ code: 'entreprise_societe', value: 'Entreprise / Société' },
+	],
+	garantieItemsList: [
+		{ code: '1 an', value: '1 an' },
+		{ code: '2 ans', value: '2 ans' },
+	],
+	tribunalItemsList: [
+		{ code: 'Tanger', value: 'Tanger' },
+		{ code: 'Casablanca', value: 'Casablanca' },
+	],
 }));
 
 jest.mock('@/utils/formValidationSchemas', () => ({

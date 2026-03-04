@@ -98,7 +98,7 @@ describe('ChipSelectFilter component', () => {
 		const input = screen.getByRole('combobox');
 		fireEvent.mouseDown(input);
 		fireEvent.click(screen.getByText('Céramique'));
-		expect(onChangeMock).toHaveBeenCalledWith([1]);
+		expect(onChangeMock).toHaveBeenCalledWith(["1"]);
 	});
 
 	it('calls onChange when a chip is removed', () => {
@@ -114,7 +114,7 @@ describe('ChipSelectFilter component', () => {
 		// Find the cancel icon on the first chip
 		const cancelButtons = screen.getAllByTestId('CancelIcon');
 		fireEvent.click(cancelButtons[0]);
-		expect(onChangeMock).toHaveBeenCalledWith([2]);
+		expect(onChangeMock).toHaveBeenCalledWith(["2"]);
 	});
 
 	it('renders with empty options', () => {
@@ -159,6 +159,6 @@ describe('ChipSelectFilter component', () => {
 		const input = screen.getByRole('combobox');
 		fireEvent.mouseDown(input);
 		fireEvent.click(screen.getByText('Bois'));
-		expect(onChangeMock).toHaveBeenCalledWith([1, 2]);
+		expect(onChangeMock).toHaveBeenCalledWith(["1", "2"]);
 	});
 });
