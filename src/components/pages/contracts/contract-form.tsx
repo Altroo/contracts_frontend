@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import type { ApiErrorResponseType, ResponseDataInterface, SessionProps } from '@/types/_initTypes';
 import {
 	Alert,
@@ -441,14 +441,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	const validationErrors = useMemo(() => {
 		const errors: Record<string, string> = {};
+		const currentCompany = formik.values.company;
+		const blFields = new Set(['prestations', 'fournitures', 'eau_electricite', 'acompte', 'tranche2', 'clause_resiliation', 'client_ville', 'client_cp', 'chantier_ville', 'chantier_etage', 'garantie_nb', 'garantie_unite', 'garantie_type', 'exclusions_garantie', 'materiaux_detail', 'notes']);
+		const cdlFields = new Set(['type_contrat', 'services', 'tranches', 'delai_retard', 'frais_redemarrage', 'delai_reserves', 'clauses_actives', 'clause_spec', 'exclusions', 'architecte', 'version_document', 'annexes', 'conditions_acces']);
 		if (hasAttemptedSubmit) {
 			Object.entries(formik.errors).forEach(([key, value]) => {
-				if (key !== 'globalError' && typeof value === 'string') {
+				if (key === 'globalError') return;
+				/* Skip errors for the other company's fields */
+				if (currentCompany === 'casa_di_lusso' && blFields.has(key)) return;
+				if (currentCompany === 'blueline_works' && cdlFields.has(key)) return;
+				if (typeof value === 'string') {
 					errors[key] = value;
 				}
 			});
-			/* Per-cell prestation errors (array) — show a single summary message */
-			if (Array.isArray(formik.errors.prestations)) {
+			/* Per-cell prestation errors (array) — show only for Blueline */
+			if (currentCompany === 'blueline_works' && Array.isArray(formik.errors.prestations)) {
 				const hasCellErrors = (formik.errors.prestations as unknown[]).some(
 					(rowErr) => rowErr && typeof rowErr === 'object' && Object.keys(rowErr as object).length > 0,
 				);
@@ -456,7 +463,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			}
 		}
 		return errors;
-	}, [formik.errors, hasAttemptedSubmit]);
+	}, [formik.errors, formik.values.company, hasAttemptedSubmit]);
 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
 	const isLoading = isAddLoading || isEditLoading || isPending || (isEditMode && isDataLoading) || (!isEditMode && isCodeLoading);
@@ -472,12 +479,20 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const isCdlRequired = (field: string) => !isBlueline && (casaDiLussoRequired as readonly string[]).includes(field);
 	const isRequired = (field: string) => isBluelineRequired(field) || isCdlRequired(field);
 
-	/* ── Auto-add first prestation row when switching to Blueline ── */
+	/* ── Stable ref so the effect below always sees the latest formik state ── */
+	const formikRef = useRef(formik);
 	useEffect(() => {
-		if (isBlueline && (!formik.values.prestations || formik.values.prestations.length === 0)) {
-			formik.setFieldValue('prestations', [{ nom: '', description: '', quantite: 0, unite: 'm2', prix_unitaire: 0 }]);
+		formikRef.current = formik;
+	});
+
+	/* ── Auto-seed the required first row when the company type changes ── */
+	useEffect(() => {
+		const { setFieldValue, values } = formikRef.current;
+		if (isBlueline && !values.prestations?.length) {
+			setFieldValue('prestations', [{ nom: '', description: '', quantite: 0, unite: 'm2', prix_unitaire: 0 }]);
+		} else if (!isBlueline && !values.tranches?.length) {
+			setFieldValue('tranches', [{ label: '', pourcentage: 0 }]);
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [isBlueline]);
 
 	/* ── Prestations helpers ── */
@@ -711,6 +726,90 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const prestationRows = useMemo(() =>
 		(formik.values.prestations ?? []).map((p, i) => ({ id: i, ...p })),
 		[formik.values.prestations],
+	);
+
+	/* ── CDL: Tranche DataGrid columns ── */
+	const trancheColumns: GridColDef[] = useMemo(() => [
+		{
+			field: 'label',
+			headerName: 'Tranche',
+			flex: 2,
+			minWidth: 200,
+			renderCell: (params: GridRenderCellParams) => {
+				const realIdx = Number(params.id);
+				const tr = (formik.values.tranches ?? [])[realIdx];
+				if (!tr) return null;
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<CustomTextInput
+							id={`tranches.${realIdx}.label`}
+							type="text"
+							label=""
+							value={tr.label}
+							onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateTranche(realIdx, 'label', e.target.value)}
+							size="small"
+							theme={gridCellInputTheme}
+						/>
+					</Box>
+				);
+			},
+		},
+		{
+			field: 'pourcentage',
+			headerName: 'Pourcentage',
+			flex: 1,
+			minWidth: 120,
+			renderCell: (params: GridRenderCellParams) => {
+				const realIdx = Number(params.id);
+				const tr = (formik.values.tranches ?? [])[realIdx];
+				if (!tr) return null;
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<CustomTextInput
+							id={`tranches.${realIdx}.pourcentage`}
+							type="text"
+							label=""
+							value={String(tr.pourcentage || '')}
+							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+								if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) {
+									updateTranche(realIdx, 'pourcentage', parseFloat(e.target.value.replace(',', '.')) || 0);
+								}
+							}}
+							size="small"
+							theme={gridCellInputTheme}
+							endIcon={<InputAdornment position="end">%</InputAdornment>}
+						/>
+					</Box>
+				);
+			},
+		},
+		{
+			field: 'actions',
+			headerName: '',
+			flex: 0.4,
+			minWidth: 50,
+			sortable: false,
+			filterable: false,
+			renderCell: (params: GridRenderCellParams) => {
+				const realIdx = Number(params.id);
+				const total = (formik.values.tranches ?? []).length;
+				if (total <= 1) return null;
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<Tooltip title="Supprimer">
+							<IconButton size="small" color="error" onClick={() => removeTranche(realIdx)}>
+								<DeleteIcon />
+							</IconButton>
+						</Tooltip>
+					</Box>
+				);
+			},
+		},
+	], [formik.values.tranches, updateTranche, removeTranche]);
+
+	const trancheRows = useMemo(() =>
+		(formik.values.tranches ?? []).map((tr, i) => ({ id: i, ...tr })),
+		[formik.values.tranches],
 	);
 
 	return (
@@ -1331,47 +1430,26 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										</Button>
 									</Stack>
 									<Divider sx={{ mb: 3 }} />
-									{(formik.values.tranches ?? []).length === 0 ? (
-										<Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', textAlign: 'center', py: 2 }}>
-											Aucune tranche ajoutée
-										</Typography>
-									) : (
-										<Stack spacing={2}>
-											{(formik.values.tranches ?? []).map((tr, idx) => (
-												<Stack key={idx} direction="row" spacing={2} alignItems="center">
-													<CustomTextInput
-														id={`tranches.${idx}.label`}
-														type="text"
-														label={`Tranche ${idx + 1} – Libellé`}
-														value={tr.label}
-														onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateTranche(idx, 'label', e.target.value)}
-														fullWidth
-														size="small"
-														theme={inputTheme}
-													/>
-													<Box sx={{ width: 120 }}>
-													<CustomTextInput
-														id={`tranches.${idx}.pourcentage`}
-														type="text"
-														label="%"
-														value={String(tr.pourcentage)}
-														onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-															if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) {
-																updateTranche(idx, 'pourcentage', parseFloat(e.target.value.replace(',', '.')) || 0);
-															}
-														}}
-														fullWidth
-														size="small"
-														theme={inputTheme}
-													/>
-												</Box>
-													<IconButton color="error" onClick={() => removeTranche(idx)} size="small">
-														<DeleteIcon fontSize="small" />
-													</IconButton>
-												</Stack>
-											))}
-										</Stack>
-									)}
+									<Box sx={{ width: '100%' }}>
+										<DataGrid
+											rows={trancheRows}
+											columns={trancheColumns}
+											localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
+											rowHeight={52}
+											disableColumnMenu
+											disableRowSelectionOnClick
+											hideFooter={(formik.values.tranches ?? []).length <= 5}
+											pageSizeOptions={[5, 10, 25]}
+											initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+											sx={{
+												border: 1,
+												borderColor: 'divider',
+												borderRadius: 2,
+												'& .MuiDataGrid-cell': { display: 'flex', alignItems: 'center' },
+												'& .MuiDataGrid-columnHeaders': { fontFamily: 'Poppins', fontWeight: 700 },
+											}}
+										/>
+									</Box>
 									<Divider sx={{ my: 3 }} />
 									<Stack spacing={2.5}>
 										<Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
