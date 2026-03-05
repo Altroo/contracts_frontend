@@ -11,14 +11,14 @@ type http = 'http' | 'https' | undefined;
 const remotePatterns: RemotePattern[] = [
 	{
 		protocol: 'https',
-		hostname: 'api-contracts.elbouazzatiholding.ma',
+		hostname: 'contrats-api.elbouazzatiholding.ma',
 		port: '',
 		pathname: '/media/**',
 		search: '',
 	},
 	{
 		protocol: 'http',
-		hostname: 'api-contracts.elbouazzatiholding.ma',
+		hostname: 'contrats-api.elbouazzatiholding.ma',
 		port: '',
 		pathname: '/media/**',
 		search: '',
@@ -120,8 +120,8 @@ const nextConfig: NextConfig = {
 							"script-src 'self' 'unsafe-inline' 'unsafe-eval'",
 							"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
 							"font-src 'self' https://fonts.gstatic.com data:",
-							`img-src 'self' https://api-contracts.elbouazzatiholding.ma data: blob:${isDev ? ' http://localhost:8001 http://127.0.0.1:8001' : ''}`,
-							`connect-src 'self' https://api-contracts.elbouazzatiholding.ma wss://api-contracts.elbouazzatiholding.ma${isDev ? ' http://localhost:8001 http://127.0.0.1:8001 ws://localhost:8001 ws://127.0.0.1:8001' : ''}`,
+							`img-src 'self' https://contrats-api.elbouazzatiholding.ma data: blob:${isDev ? ' http://localhost:8001 http://127.0.0.1:8001' : ''}`,
+							`connect-src 'self' https://contrats-api.elbouazzatiholding.ma wss://contrats-api.elbouazzatiholding.ma${isDev ? ' http://localhost:8001 http://127.0.0.1:8001 ws://localhost:8001 ws://127.0.0.1:8001' : ''}`,
 							"frame-ancestors 'self'",
 							"base-uri 'self'",
 							"form-action 'self'",
