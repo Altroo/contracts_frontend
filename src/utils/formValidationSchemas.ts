@@ -172,7 +172,7 @@ export const changePasswordSchema = z
 
 export const casaDiLussoRequired = ['type_contrat'] as const;
 export const bluelineRequired = ['fournitures', 'eau_electricite', 'acompte', 'tranche2', 'clause_resiliation'] as const;
-export const stRequired = ['st_name', 'st_lot_type', 'st_type_prix', 'st_rep', 'st_addr', 'st_rc', 'st_delai_val'] as const;
+export const stRequired = ['st_name', 'st_lot_type', 'st_type_prix'] as const;
 
 export const contractSchema = z
 	.object({

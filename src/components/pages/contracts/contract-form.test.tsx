@@ -209,7 +209,7 @@ jest.mock('@/utils/formValidationSchemas', () => ({
 	contractSchema: { parse: jest.fn() },
 	bluelineRequired: ['fournitures', 'eau_electricite', 'acompte', 'tranche2', 'clause_resiliation'] as const,
 	casaDiLussoRequired: ['type_contrat'] as const,
-	stRequired: ['st_name', 'st_lot_type', 'st_type_prix', 'st_rep', 'st_addr', 'st_rc', 'st_delai_val'] as const,
+	stRequired: ['st_name', 'st_lot_type', 'st_type_prix'] as const,
 }));
 
 jest.mock('zod-formik-adapter', () => ({
