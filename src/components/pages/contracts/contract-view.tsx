@@ -421,46 +421,52 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 											</>
 										)}
 										<InfoRow icon={<CalendarTodayIcon />} label="Date contrat" value={contract?.date_contrat && formatDateShort(contract.date_contrat)} />
-											<Divider />
-											<InfoRow icon={<CategoryIcon />} label="Type contrat" value={contract?.type_contrat_display ?? contract?.type_contrat} />
-											<Divider />
-											<InfoRow icon={<CityIcon />} label="Ville signature" value={contract?.ville_signature} />
+										{!isST && (
+											<>
+												<Divider />
+												<InfoRow icon={<CategoryIcon />} label="Type contrat" value={contract?.type_contrat_display ?? contract?.type_contrat} />
+											</>
+										)}
+										<Divider />
+										<InfoRow icon={<CityIcon />} label="Ville signature" value={contract?.ville_signature} />
 										</Stack>
 									</CardContent>
 								</Card>
 
-								{/* Client */}
-								<Card elevation={2} sx={{ borderRadius: 2 }}>
-									<CardContent
-										sx={{
-											px: { xs: 2, md: 3 },
-											py: { xs: 2, md: 3 },
-										}}
-									>
-										<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-											<PersonIcon color="primary" />
-											<Typography variant="h6" fontWeight={700}>
-												Client
-											</Typography>
-										</Stack>
+{/* Client — hidden for ST when client_nom is empty */}
+							{(!isST || !!contract?.client_nom) && (
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent
+									sx={{
+										px: { xs: 2, md: 3 },
+										py: { xs: 2, md: 3 },
+									}}
+								>
+									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<PersonIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>
+											{isST ? 'Maître d\'Ouvrage' : 'Client'}
+										</Typography>
+									</Stack>
 
-										<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+									<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
 
-										<Stack spacing={0}>
-											<InfoRow icon={<PersonIcon />} label="Nom" value={contract?.client_nom} />
-											<Divider />
-											<InfoRow icon={<BadgeIcon />} label="CIN / N° ent." value={contract?.client_cin} />
-											<Divider />
-											<InfoRow icon={<WorkIcon />} label="Qualité" value={resolveLabel(clientQualiteItemsList, contract?.client_qualite)} />
-											<Divider />
-											<InfoRow icon={<PhoneIcon />} label="Téléphone" value={contract?.client_tel} />
-											<Divider />
-											<InfoRow icon={<EmailIcon />} label="Email" value={contract?.client_email} />
-											<Divider />
-											<InfoRow icon={<HomeIcon />} label="Adresse" value={contract?.client_adresse} />
-										</Stack>
-									</CardContent>
-								</Card>
+									<Stack spacing={0}>
+										<InfoRow icon={<PersonIcon />} label="Nom" value={contract?.client_nom} />
+										<Divider />
+										<InfoRow icon={<BadgeIcon />} label="CIN / N° ent." value={contract?.client_cin} />
+										<Divider />
+										<InfoRow icon={<WorkIcon />} label="Qualité" value={resolveLabel(clientQualiteItemsList, contract?.client_qualite)} />
+										<Divider />
+										<InfoRow icon={<PhoneIcon />} label="Téléphone" value={contract?.client_tel} />
+										<Divider />
+										<InfoRow icon={<EmailIcon />} label="Email" value={contract?.client_email} />
+										<Divider />
+										<InfoRow icon={<HomeIcon />} label="Adresse" value={contract?.client_adresse} />
+									</Stack>
+								</CardContent>
+							</Card>
+							)}
 
 								{/* Travaux */}
 								<Card elevation={2} sx={{ borderRadius: 2 }}>
@@ -848,7 +854,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 												<Divider />
 												<InfoRow icon={<TimerIcon />} label="Délai levée réserves" value={contract?.st_delai_reserves != null ? `${contract.st_delai_reserves} jours` : undefined} />
 												<Divider />
-												<InfoRow icon={<GavelIcon />} label="Délai médiation" value={contract?.st_delai_med != null ? `${contract.st_delai_med} jours` : undefined} />
+												<InfoRow icon={<GavelIcon />} label="Délai mise en demeure" value={contract?.st_delai_med != null ? `${contract.st_delai_med} jours` : undefined} />
 											</Stack>
 										</CardContent>
 									</Card>

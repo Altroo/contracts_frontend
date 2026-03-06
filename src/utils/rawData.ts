@@ -228,6 +228,7 @@ export const stClausesActivesList: Array<{ key: string; label: string }> = [
 	{ key: 'tPI', label: 'Propriété intellectuelle' },
 	{ key: 'tExclus', label: 'Exclusivité' },
 	{ key: 'tRevision', label: 'Révision de prix' },
+	{ key: 'tTRC', label: 'Assurance Tous Risques Chantier (TRC)' },
 	{ key: 'tMediat', label: 'Médiation et arbitrage' },
 	{ key: 'tAnnexe', label: 'Annexes' },
 ];

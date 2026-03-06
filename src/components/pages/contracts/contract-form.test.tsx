@@ -209,7 +209,7 @@ jest.mock('@/utils/formValidationSchemas', () => ({
 	contractSchema: { parse: jest.fn() },
 	bluelineRequired: ['fournitures', 'eau_electricite', 'acompte', 'tranche2', 'clause_resiliation'] as const,
 	casaDiLussoRequired: ['type_contrat'] as const,
-	stRequired: ['st_name', 'st_lot_type', 'st_type_prix'] as const,
+	stRequired: ['st_name', 'st_lot_type', 'st_type_prix', 'st_rep', 'st_addr', 'st_rc', 'st_delai_val'] as const,
 }));
 
 jest.mock('zod-formik-adapter', () => ({
@@ -627,7 +627,7 @@ describe('ContractFormClient', () => {
 			expect(screen.getByText('Unité de délai')).toBeInTheDocument();
 			expect(screen.getByText('Garantie (mois)')).toBeInTheDocument();
 			expect(screen.getByText('Délai levée réserves (jours)')).toBeInTheDocument();
-			expect(screen.getByText('Délai médiation (jours)')).toBeInTheDocument();
+			expect(screen.getByText('Délai mise en demeure (jours)')).toBeInTheDocument();
 		});
 
 		it('renders common sections alongside ST sections', () => {

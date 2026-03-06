@@ -153,7 +153,7 @@ export type ContractSchemaType = {
 	contract_category: ContractCategoryType;
 	numero_contrat: string;
 	date_contrat: string;
-	client_nom: string;
+	client_nom?: string;
 	montant_ht: number;
 	statut?: string;
 	type_contrat?: string;

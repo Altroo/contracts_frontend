@@ -172,7 +172,7 @@ export const changePasswordSchema = z
 
 export const casaDiLussoRequired = ['type_contrat'] as const;
 export const bluelineRequired = ['fournitures', 'eau_electricite', 'acompte', 'tranche2', 'clause_resiliation'] as const;
-export const stRequired = ['st_name', 'st_lot_type', 'st_type_prix'] as const;
+export const stRequired = ['st_name', 'st_lot_type', 'st_type_prix', 'st_rep', 'st_addr', 'st_rc', 'st_delai_val'] as const;
 
 export const contractSchema = z
 	.object({
@@ -181,7 +181,7 @@ export const contractSchema = z
 		contract_category: z.enum(['standard', 'sous_traitance']).optional(),
 		numero_contrat: requiredTextField(1, 255),
 		date_contrat: requiredTextField(1, 255),
-		client_nom: requiredTextField(1, 255),
+		client_nom: optionalTextField(1, 255), // required for non-ST via superRefine
 		montant_ht: requiredNumberField(0),
 		// OPTIONAL FIELDS (conditionally required via superRefine)
 		statut: optionalChoiceField(),
@@ -306,6 +306,10 @@ export const contractSchema = z
 		const isST = data.company === 'casa_di_lusso' && data.contract_category === 'sous_traitance';
 
 		if (data.company === 'casa_di_lusso' && !isST) {
+			// client_nom is required for CDL standard contracts
+			if (isEmpty(data.client_nom)) {
+				ctx.addIssue({ path: ['client_nom'], code: 'custom', message: INPUT_REQUIRED });
+			}
 			casaDiLussoRequired.forEach((key) => {
 				const val = data[key];
 				if (isEmpty(val)) {
@@ -313,6 +317,7 @@ export const contractSchema = z
 				}
 			});
 		} else if (isST) {
+			// client_nom is NOT required for ST contracts (no client in ST context)
 			stRequired.forEach((key) => {
 				const val = data[key as keyof typeof data];
 				if (isEmpty(val)) {
@@ -320,6 +325,10 @@ export const contractSchema = z
 				}
 			});
 		} else if (data.company === 'blueline_works') {
+			// client_nom is required for Blueline contracts
+			if (isEmpty(data.client_nom)) {
+				ctx.addIssue({ path: ['client_nom'], code: 'custom', message: INPUT_REQUIRED });
+			}
 			bluelineRequired.forEach((key) => {
 				const val = data[key];
 				if (isEmpty(val)) {

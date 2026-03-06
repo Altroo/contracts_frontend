@@ -265,6 +265,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			const isEmpty = (val: unknown) =>
 				val === undefined || val === null || (typeof val === 'string' && val.trim() === '') || (typeof val === 'number' && Number.isNaN(val));
 			const isST = values.company === 'casa_di_lusso' && values.contract_category === 'sous_traitance';
+			// client_nom: required for all companies except ST (ST has no traditional client)
+			if (!isST && isEmpty(values.client_nom)) {
+				errors.client_nom = INPUT_REQUIRED;
+			}
 			if (values.company === 'blueline_works') {
 				bluelineRequired.forEach((key) => {
 					if (isEmpty(values[key as keyof ContractFormValuesType])) {
@@ -360,6 +364,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				payload.architecte = '';
 				payload.version_document = '';
 				payload.annexes = '';
+			}
+			/* For ST: send null instead of empty string for optional client_nom */
+			if (isST && !fields.client_nom) {
+				payload.client_nom = null;
 			}
 			/* Clear ST fields when not ST */
 			if (!isST) {
@@ -508,7 +516,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			st_delai_unit: 'Unité de délai',
 			st_garantie_mois: 'Garantie (mois)',
 			st_delai_reserves: 'Délai levée réserves (jours)',
-			st_delai_med: 'Délai médiation (jours)',
+			st_delai_med: 'Délai mise en demeure (jours)',
 			st_clauses_actives: 'Clauses actives ST',
 			st_observations: 'Observations',
 			globalError: 'Erreur globale',
@@ -1120,7 +1128,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									value={formik.values.company}
 									exclusive
 									onChange={(_e, val: string | null) => {
-										if (val) formik.setFieldValue('company', val);
+										if (val) {
+											formik.setFieldValue('company', val);
+											setHasAttemptedSubmit(false);
+										}
 									}}
 									sx={{ width: '100%' }}
 								>
@@ -1149,7 +1160,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											value={formik.values.contract_category}
 											exclusive
 											onChange={(_e, val: string | null) => {
-												if (val) formik.setFieldValue('contract_category', val);
+												if (val) {
+													formik.setFieldValue('contract_category', val);
+													setHasAttemptedSubmit(false);
+												}
 											}}
 											sx={{ width: '100%' }}
 										>
@@ -1275,7 +1289,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="client_nom"
 										type="text"
-										label="Nom du client *"
+										label={isST ? 'Nom du client / MOA (optionnel)' : 'Nom du client *'}
 										value={formik.values.client_nom}
 										onChange={formik.handleChange('client_nom')}
 										onBlur={formik.handleBlur('client_nom')}
@@ -1959,10 +1973,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												<CustomTextInput
 													id="st_rc"
 													type="text"
-													label="Registre du commerce"
+													label={`Registre du commerce${isRequired('st_rc') ? ' *' : ''}`}
 													value={formik.values.st_rc}
 													onChange={formik.handleChange('st_rc')}
 													onBlur={formik.handleBlur('st_rc')}
+													error={formik.touched.st_rc && Boolean(formik.errors.st_rc)}
+													helperText={formik.touched.st_rc ? formik.errors.st_rc : ''}
 													fullWidth
 													size="small"
 													theme={inputTheme}
@@ -2017,10 +2033,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomTextInput
 											id="st_addr"
 											type="text"
-											label="Adresse du sous-traitant"
+											label={`Adresse du sous-traitant${isRequired('st_addr') ? ' *' : ''}`}
 											value={formik.values.st_addr}
 											onChange={formik.handleChange('st_addr')}
 											onBlur={formik.handleBlur('st_addr')}
+											error={formik.touched.st_addr && Boolean(formik.errors.st_addr)}
+											helperText={formik.touched.st_addr ? formik.errors.st_addr : ''}
 											fullWidth
 											size="small"
 											theme={inputTheme}
@@ -2031,10 +2049,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												<CustomTextInput
 													id="st_rep"
 													type="text"
-													label="Représentant légal"
+													label={`Représentant légal${isRequired('st_rep') ? ' *' : ''}`}
 													value={formik.values.st_rep}
 													onChange={formik.handleChange('st_rep')}
 													onBlur={formik.handleBlur('st_rep')}
+													error={formik.touched.st_rep && Boolean(formik.errors.st_rep)}
+													helperText={formik.touched.st_rep ? formik.errors.st_rep : ''}
 													fullWidth
 													size="small"
 													theme={inputTheme}
@@ -2351,12 +2371,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 												<CustomTextInput
 													id="st_delai_val"
 													type="text"
-													label="Délai d'exécution"
+													label={`Délai d'exécution${isRequired('st_delai_val') ? ' *' : ''}`}
 													value={formik.values.st_delai_val}
 													onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 														if (/^\d*$/.test(e.target.value)) formik.setFieldValue('st_delai_val', e.target.value);
 													}}
 													onBlur={formik.handleBlur('st_delai_val')}
+													error={formik.touched.st_delai_val && Boolean(formik.errors.st_delai_val)}
+													helperText={formik.touched.st_delai_val ? formik.errors.st_delai_val : ''}
 													fullWidth
 													size="small"
 													theme={inputTheme}
@@ -2416,7 +2438,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomTextInput
 											id="st_delai_med"
 											type="text"
-											label="Délai médiation (jours)"
+											label="Délai mise en demeure (jours)"
 											value={formik.values.st_delai_med}
 											onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 												if (/^\d*$/.test(e.target.value)) formik.setFieldValue('st_delai_med', e.target.value);

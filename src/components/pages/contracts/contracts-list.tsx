@@ -284,13 +284,16 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			headerName: 'Type de contrat',
 			flex: 1.2,
 			minWidth: 140,
-			renderCell: (params: GridRenderCellParams<ContractClass>) => (
-				<DarkTooltip title={params.value}>
-					<Typography variant="body2" noWrap>
-						{params.value}
-					</Typography>
-				</DarkTooltip>
-			),
+			renderCell: (params: GridRenderCellParams<ContractClass>) => {
+				const value = params.row.contract_category === 'sous_traitance' ? '—' : (params.value ?? '—');
+				return (
+					<DarkTooltip title={value}>
+						<Typography variant="body2" noWrap>
+							{value}
+						</Typography>
+					</DarkTooltip>
+				);
+			},
 		},
 		{
 			field: 'statut',

@@ -212,8 +212,8 @@ describe('items lists', () => {
 	});
 
 	describe('stClausesActivesList', () => {
-		it('has 10 clause entries', () => {
-			expect(stClausesActivesList).toHaveLength(10);
+		it('has 11 clause entries', () => {
+			expect(stClausesActivesList).toHaveLength(11);
 		});
 
 		it('each entry has key and label', () => {
@@ -234,6 +234,7 @@ describe('items lists', () => {
 			const keys = stClausesActivesList.map((i) => i.key);
 			expect(keys).toContain('tConfid');
 			expect(keys).toContain('tNonConc');
+			expect(keys).toContain('tTRC');
 			expect(keys).toContain('tMediat');
 		});
 	});

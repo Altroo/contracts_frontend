@@ -411,7 +411,7 @@ describe('ContractViewClient', () => {
 			expect(screen.getByText('Délai de paiement')).toBeInTheDocument();
 			expect(screen.getByText("Délai d'exécution")).toBeInTheDocument();
 			expect(screen.getByText('Délai levée réserves')).toBeInTheDocument();
-			expect(screen.getByText('Délai médiation')).toBeInTheDocument();
+			expect(screen.getByText('Délai mise en demeure')).toBeInTheDocument();
 			// Labels shared between common & ST sections (appear twice)
 			expect(screen.getAllByText('Adresse').length).toBeGreaterThanOrEqual(2);
 			expect(screen.getAllByText('Qualité').length).toBeGreaterThanOrEqual(2);
