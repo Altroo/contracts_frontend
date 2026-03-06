@@ -235,6 +235,10 @@ jest.mock('@/utils/rawData', () => ({
 		{ code: 'casa_di_lusso', value: 'Casa di Lusso' },
 		{ code: 'blueline_works', value: 'Blueline Works' },
 	],
+	contractCategoryItemsList: [
+		{ code: 'standard', value: 'Standard' },
+		{ code: 'sous_traitance', value: 'Sous-Traitance' },
+	],
 }));
 
 jest.mock('@/styles/dashboard/dashboard.module.sass', () => ({

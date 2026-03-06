@@ -1,5 +1,6 @@
 import type {
 	ContractCompanyType,
+	ContractCategoryType,
 	ContractStatutType,
 	ContractTypeType,
 	ContractTypeBienType,
@@ -16,6 +17,12 @@ import type {
 	ContractGarantieTypeType,
 	ContractClauseResiliationType,
 	ContractPrestationType,
+	STLotType,
+	STFormeJuridiqueType,
+	STTypePrixType,
+	STDelaiUnitType,
+	STTrancheType,
+	ProjectType,
 } from '@/types/contractTypes';
 
 export class UserClass {
@@ -52,6 +59,8 @@ export class ContractClass {
 		// Company
 		public company: ContractCompanyType | string,
 		public readonly company_display: string,
+		public contract_category: ContractCategoryType | string,
+		public readonly contract_category_display: string,
 
 		// Client embedded fields
 		public client_nom: string,
@@ -124,6 +133,41 @@ export class ContractClass {
 		public readonly solde: number | null,
 		public clause_resiliation: ContractClauseResiliationType | string,
 		public notes: string,
+
+		// Sous-Traitance (CDL) specific fields
+		public st_projet: number | null,
+		public st_projet_detail: ProjectType | null,
+		public st_name: string,
+		public st_forme: STFormeJuridiqueType | string,
+		public st_capital: string,
+		public st_rc: string,
+		public st_ice: string,
+		public st_if: string,
+		public st_cnss: string,
+		public st_addr: string,
+		public st_rep: string,
+		public st_cin: string,
+		public st_qualite: string,
+		public st_tel: string,
+		public st_email: string,
+		public st_rib: string,
+		public st_banque: string,
+		public st_lot_type: STLotType | string,
+		public st_lot_description: string,
+		public st_type_prix: STTypePrixType | string,
+		public st_retenue_garantie: number | null,
+		public st_avance: number | null,
+		public st_penalite_taux: number | null,
+		public st_plafond_penalite: number | null,
+		public st_delai_paiement: number | null,
+		public st_tranches: STTrancheType[],
+		public st_delai_val: number | null,
+		public st_delai_unit: STDelaiUnitType | string,
+		public st_garantie_mois: number | null,
+		public st_delai_reserves: number | null,
+		public st_delai_med: number | null,
+		public st_clauses_actives: string[],
+		public st_observations: string,
 
 		// Meta audit
 		public readonly created_by_user: number | null,

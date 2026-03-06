@@ -162,3 +162,72 @@ export const prestationUniteItemsList: Array<{ code: string; value: string }> = 
 	{ code: 'jour', value: 'jour' },
 	{ code: 'kg', value: 'kg' },
 ];
+
+/* ── Contract category ── */
+
+export const contractCategoryItemsList: Array<{ code: string; value: string }> = [
+	{ code: 'standard', value: 'Standard' },
+	{ code: 'sous_traitance', value: 'Sous-Traitance' },
+];
+
+/* ── Sous-Traitance (CDL) specific choices ── */
+
+export const stLotTypeItemsList: Array<{ code: string; value: string }> = [
+	{ code: 'gros_oeuvre', value: 'Travaux de Gros Œuvre' },
+	{ code: 'electricite', value: "Travaux d'Électricité" },
+	{ code: 'plomberie', value: 'Travaux de Plomberie et Sanitaire' },
+	{ code: 'menuiserie_alu', value: 'Travaux de Menuiserie Aluminium' },
+	{ code: 'menuiserie_bois', value: 'Travaux de Menuiserie Bois' },
+	{ code: 'carrelage', value: 'Travaux de Carrelage et Faïence' },
+	{ code: 'peinture', value: 'Travaux de Peinture' },
+	{ code: 'etancheite', value: "Travaux d'Étanchéité" },
+	{ code: 'ascenseur', value: "Fourniture et Installation d'Ascenseur" },
+	{ code: 'platre', value: 'Travaux de Plâtre et Faux Plafond' },
+	{ code: 'ferronnerie', value: 'Travaux de Ferronnerie et Garde-Corps' },
+	{ code: 'vrd', value: 'Travaux de VRD et Façade' },
+	{ code: 'climatisation', value: 'Travaux de Climatisation et Ventilation' },
+	{ code: 'cuisine', value: 'Fourniture et Pose de Cuisines Équipées' },
+];
+
+export const stProjetTypeItemsList: Array<{ code: string; value: string }> = [
+	{ code: 'immeuble', value: 'Immeuble' },
+	{ code: 'villa', value: 'Villa' },
+	{ code: 'commercial', value: 'Commercial' },
+	{ code: 'industriel', value: 'Industriel' },
+	{ code: 'renovation', value: 'Rénovation' },
+	{ code: 'autre', value: 'Autre' },
+];
+
+export const stFormeJuridiqueItemsList: Array<{ code: string; value: string }> = [
+	{ code: 'SARL', value: 'SARL' },
+	{ code: 'SA', value: 'SA' },
+	{ code: 'SARLAU', value: 'SARLAU' },
+	{ code: 'SNC', value: 'SNC' },
+	{ code: 'auto_entrepreneur', value: 'Auto-entrepreneur' },
+	{ code: 'personne_physique', value: 'Personne physique' },
+];
+
+export const stTypePrixItemsList: Array<{ code: string; value: string }> = [
+	{ code: 'forfaitaire', value: 'Forfaitaire ferme' },
+	{ code: 'unitaire', value: 'Prix unitaires' },
+	{ code: 'regie', value: 'Régie' },
+];
+
+export const stDelaiUnitItemsList: Array<{ code: string; value: string }> = [
+	{ code: 'mois', value: 'Mois' },
+	{ code: 'semaines', value: 'Semaines' },
+	{ code: 'jours', value: 'Jours' },
+];
+
+export const stClausesActivesList: Array<{ key: string; label: string }> = [
+	{ key: 'tConfid', label: 'Confidentialité' },
+	{ key: 'tNonConc', label: 'Non-concurrence' },
+	{ key: 'tNonDeb', label: 'Non-débauchage' },
+	{ key: 'tCascade', label: 'Interdiction de sous-traitance en cascade' },
+	{ key: 'tEnviro', label: 'Clause environnementale' },
+	{ key: 'tPI', label: 'Propriété intellectuelle' },
+	{ key: 'tExclus', label: 'Exclusivité' },
+	{ key: 'tRevision', label: 'Révision de prix' },
+	{ key: 'tMediat', label: 'Médiation et arbitrage' },
+	{ key: 'tAnnexe', label: 'Annexes' },
+];

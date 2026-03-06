@@ -36,5 +36,9 @@ declare namespace NodeJS {
 		NEXT_PUBLIC_CONTRACT_PDF: string;
 		NEXT_PUBLIC_CONTRACT_DOCX: string;
 		NEXT_PUBLIC_CONTRACT_GENERATE_CODE_REFERENCE: string;
+		// Projects & Company Config
+		NEXT_PUBLIC_PROJECT_ROOT: string;
+		NEXT_PUBLIC_PROJECT_LIST: string;
+		NEXT_PUBLIC_COMPANY_CONFIG_LIST: string;
 	}
 }

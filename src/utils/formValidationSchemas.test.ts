@@ -351,4 +351,173 @@ describe('Zod Schema Validation', () => {
 			expect(result.success).toBe(false);
 		});
 	});
+
+	// ── contractSchema (Sous-Traitance) ──
+	describe('contractSchema – Sous-Traitance category', () => {
+		const validSTContract = {
+			company: 'casa_di_lusso',
+			contract_category: 'sous_traitance',
+			numero_contrat: 'CTR-ST-001',
+			date_contrat: '2024-06-01',
+			client_nom: 'Client ST',
+			montant_ht: '75000',
+			st_name: 'Sub Corp SARL',
+			st_lot_type: 'gros_oeuvre',
+			st_type_prix: 'forfaitaire',
+		};
+
+		it('validates a complete sous-traitance contract', () => {
+			expect(() => contractSchema.parse(validSTContract)).not.toThrow();
+		});
+
+		it('fails when st_name is missing for sous-traitance', () => {
+			const result = contractSchema.safeParse({
+				...validSTContract,
+				st_name: '',
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it('fails when st_lot_type is missing for sous-traitance', () => {
+			const result = contractSchema.safeParse({
+				...validSTContract,
+				st_lot_type: '',
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it('fails when st_type_prix is missing for sous-traitance', () => {
+			const result = contractSchema.safeParse({
+				...validSTContract,
+				st_type_prix: '',
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it('does NOT require type_contrat for sous-traitance', () => {
+			const result = contractSchema.safeParse({
+				...validSTContract,
+				type_contrat: undefined,
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it('accepts optional ST numeric fields', () => {
+			const result = contractSchema.safeParse({
+				...validSTContract,
+				st_retenue_garantie: '10',
+				st_avance: '15',
+				st_penalite_taux: '2',
+				st_plafond_penalite: '10',
+				st_delai_paiement: '30',
+				st_delai_val: '3',
+				st_garantie_mois: '12',
+				st_delai_reserves: '30',
+				st_delai_med: '60',
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it('accepts ST tranches array', () => {
+			const result = contractSchema.safeParse({
+				...validSTContract,
+				st_tranches: [
+					{ label: 'Acompte', pourcentage: 30 },
+					{ label: 'Intermédiaire', pourcentage: 40 },
+					{ label: 'Solde', pourcentage: 30 },
+				],
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it('accepts ST clauses actives array', () => {
+			const result = contractSchema.safeParse({
+				...validSTContract,
+				st_clauses_actives: ['tConfid', 'tNonConc'],
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it('accepts optional ST text fields', () => {
+			const result = contractSchema.safeParse({
+				...validSTContract,
+				st_forme: 'SARL',
+				st_capital: '100000',
+				st_rc: 'RC-12345',
+				st_ice: '001234567890123',
+				st_if: 'IF12345',
+				st_cnss: 'CNSS-789',
+				st_addr: '45 Rue des Ateliers, Casablanca',
+				st_rep: 'Mohammed El Amrani',
+				st_cin: 'BE654321',
+				st_qualite: 'Gérant',
+				st_tel: '0600000000',
+				st_email: 'sub@example.com',
+				st_rib: 'MA76 XXXX XXXX XXXX',
+				st_banque: 'Banque Populaire',
+				st_lot_description: 'Lot de gros oeuvre principal',
+				st_observations: 'Observations de test',
+				st_delai_unit: 'mois',
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it('handles undefined for all optional ST fields', () => {
+			const result = contractSchema.safeParse({
+				...validSTContract,
+				st_forme: undefined,
+				st_capital: undefined,
+				st_rc: undefined,
+				st_ice: undefined,
+				st_if: undefined,
+				st_cnss: undefined,
+				st_addr: undefined,
+				st_rep: undefined,
+				st_cin: undefined,
+				st_qualite: undefined,
+				st_tel: undefined,
+				st_email: undefined,
+				st_rib: undefined,
+				st_banque: undefined,
+				st_lot_description: undefined,
+				st_observations: undefined,
+				st_delai_unit: undefined,
+				st_retenue_garantie: undefined,
+				st_avance: undefined,
+				st_penalite_taux: undefined,
+				st_plafond_penalite: undefined,
+				st_delai_paiement: undefined,
+				st_delai_val: undefined,
+				st_garantie_mois: undefined,
+				st_delai_reserves: undefined,
+				st_delai_med: undefined,
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it('standard CDL still requires type_contrat', () => {
+			const result = contractSchema.safeParse({
+				company: 'casa_di_lusso',
+				contract_category: 'standard',
+				numero_contrat: 'CTR-CDL-001',
+				date_contrat: '2024-01-01',
+				client_nom: 'Jean',
+				montant_ht: '100',
+				type_contrat: undefined,
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it('contract_category is optional (defaults to standard behavior)', () => {
+			const result = contractSchema.safeParse({
+				company: 'casa_di_lusso',
+				numero_contrat: 'CTR-001',
+				date_contrat: '2024-01-01',
+				client_nom: 'Jean',
+				montant_ht: '100',
+				type_contrat: 'travaux_finition',
+			});
+			expect(result.success).toBe(true);
+		});
+	});
 });

@@ -9,7 +9,7 @@ import {
 	SHORT_INPUT_REQUIRED,
 	TVA_INPUT_INVALID,
 } from '@/utils/formValidationErrorMessages';
-import type { ContractSchemaType } from '@/types/contractTypes';
+
 
 const base64ImageField = z.url().or(z.string().startsWith('data:image/')).nullable().optional();
 
@@ -172,11 +172,13 @@ export const changePasswordSchema = z
 
 export const casaDiLussoRequired = ['type_contrat'] as const;
 export const bluelineRequired = ['fournitures', 'eau_electricite', 'acompte', 'tranche2', 'clause_resiliation'] as const;
+export const stRequired = ['st_name', 'st_lot_type', 'st_type_prix'] as const;
 
 export const contractSchema = z
 	.object({
 		// COMMON REQUIRED FIELDS
 		company: z.enum(['casa_di_lusso', 'blueline_works']),
+		contract_category: z.enum(['standard', 'sous_traitance']).optional(),
 		numero_contrat: requiredTextField(1, 255),
 		date_contrat: requiredTextField(1, 255),
 		client_nom: requiredTextField(1, 255),
@@ -252,18 +254,67 @@ export const contractSchema = z
 		tranche2: optionalNumberField(0, 100),
 		clause_resiliation: optionalChoiceField(),
 		notes: optionalTextField(1, 5000),
+		/* ── Sous-Traitance (CDL) fields ── */
+		st_projet: optionalNumberField(0),
+		st_name: optionalTextField(1, 255),
+		st_forme: optionalChoiceField(),
+		st_capital: optionalTextField(1, 255),
+		st_rc: optionalTextField(1, 255),
+		st_ice: optionalTextField(1, 255),
+		st_if: optionalTextField(1, 255),
+		st_cnss: optionalTextField(1, 255),
+		st_addr: optionalTextField(1, 500),
+		st_rep: optionalTextField(1, 255),
+		st_cin: optionalTextField(1, 255),
+		st_qualite: optionalTextField(1, 255),
+		st_tel: optionalPhoneField,
+		st_email: optionalEmailField,
+		st_rib: optionalTextField(1, 200),
+		st_banque: optionalTextField(1, 255),
+		st_lot_type: optionalChoiceField(),
+		st_lot_description: optionalTextField(1, 5000),
+		st_type_prix: optionalChoiceField(),
+		st_retenue_garantie: optionalNumberField(0, 100),
+		st_avance: optionalNumberField(0, 100),
+		st_penalite_taux: optionalNumberField(0, 100),
+		st_plafond_penalite: optionalNumberField(0, 100),
+		st_delai_paiement: optionalNumberField(0, 365),
+		st_tranches: z
+			.array(
+				z.object({
+					label: z.string().min(1, { error: INPUT_REQUIRED }),
+					pourcentage: z.number().min(0).max(100),
+				}),
+			)
+			.optional(),
+		st_delai_val: optionalNumberField(0, 365),
+		st_delai_unit: optionalChoiceField(),
+		st_garantie_mois: optionalNumberField(0, 120),
+		st_delai_reserves: optionalNumberField(0, 365),
+		st_delai_med: optionalNumberField(0, 365),
+		st_clauses_actives: z.array(z.string()).optional(),
+		st_observations: optionalTextField(1, 5000),
 		globalError: optionalTextField(1, 500),
 	})
-	.superRefine((data: ContractSchemaType, ctx) => {
+	.superRefine((data, ctx) => {
 		const isEmpty = (val: unknown): boolean =>
 			val === undefined ||
 			val === null ||
 			(typeof val === 'string' && val.trim() === '') ||
 			(typeof val === 'number' && Number.isNaN(val));
 
-		if (data.company === 'casa_di_lusso') {
+		const isST = data.company === 'casa_di_lusso' && data.contract_category === 'sous_traitance';
+
+		if (data.company === 'casa_di_lusso' && !isST) {
 			casaDiLussoRequired.forEach((key) => {
 				const val = data[key];
+				if (isEmpty(val)) {
+					ctx.addIssue({ path: [key], code: 'custom', message: INPUT_REQUIRED });
+				}
+			});
+		} else if (isST) {
+			stRequired.forEach((key) => {
+				const val = data[key as keyof typeof data];
 				if (isEmpty(val)) {
 					ctx.addIssue({ path: [key], code: 'custom', message: INPUT_REQUIRED });
 				}

@@ -24,7 +24,7 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type { ContractClass } from '@/models/classes';
 import { formatDate, extractApiErrorMessage } from '@/utils/helpers';
-import { getContractStatusColor, companyItemsList } from '@/utils/rawData';
+import { getContractStatusColor, companyItemsList, contractCategoryItemsList } from '@/utils/rawData';
 import { useToast } from '@/utils/hooks';
 import { fetchFileBlob } from '@/utils/apiHelpers';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
@@ -205,6 +205,12 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 				paramName: 'company',
 				options: companyItemsList.map((c) => ({ id: c.code, nom: c.value })),
 			},
+			{
+				key: 'contract_category',
+				label: 'Catégorie',
+				paramName: 'contract_category',
+				options: contractCategoryItemsList.map((c) => ({ id: c.code, nom: c.value })),
+			},
 		],
 		[],
 	);
@@ -252,6 +258,23 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 							variant="outlined"
 							color={params.row.company === 'blueline_works' ? 'info' : 'warning'}
 						/>
+					</DarkTooltip>
+				);
+			},
+		},
+		{
+			field: 'contract_category',
+			headerName: 'Catégorie',
+			flex: 0.9,
+			minWidth: 130,
+			renderCell: (params: GridRenderCellParams<ContractClass>) => {
+				const catCode = params.value as string | undefined;
+				const catItem = contractCategoryItemsList.find((c) => c.code === catCode);
+				const label = catItem?.value ?? catCode ?? '—';
+				const color = catCode === 'sous_traitance' ? 'secondary' : 'default';
+				return (
+					<DarkTooltip title={label}>
+						<Chip label={label} size="small" variant="outlined" color={color} />
 					</DarkTooltip>
 				);
 			},

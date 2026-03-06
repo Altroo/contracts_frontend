@@ -94,6 +94,8 @@ describe('ContractClass', () => {
 			// Company
 			'casa_di_lusso',            // company
 			'Casa di Lusso',            // company_display (readonly)
+			'standard',                 // contract_category
+			'Standard',                 // contract_category_display (readonly)
 
 			// Client embedded fields
 			'Dupont Jean',              // client_nom
@@ -165,6 +167,41 @@ describe('ContractClass', () => {
 			'',                         // clause_resiliation
 			'',                         // notes
 
+			// Sous-Traitance (CDL) specific fields
+			null,                       // st_projet
+			null,                       // st_projet_detail
+			'',                         // st_name
+			'',                         // st_forme
+			'',                         // st_capital
+			'',                         // st_rc
+			'',                         // st_ice
+			'',                         // st_if
+			'',                         // st_cnss
+			'',                         // st_addr
+			'',                         // st_rep
+			'',                         // st_cin
+			'',                         // st_qualite
+			'',                         // st_tel
+			'',                         // st_email
+			'',                         // st_rib
+			'',                         // st_banque
+			'',                         // st_lot_type
+			'',                         // st_lot_description
+			'',                         // st_type_prix
+			null,                       // st_retenue_garantie
+			null,                       // st_avance
+			null,                       // st_penalite_taux
+			null,                       // st_plafond_penalite
+			null,                       // st_delai_paiement
+			[],                         // st_tranches
+			null,                       // st_delai_val
+			'',                         // st_delai_unit
+			null,                       // st_garantie_mois
+			null,                       // st_delai_reserves
+			null,                       // st_delai_med
+			[],                         // st_clauses_actives
+			'',                         // st_observations
+
 			// Meta audit
 			3,                          // created_by_user (readonly)
 			3,                          // created_by_user_id (readonly)
@@ -178,6 +215,12 @@ describe('ContractClass', () => {
 		expect(contract.id).toBe(1);
 		expect(contract.numero_contrat).toBe('CTR-2024-001');
 		expect(contract.client_name).toBe('Dupont SAS');
+	});
+
+	it('stores contract_category fields', () => {
+		const contract = makeContract();
+		expect(contract.contract_category).toBe('standard');
+		expect(contract.contract_category_display).toBe('Standard');
 	});
 
 	it('stores client embedded fields', () => {
@@ -226,5 +269,61 @@ describe('ContractClass', () => {
 		const contract = makeContract();
 		contract.numero_contrat = 'CTR-2024-002';
 		expect(contract.numero_contrat).toBe('CTR-2024-002');
+	});
+
+	it('initialises ST fields to defaults', () => {
+		const contract = makeContract();
+		expect(contract.st_projet).toBeNull();
+		expect(contract.st_projet_detail).toBeNull();
+		expect(contract.st_name).toBe('');
+		expect(contract.st_forme).toBe('');
+		expect(contract.st_lot_type).toBe('');
+		expect(contract.st_type_prix).toBe('');
+		expect(contract.st_retenue_garantie).toBeNull();
+		expect(contract.st_avance).toBeNull();
+		expect(contract.st_penalite_taux).toBeNull();
+		expect(contract.st_plafond_penalite).toBeNull();
+		expect(contract.st_delai_paiement).toBeNull();
+		expect(contract.st_tranches).toEqual([]);
+		expect(contract.st_delai_val).toBeNull();
+		expect(contract.st_delai_unit).toBe('');
+		expect(contract.st_garantie_mois).toBeNull();
+		expect(contract.st_delai_reserves).toBeNull();
+		expect(contract.st_delai_med).toBeNull();
+		expect(contract.st_clauses_actives).toEqual([]);
+		expect(contract.st_observations).toBe('');
+	});
+
+	it('allows mutating ST fields', () => {
+		const contract = makeContract();
+		contract.st_name = 'Sub Corp SARL';
+		contract.st_lot_type = 'gros_oeuvre';
+		contract.st_type_prix = 'forfaitaire';
+		contract.contract_category = 'sous_traitance';
+
+		expect(contract.st_name).toBe('Sub Corp SARL');
+		expect(contract.st_lot_type).toBe('gros_oeuvre');
+		expect(contract.st_type_prix).toBe('forfaitaire');
+		expect(contract.contract_category).toBe('sous_traitance');
+	});
+
+	it('stores ST identity text fields', () => {
+		const contract = makeContract();
+		// All identity fields should be empty strings by default
+		expect(contract.st_capital).toBe('');
+		expect(contract.st_rc).toBe('');
+		expect(contract.st_ice).toBe('');
+		expect(contract.st_if).toBe('');
+		expect(contract.st_cnss).toBe('');
+		expect(contract.st_addr).toBe('');
+		expect(contract.st_rep).toBe('');
+		expect(contract.st_cin).toBe('');
+		expect(contract.st_qualite).toBe('');
+		expect(contract.st_tel).toBe('');
+		expect(contract.st_email).toBe('');
+		expect(contract.st_rib).toBe('');
+		expect(contract.st_banque).toBe('');
+		expect(contract.st_lot_description).toBe('');
+		expect(contract.st_observations).toBe('');
 	});
 });

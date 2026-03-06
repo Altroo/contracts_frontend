@@ -71,7 +71,7 @@ import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageMo
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import { Protected } from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import { getContractStatusColor, contractStatutItemsList, companyItemsList, fournituresItemsList, eauElectriciteItemsList, garantieUniteItemsList, garantieTypeItemsList, clauseResiliationItemsList, prestationNomItemsList, prestationUniteItemsList, clientQualiteItemsList, typeBienItemsList, garantieItemsList, modePaiementTexteItemsList } from '@/utils/rawData';
+import { getContractStatusColor, contractStatutItemsList, companyItemsList, fournituresItemsList, eauElectriciteItemsList, garantieUniteItemsList, garantieTypeItemsList, clauseResiliationItemsList, prestationNomItemsList, prestationUniteItemsList, clientQualiteItemsList, typeBienItemsList, garantieItemsList, modePaiementTexteItemsList, contractCategoryItemsList, stLotTypeItemsList, stFormeJuridiqueItemsList, stTypePrixItemsList, stDelaiUnitItemsList, stClausesActivesList } from '@/utils/rawData';
 import type { ContractStatutType } from '@/types/contractTypes';
 
 interface InfoRowProps {
@@ -231,6 +231,8 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 
 	const statusColor = contract ? getContractStatusColor(contract.statut) : 'default';
 	const isBlueline = contract?.company === 'blueline_works';
+	const isST = contract?.company === 'casa_di_lusso' && contract?.contract_category === 'sous_traitance';
+	const isCDL = !isBlueline && !isST;
 
 	const resolveLabel = (list: Array<{ code: string; value: string }>, code: string | null | undefined) =>
 		list.find((i) => i.code === code)?.value ?? code ?? '-';
@@ -400,7 +402,25 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 												/>
 											}
 										/>
-										<Divider />											<InfoRow icon={<CalendarTodayIcon />} label="Date contrat" value={contract?.date_contrat && formatDateShort(contract.date_contrat)} />
+										<Divider />
+										{contract?.contract_category && (
+											<>
+												<InfoRow
+													icon={<CategoryIcon />}
+													label="Catégorie"
+													value={
+														<Chip
+															label={contract?.contract_category_display ?? resolveLabel(contractCategoryItemsList, contract?.contract_category)}
+															color={isST ? 'secondary' : 'default'}
+															variant="outlined"
+															size="small"
+														/>
+													}
+												/>
+												<Divider />
+											</>
+										)}
+										<InfoRow icon={<CalendarTodayIcon />} label="Date contrat" value={contract?.date_contrat && formatDateShort(contract.date_contrat)} />
 											<Divider />
 											<InfoRow icon={<CategoryIcon />} label="Type contrat" value={contract?.type_contrat_display ?? contract?.type_contrat} />
 											<Divider />
@@ -560,7 +580,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 								</Card>
 
 							{/* ── CDL-specific sections ── */}
-							{!isBlueline && (
+							{isCDL && (
 								<>
 									{/* Services CDL */}
 									{contract?.services && contract.services.length > 0 && (
@@ -685,6 +705,185 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 													<Divider />
 													<InfoRow icon={<AttachmentIcon />} label="Annexes" value={contract?.annexes} />
 												</Stack>
+											</CardContent>
+										</Card>
+									)}
+								</>
+							)}
+
+							{/* ── ST-specific sections ── */}
+							{isST && (
+								<>
+									{/* Sous-Traitant Identity */}
+									<Card elevation={2} sx={{ borderRadius: 2 }}>
+										<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+											<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+												<PersonIcon color="primary" />
+												<Typography variant="h6" fontWeight={700}>Sous-Traitant</Typography>
+											</Stack>
+											<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+											<Stack spacing={0}>
+												{contract?.st_projet_detail && (
+													<>
+														<InfoRow icon={<ArchitectureIcon />} label="Projet" value={contract.st_projet_detail.name} />
+														<Divider />
+													</>
+												)}
+												<InfoRow icon={<BusinessIcon />} label="Raison sociale" value={contract?.st_name} />
+												<Divider />
+												<InfoRow icon={<DescriptionIcon />} label="Forme juridique" value={resolveLabel(stFormeJuridiqueItemsList, contract?.st_forme)} />
+												<Divider />
+												<InfoRow icon={<MoneyIcon />} label="Capital" value={contract?.st_capital} />
+												<Divider />
+												<InfoRow icon={<BadgeIcon />} label="RC" value={contract?.st_rc} />
+												<Divider />
+												<InfoRow icon={<BadgeIcon />} label="ICE" value={contract?.st_ice} />
+												<Divider />
+												<InfoRow icon={<BadgeIcon />} label="IF" value={contract?.st_if} />
+												<Divider />
+												<InfoRow icon={<ShieldIcon />} label="CNSS" value={contract?.st_cnss} />
+												<Divider />
+												<InfoRow icon={<HomeIcon />} label="Adresse" value={contract?.st_addr} />
+												<Divider />
+												<InfoRow icon={<PersonIcon />} label="Représentant" value={contract?.st_rep} />
+												<Divider />
+												<InfoRow icon={<BadgeIcon />} label="CIN" value={contract?.st_cin} />
+												<Divider />
+												<InfoRow icon={<WorkIcon />} label="Qualité" value={contract?.st_qualite} />
+												<Divider />
+												<InfoRow icon={<PhoneIcon />} label="Téléphone" value={contract?.st_tel} />
+												<Divider />
+												<InfoRow icon={<EmailIcon />} label="Email" value={contract?.st_email} />
+												<Divider />
+												<InfoRow icon={<MoneyIcon />} label="RIB" value={contract?.st_rib} />
+												<Divider />
+												<InfoRow icon={<MoneyIcon />} label="Banque" value={contract?.st_banque} />
+											</Stack>
+										</CardContent>
+									</Card>
+
+									{/* Lot & Type */}
+									<Card elevation={2} sx={{ borderRadius: 2 }}>
+										<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+											<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+												<CategoryIcon color="primary" />
+												<Typography variant="h6" fontWeight={700}>Lot & Type</Typography>
+											</Stack>
+											<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+											<Stack spacing={0}>
+												<InfoRow icon={<CategoryIcon />} label="Type de lot" value={resolveLabel(stLotTypeItemsList, contract?.st_lot_type)} />
+												<Divider />
+												<InfoRow icon={<DescriptionIcon />} label="Description du lot" value={contract?.st_lot_description} />
+												<Divider />
+												<InfoRow icon={<MoneyIcon />} label="Type de prix" value={resolveLabel(stTypePrixItemsList, contract?.st_type_prix)} />
+											</Stack>
+										</CardContent>
+									</Card>
+
+									{/* Financier ST */}
+									<Card elevation={2} sx={{ borderRadius: 2 }}>
+										<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+											<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+												<MoneyIcon color="primary" />
+												<Typography variant="h6" fontWeight={700}>Financier ST</Typography>
+											</Stack>
+											<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+											<Stack spacing={0}>
+												<InfoRow icon={<PercentIcon />} label="Retenue de garantie" value={contract?.st_retenue_garantie != null ? `${contract.st_retenue_garantie}%` : undefined} />
+												<Divider />
+												<InfoRow icon={<PercentIcon />} label="Avance" value={contract?.st_avance != null ? `${contract.st_avance}%` : undefined} />
+												<Divider />
+												<InfoRow icon={<PercentIcon />} label="Taux de pénalité" value={contract?.st_penalite_taux != null ? `${contract.st_penalite_taux}‰/jour` : undefined} />
+												<Divider />
+												<InfoRow icon={<PercentIcon />} label="Plafond pénalité" value={contract?.st_plafond_penalite != null ? `${contract.st_plafond_penalite}%` : undefined} />
+												<Divider />
+												<InfoRow icon={<TimerIcon />} label="Délai de paiement" value={contract?.st_delai_paiement != null ? `${contract.st_delai_paiement} jours` : undefined} />
+											</Stack>
+										</CardContent>
+									</Card>
+
+									{/* Échéancier ST */}
+									{contract?.st_tranches && contract.st_tranches.length > 0 && (
+										<Card elevation={2} sx={{ borderRadius: 2 }}>
+											<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+												<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+													<PlaylistAddCheckIcon color="primary" />
+													<Typography variant="h6" fontWeight={700}>Échéancier ST</Typography>
+												</Stack>
+												<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+												<TableContainer component={Paper} variant="outlined">
+													<Table size="small">
+														<TableHead>
+															<TableRow>
+																<TableCell sx={{ fontWeight: 700 }}>Tranche</TableCell>
+																<TableCell sx={{ fontWeight: 700 }} align="right">Pourcentage</TableCell>
+															</TableRow>
+														</TableHead>
+														<TableBody>
+															{contract.st_tranches.map((tr, idx) => (
+																<TableRow key={idx}>
+																	<TableCell>{tr.label || `Tranche ${idx + 1}`}</TableCell>
+																	<TableCell align="right">{tr.pourcentage}%</TableCell>
+																</TableRow>
+															))}
+														</TableBody>
+													</Table>
+												</TableContainer>
+											</CardContent>
+										</Card>
+									)}
+
+									{/* Délais & Garantie ST */}
+									<Card elevation={2} sx={{ borderRadius: 2 }}>
+										<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+											<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+												<TimerIcon color="primary" />
+												<Typography variant="h6" fontWeight={700}>Délais & Garantie ST</Typography>
+											</Stack>
+											<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+											<Stack spacing={0}>
+												<InfoRow icon={<TimerIcon />} label="Délai d'exécution" value={contract?.st_delai_val != null ? `${contract.st_delai_val} ${resolveLabel(stDelaiUnitItemsList, contract?.st_delai_unit)}` : undefined} />
+												<Divider />
+												<InfoRow icon={<ShieldIcon />} label="Garantie" value={contract?.st_garantie_mois != null ? `${contract.st_garantie_mois} mois` : undefined} />
+												<Divider />
+												<InfoRow icon={<TimerIcon />} label="Délai levée réserves" value={contract?.st_delai_reserves != null ? `${contract.st_delai_reserves} jours` : undefined} />
+												<Divider />
+												<InfoRow icon={<GavelIcon />} label="Délai médiation" value={contract?.st_delai_med != null ? `${contract.st_delai_med} jours` : undefined} />
+											</Stack>
+										</CardContent>
+									</Card>
+
+									{/* Clauses actives ST */}
+									{contract?.st_clauses_actives && contract.st_clauses_actives.length > 0 && (
+										<Card elevation={2} sx={{ borderRadius: 2 }}>
+											<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+												<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+													<GavelIcon color="primary" />
+													<Typography variant="h6" fontWeight={700}>Clauses actives ST</Typography>
+												</Stack>
+												<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+												<Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+													{contract.st_clauses_actives.map((clause, idx) => {
+														const clauseItem = stClausesActivesList.find((c) => c.key === clause);
+														return (
+															<Chip key={idx} label={clauseItem?.label ?? clause} color="secondary" variant="outlined" size="small" />
+														);
+													})}
+												</Box>
+											</CardContent>
+										</Card>
+									)}
+
+									{/* Observations ST */}
+									{contract?.st_observations && (
+										<Card elevation={2} sx={{ borderRadius: 2 }}>
+											<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
+												<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+													<NotesIcon color="primary" />
+													<Typography variant="h6" fontWeight={700}>Observations</Typography>
+												</Stack>
+												<Divider sx={{ mb: { xs: 1.5, md: 2 } }} />
+												<Typography>{contract.st_observations}</Typography>
 											</CardContent>
 										</Card>
 									)}

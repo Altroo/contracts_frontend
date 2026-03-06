@@ -1,5 +1,7 @@
 export type ContractCompanyType = 'casa_di_lusso' | 'blueline_works';
 
+export type ContractCategoryType = 'standard' | 'sous_traitance';
+
 export type ContractStatutType =
 	| 'Brouillon'
 	| 'Envoyé'
@@ -72,8 +74,83 @@ export type ContractPrestationType = {
 	prix_unitaire: number;
 };
 
+/* ── Sous-Traitance (CDL) types ── */
+
+export type STLotType =
+	| 'gros_oeuvre'
+	| 'electricite'
+	| 'plomberie'
+	| 'menuiserie_alu'
+	| 'menuiserie_bois'
+	| 'carrelage'
+	| 'peinture'
+	| 'etancheite'
+	| 'ascenseur'
+	| 'platre'
+	| 'ferronnerie'
+	| 'vrd'
+	| 'climatisation'
+	| 'cuisine';
+
+export type STProjetType =
+	| 'immeuble'
+	| 'villa'
+	| 'commercial'
+	| 'industriel'
+	| 'renovation'
+	| 'autre';
+
+export type STFormeJuridiqueType =
+	| 'SARL'
+	| 'SA'
+	| 'SARLAU'
+	| 'SNC'
+	| 'auto_entrepreneur'
+	| 'personne_physique';
+
+export type STTypePrixType = 'forfaitaire' | 'unitaire' | 'regie';
+
+export type STDelaiUnitType = 'mois' | 'semaines' | 'jours';
+
+export type STTrancheType = {
+	label: string;
+	pourcentage: number;
+};
+
+export type ProjectType = {
+	id: number;
+	company: ContractCompanyType;
+	company_display: string;
+	name: string;
+	type: STProjetType | string;
+	type_display: string;
+	description: string;
+	adresse: string;
+	maitre_ouvrage: string;
+	permis: string;
+	is_predefined: boolean;
+	created_by_user: number | null;
+	date_created: string;
+	date_updated: string;
+};
+
+export type CompanyConfigType = {
+	id: number;
+	company: ContractCompanyType;
+	name: string;
+	forme_juridique: string;
+	capital: string;
+	rc: string;
+	ice: string;
+	identifiant_fiscal: string;
+	adresse: string;
+	representant: string;
+	qualite_representant: string;
+};
+
 export type ContractSchemaType = {
 	company: ContractCompanyType;
+	contract_category: ContractCategoryType;
 	numero_contrat: string;
 	date_contrat: string;
 	client_nom: string;
@@ -131,11 +208,45 @@ export type ContractSchemaType = {
 	tranche2?: number;
 	clause_resiliation?: string;
 	notes?: string;
+	/* ── Sous-Traitance (CDL) fields ── */
+	st_projet?: number | null;
+	st_name?: string;
+	st_forme?: string;
+	st_capital?: string;
+	st_rc?: string;
+	st_ice?: string;
+	st_if?: string;
+	st_cnss?: string;
+	st_addr?: string;
+	st_rep?: string;
+	st_cin?: string;
+	st_qualite?: string;
+	st_tel?: string;
+	st_email?: string;
+	st_rib?: string;
+	st_banque?: string;
+	st_lot_type?: string;
+	st_lot_description?: string;
+	st_type_prix?: string;
+	st_retenue_garantie?: number;
+	st_avance?: number;
+	st_penalite_taux?: number;
+	st_plafond_penalite?: number;
+	st_delai_paiement?: number;
+	st_tranches?: STTrancheType[];
+	st_delai_val?: number;
+	st_delai_unit?: string;
+	st_garantie_mois?: number;
+	st_delai_reserves?: number;
+	st_delai_med?: number;
+	st_clauses_actives?: string[];
+	st_observations?: string;
 	globalError?: string;
 };
 
 export type ContractFormValuesType = {
 	company: ContractCompanyType;
+	contract_category: ContractCategoryType;
 	numero_contrat: string;
 	date_contrat: string;
 	statut: ContractStatutType;
@@ -193,5 +304,38 @@ export type ContractFormValuesType = {
 	tranche2: string;
 	clause_resiliation: string;
 	notes: string;
+	/* ── Sous-Traitance (CDL) fields ── */
+	st_projet: string;
+	st_name: string;
+	st_forme: string;
+	st_capital: string;
+	st_rc: string;
+	st_ice: string;
+	st_if: string;
+	st_cnss: string;
+	st_addr: string;
+	st_rep: string;
+	st_cin: string;
+	st_qualite: string;
+	st_tel: string;
+	st_email: string;
+	st_rib: string;
+	st_banque: string;
+	st_lot_type: string;
+	st_lot_description: string;
+	st_type_prix: string;
+	st_retenue_garantie: string;
+	st_avance: string;
+	st_penalite_taux: string;
+	st_plafond_penalite: string;
+	st_delai_paiement: string;
+	st_tranches: STTrancheType[];
+	st_delai_val: string;
+	st_delai_unit: string;
+	st_garantie_mois: string;
+	st_delai_reserves: string;
+	st_delai_med: string;
+	st_clauses_actives: string[];
+	st_observations: string;
 	globalError: string;
 };

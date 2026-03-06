@@ -52,6 +52,7 @@ jest.mock('@/store/services/contract', () => ({
 	useGetCodeReferenceQuery: () => ({ data: { numero_contrat: 'CTR-AUTO-001' }, isLoading: false }),
 	useAddContractMutation: () => [mockAddContractMutation, { isLoading: false, error: undefined }],
 	useEditContractMutation: () => [mockEditContractMutation, { isLoading: false, error: undefined }],
+	useGetProjectsListQuery: () => ({ data: [], isLoading: false }),
 }));
 
 // Mock form sub-components
@@ -178,12 +179,37 @@ jest.mock('@/utils/rawData', () => ({
 		{ code: 'Tanger', value: 'Tanger' },
 		{ code: 'Casablanca', value: 'Casablanca' },
 	],
+	contractCategoryItemsList: [
+		{ code: 'standard', value: 'Standard' },
+		{ code: 'sous_traitance', value: 'Sous-Traitance' },
+	],
+	stLotTypeItemsList: [
+		{ code: 'gros_oeuvre', value: 'Travaux de Gros Œuvre' },
+		{ code: 'electricite', value: "Travaux d'Électricité" },
+	],
+	stFormeJuridiqueItemsList: [
+		{ code: 'SARL', value: 'SARL' },
+		{ code: 'SA', value: 'SA' },
+	],
+	stTypePrixItemsList: [
+		{ code: 'forfaitaire', value: 'Forfaitaire ferme' },
+		{ code: 'unitaire', value: 'Prix unitaires' },
+	],
+	stDelaiUnitItemsList: [
+		{ code: 'mois', value: 'Mois' },
+		{ code: 'semaines', value: 'Semaines' },
+	],
+	stClausesActivesList: [
+		{ key: 'tConfid', label: 'Confidentialité' },
+		{ key: 'tNonConc', label: 'Non-concurrence' },
+	],
 }));
 
 jest.mock('@/utils/formValidationSchemas', () => ({
 	contractSchema: { parse: jest.fn() },
 	bluelineRequired: ['fournitures', 'eau_electricite', 'acompte', 'tranche2', 'clause_resiliation'] as const,
 	casaDiLussoRequired: ['type_contrat'] as const,
+	stRequired: ['st_name', 'st_lot_type', 'st_type_prix'] as const,
 }));
 
 jest.mock('zod-formik-adapter', () => ({
@@ -376,6 +402,242 @@ describe('ContractFormClient', () => {
 
 			renderWithProviders(<ContractFormClient session={mockSession} id={1} />);
 			expect(screen.getByTestId('api-loader')).toBeInTheDocument();
+		});
+	});
+
+	describe('Sous-Traitance (ST) mode', () => {
+		const stContractData = {
+			id: 50,
+			company: 'casa_di_lusso',
+			contract_category: 'sous_traitance',
+			numero_contrat: 'CTR-ST-050',
+			date_contrat: '2024-06-01',
+			statut: 'Brouillon',
+			type_contrat: 'travaux_finition',
+			ville_signature: 'Tanger',
+			client_nom: 'Client ST',
+			client_cin: 'ST-CIN-001',
+			montant_ht: '120000',
+			devise: 'MAD',
+			tva: '20',
+			st_name: 'Sous-Traitant Alpha',
+			st_forme: 'SARL',
+			st_capital: '500000',
+			st_rc: 'RC-12345',
+			st_ice: 'ICE-67890',
+			st_if: 'IF-11111',
+			st_cnss: 'CNSS-22222',
+			st_addr: '123 Rue des ST',
+			st_rep: 'Mohamed Alami',
+			st_cin: 'AB123456',
+			st_qualite: 'Gérant',
+			st_tel: '0612345678',
+			st_email: 'st@example.com',
+			st_rib: '123456789012345678901234',
+			st_banque: 'Banque Populaire',
+			st_lot_type: 'gros_oeuvre',
+			st_lot_description: 'Gros œuvre complet',
+			st_type_prix: 'forfaitaire',
+			st_retenue_garantie: '10',
+			st_avance: '15',
+			st_penalite_taux: '0.5',
+			st_plafond_penalite: '10',
+			st_delai_paiement: '30',
+			st_tranches: [
+				{ label: 'Démarrage', pourcentage: 30 },
+				{ label: 'Mi-parcours', pourcentage: 40 },
+				{ label: 'Réception', pourcentage: 30 },
+			],
+			st_delai_val: '6',
+			st_delai_unit: 'mois',
+			st_garantie_mois: '12',
+			st_delai_reserves: '30',
+			st_delai_med: '30',
+			st_clauses_actives: ['tConfid', 'tNonConc'],
+			st_observations: 'Observations de test',
+		};
+
+		beforeEach(() => {
+			// Reset mutation mocks that may have been mutated by prior tests
+			const contractService = jest.requireMock('@/store/services/contract') as Record<string, unknown>;
+			contractService.useAddContractMutation = () => [mockAddContractMutation, { isLoading: false, error: undefined }];
+			contractService.useEditContractMutation = () => [mockEditContractMutation, { isLoading: false, error: undefined }];
+			contractService.useGetProjectsListQuery = () => ({ data: [], isLoading: false });
+
+			mockUseGetContractQuery.mockReturnValue({
+				data: stContractData,
+				isLoading: false,
+				error: undefined,
+			});
+		});
+
+		it('renders category toggle when company is casa_di_lusso', () => {
+			renderWithProviders(<ContractFormClient session={mockSession} id={50} />);
+			expect(screen.getByText('Catégorie de contrat')).toBeInTheDocument();
+			expect(screen.getByText('Standard')).toBeInTheDocument();
+			expect(screen.getByText('Sous-Traitance')).toBeInTheDocument();
+		});
+
+		it('renders ST section headers in edit mode', () => {
+			renderWithProviders(<ContractFormClient session={mockSession} id={50} />);
+			expect(screen.getByText('Sous-Traitant')).toBeInTheDocument();
+			expect(screen.getByText('Lot & Type')).toBeInTheDocument();
+			expect(screen.getByText('Financier ST')).toBeInTheDocument();
+			expect(screen.getByText('Délais & Garantie ST')).toBeInTheDocument();
+			expect(screen.getByText('Clauses actives ST')).toBeInTheDocument();
+			// "Observations" appears as both section header and field label
+			expect(screen.getAllByText('Observations').length).toBeGreaterThanOrEqual(1);
+		});
+
+		it('renders Sous-Traitant identity fields', () => {
+			renderWithProviders(<ContractFormClient session={mockSession} id={50} />);
+			expect(screen.getByTestId('input-st_name')).toBeInTheDocument();
+			expect(screen.getByTestId('dropdown-st_forme')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_capital')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_rc')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_ice')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_if')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_cnss')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_addr')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_rep')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_cin')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_qualite')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_tel')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_email')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_rib')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_banque')).toBeInTheDocument();
+		});
+
+		it('renders Lot & Type fields', () => {
+			renderWithProviders(<ContractFormClient session={mockSession} id={50} />);
+			expect(screen.getByTestId('dropdown-st_lot_type')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_lot_description')).toBeInTheDocument();
+			expect(screen.getByTestId('dropdown-st_type_prix')).toBeInTheDocument();
+		});
+
+		it('renders Financier ST fields', () => {
+			renderWithProviders(<ContractFormClient session={mockSession} id={50} />);
+			expect(screen.getByTestId('input-st_retenue_garantie')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_avance')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_penalite_taux')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_plafond_penalite')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_delai_paiement')).toBeInTheDocument();
+		});
+
+		it('renders Délais & Garantie ST fields', () => {
+			renderWithProviders(<ContractFormClient session={mockSession} id={50} />);
+			expect(screen.getByTestId('input-st_delai_val')).toBeInTheDocument();
+			expect(screen.getByTestId('dropdown-st_delai_unit')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_garantie_mois')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_delai_reserves')).toBeInTheDocument();
+			expect(screen.getByTestId('input-st_delai_med')).toBeInTheDocument();
+		});
+
+		it('renders Observations field', () => {
+			renderWithProviders(<ContractFormClient session={mockSession} id={50} />);
+			expect(screen.getByTestId('input-st_observations')).toBeInTheDocument();
+		});
+
+		it('renders clause checkboxes from stClausesActivesList', () => {
+			renderWithProviders(<ContractFormClient session={mockSession} id={50} />);
+			// "Confidentialité" also appears as common field label
+			expect(screen.getAllByText('Confidentialité').length).toBeGreaterThanOrEqual(2);
+			expect(screen.getByText('Non-concurrence')).toBeInTheDocument();
+		});
+
+		it('renders project dropdown when projects exist', () => {
+			const contractService = jest.requireMock('@/store/services/contract') as Record<string, unknown>;
+			contractService.useGetProjectsListQuery = () => ({
+				data: [{ id: 1, name: 'Projet Alpha' }],
+				isLoading: false,
+			});
+			renderWithProviders(<ContractFormClient session={mockSession} id={50} />);
+			expect(screen.getByTestId('dropdown-st_projet')).toBeInTheDocument();
+		});
+
+		it('does not render CDL-specific sections in ST mode', () => {
+			renderWithProviders(<ContractFormClient session={mockSession} id={50} />);
+			expect(screen.queryByText('Services CDL')).not.toBeInTheDocument();
+			expect(screen.queryByText('Projet CDL')).not.toBeInTheDocument();
+			expect(screen.queryByText('Échéancier CDL')).not.toBeInTheDocument();
+			expect(screen.queryByText('Clauses actives CDL')).not.toBeInTheDocument();
+			expect(screen.queryByText('Détails additionnels CDL')).not.toBeInTheDocument();
+		});
+
+		it('does not render Blueline-specific sections in ST mode', () => {
+			renderWithProviders(<ContractFormClient session={mockSession} id={50} />);
+			expect(screen.queryByText('Prestations')).not.toBeInTheDocument();
+			expect(screen.queryByText('Fournitures & Eau / Électricité')).not.toBeInTheDocument();
+			expect(screen.queryByText('Garantie (Blueline)')).not.toBeInTheDocument();
+			expect(screen.queryByText('Échéancier & Résiliation')).not.toBeInTheDocument();
+			expect(screen.queryByText('Client (Blueline)')).not.toBeInTheDocument();
+		});
+
+		it('does not render category toggle for non-CDL company', () => {
+			mockUseGetContractQuery.mockReturnValue({
+				data: {
+					id: 60,
+					company: 'blueline_works',
+					numero_contrat: 'BL-060',
+					client_nom: 'BL Client',
+					montant_ht: '5000',
+				},
+				isLoading: false,
+				error: undefined,
+			});
+			renderWithProviders(<ContractFormClient session={mockSession} id={60} />);
+			expect(screen.queryByText('Catégorie de contrat')).not.toBeInTheDocument();
+		});
+
+		it('renders submit button with update text in ST edit mode', () => {
+			renderWithProviders(<ContractFormClient session={mockSession} id={50} />);
+			expect(screen.getByTestId('submit-button')).toHaveTextContent('Mettre à jour');
+		});
+
+		it('renders field labels for ST identity section', () => {
+			renderWithProviders(<ContractFormClient session={mockSession} id={50} />);
+			expect(screen.getByText('Capital')).toBeInTheDocument();
+			expect(screen.getByText('Registre du commerce')).toBeInTheDocument();
+			expect(screen.getByText('ICE')).toBeInTheDocument();
+			expect(screen.getByText('Identifiant fiscal')).toBeInTheDocument();
+			expect(screen.getByText('CNSS')).toBeInTheDocument();
+			expect(screen.getByText('Adresse du sous-traitant')).toBeInTheDocument();
+			expect(screen.getByText('Représentant légal')).toBeInTheDocument();
+			expect(screen.getByText('CIN du représentant')).toBeInTheDocument();
+			expect(screen.getByText('Qualité du représentant')).toBeInTheDocument();
+			expect(screen.getByText('Banque')).toBeInTheDocument();
+			// Labels shared with Client section (appear twice)
+			expect(screen.getAllByText('Téléphone').length).toBeGreaterThanOrEqual(2);
+			expect(screen.getAllByText('Email').length).toBeGreaterThanOrEqual(2);
+			expect(screen.getAllByText('RIB').length).toBeGreaterThanOrEqual(1);
+		});
+
+		it('renders Financier ST field labels', () => {
+			renderWithProviders(<ContractFormClient session={mockSession} id={50} />);
+			expect(screen.getByText('Retenue de garantie')).toBeInTheDocument();
+			expect(screen.getByText('Avance')).toBeInTheDocument();
+			expect(screen.getByText('Taux de pénalité (‰/jour)')).toBeInTheDocument();
+			expect(screen.getByText('Plafond pénalité')).toBeInTheDocument();
+			expect(screen.getByText('Délai de paiement (jours)')).toBeInTheDocument();
+		});
+
+		it('renders Délais & Garantie ST field labels', () => {
+			renderWithProviders(<ContractFormClient session={mockSession} id={50} />);
+			expect(screen.getByText("Délai d'exécution")).toBeInTheDocument();
+			expect(screen.getByText('Unité de délai')).toBeInTheDocument();
+			expect(screen.getByText('Garantie (mois)')).toBeInTheDocument();
+			expect(screen.getByText('Délai levée réserves (jours)')).toBeInTheDocument();
+			expect(screen.getByText('Délai médiation (jours)')).toBeInTheDocument();
+		});
+
+		it('renders common sections alongside ST sections', () => {
+			renderWithProviders(<ContractFormClient session={mockSession} id={50} />);
+			expect(screen.getByText('Identification')).toBeInTheDocument();
+			expect(screen.getByText('Client')).toBeInTheDocument();
+			expect(screen.getByText('Travaux')).toBeInTheDocument();
+			expect(screen.getByText('Financier')).toBeInTheDocument();
+			expect(screen.getByText('Clauses')).toBeInTheDocument();
+			expect(screen.getByText('Société')).toBeInTheDocument();
 		});
 	});
 });

@@ -88,12 +88,18 @@ import {
 	clientQualiteItemsList,
 	garantieItemsList,
 	tribunalItemsList,
+	contractCategoryItemsList,
+	stLotTypeItemsList,
+	stFormeJuridiqueItemsList,
+	stTypePrixItemsList,
+	stDelaiUnitItemsList,
+	stClausesActivesList,
 } from '@/utils/rawData';
 import { CONTRACTS_LIST, CONTRACTS_VIEW } from '@/utils/routes';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/utils/hooks';
-import { useAddContractMutation, useEditContractMutation, useGetContractQuery, useGetCodeReferenceQuery } from '@/store/services/contract';
-import { contractSchema, bluelineRequired, casaDiLussoRequired } from '@/utils/formValidationSchemas';
+import { useAddContractMutation, useEditContractMutation, useGetContractQuery, useGetCodeReferenceQuery, useGetProjectsListQuery } from '@/store/services/contract';
+import { contractSchema, bluelineRequired, casaDiLussoRequired, stRequired } from '@/utils/formValidationSchemas';
 import { INPUT_REQUIRED } from '@/utils/formValidationErrorMessages';
 import { textInputTheme, customDropdownTheme, gridInputTheme, customGridDropdownTheme } from '@/utils/themes';
 import { formatLocalDate } from '@/utils/helpers';
@@ -102,7 +108,7 @@ import CustomDropDownSelect from '@/components/formikElements/customDropDownSele
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import type { ContractFormValuesType, ContractPrestationType, ContractCompanyType, ContractTrancheType } from '@/types/contractTypes';
+import type { ContractFormValuesType, ContractPrestationType, ContractCompanyType, ContractCategoryType, ContractTrancheType, STTrancheType } from '@/types/contractTypes';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import { getAccessTokenFromSession } from '@/store/session';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
@@ -140,6 +146,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [addContract, { isLoading: isAddLoading, error: addError }] = useAddContractMutation();
 	const [editContract, { isLoading: isEditLoading, error: editError }] = useEditContractMutation();
 
+	const {
+		data: projectsList,
+	} = useGetProjectsListQuery({ company: 'casa_di_lusso' }, { skip: !token });
+
 	const error = isEditMode ? dataError || editError : addError;
 	const axiosError: ResponseDataInterface<ApiErrorResponseType> | undefined = useMemo(
 		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
@@ -154,6 +164,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const formik = useFormik<ContractFormValuesType>({
 		initialValues: {
 			company: (rawData?.company as ContractCompanyType) ?? 'casa_di_lusso',
+			contract_category: (rawData?.contract_category as ContractCategoryType) ?? 'standard',
 			numero_contrat: isEditMode ? (rawData?.numero_contrat ?? '') : (generatedCodeData?.numero_contrat ?? ''),
 			date_contrat: isEditMode ? (rawData?.date_contrat ?? today) : today,
 			statut: rawData?.statut ?? 'Brouillon',
@@ -211,6 +222,39 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			tranche2: rawData?.tranche2 != null ? String(rawData.tranche2) : '',
 			clause_resiliation: rawData?.clause_resiliation ?? '',
 			notes: rawData?.notes ?? '',
+			/* ── Sous-Traitance (CDL) fields ── */
+			st_projet: rawData?.st_projet != null ? String(rawData.st_projet) : '',
+			st_name: rawData?.st_name ?? '',
+			st_forme: rawData?.st_forme ?? '',
+			st_capital: rawData?.st_capital ?? '',
+			st_rc: rawData?.st_rc ?? '',
+			st_ice: rawData?.st_ice ?? '',
+			st_if: rawData?.st_if ?? '',
+			st_cnss: rawData?.st_cnss ?? '',
+			st_addr: rawData?.st_addr ?? '',
+			st_rep: rawData?.st_rep ?? '',
+			st_cin: rawData?.st_cin ?? '',
+			st_qualite: rawData?.st_qualite ?? '',
+			st_tel: rawData?.st_tel ?? '',
+			st_email: rawData?.st_email ?? '',
+			st_rib: rawData?.st_rib ?? '',
+			st_banque: rawData?.st_banque ?? '',
+			st_lot_type: rawData?.st_lot_type ?? '',
+			st_lot_description: rawData?.st_lot_description ?? '',
+			st_type_prix: rawData?.st_type_prix ?? 'forfaitaire',
+			st_retenue_garantie: rawData?.st_retenue_garantie != null ? String(rawData.st_retenue_garantie) : '10',
+			st_avance: rawData?.st_avance != null ? String(rawData.st_avance) : '',
+			st_penalite_taux: rawData?.st_penalite_taux != null ? String(rawData.st_penalite_taux) : '0.5',
+			st_plafond_penalite: rawData?.st_plafond_penalite != null ? String(rawData.st_plafond_penalite) : '10',
+			st_delai_paiement: rawData?.st_delai_paiement != null ? String(rawData.st_delai_paiement) : '30',
+			st_tranches: rawData?.st_tranches ?? [],
+			st_delai_val: rawData?.st_delai_val != null ? String(rawData.st_delai_val) : '',
+			st_delai_unit: rawData?.st_delai_unit ?? 'mois',
+			st_garantie_mois: rawData?.st_garantie_mois != null ? String(rawData.st_garantie_mois) : '12',
+			st_delai_reserves: rawData?.st_delai_reserves != null ? String(rawData.st_delai_reserves) : '30',
+			st_delai_med: rawData?.st_delai_med != null ? String(rawData.st_delai_med) : '30',
+			st_clauses_actives: rawData?.st_clauses_actives ?? [],
+			st_observations: rawData?.st_observations ?? '',
 			globalError: '',
 		},
 		enableReinitialize: true,
@@ -220,8 +264,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			const errors: Partial<Record<string, string>> = {};
 			const isEmpty = (val: unknown) =>
 				val === undefined || val === null || (typeof val === 'string' && val.trim() === '') || (typeof val === 'number' && Number.isNaN(val));
+			const isST = values.company === 'casa_di_lusso' && values.contract_category === 'sous_traitance';
 			if (values.company === 'blueline_works') {
 				bluelineRequired.forEach((key) => {
+					if (isEmpty(values[key as keyof ContractFormValuesType])) {
+						errors[key] = INPUT_REQUIRED;
+					}
+				});
+			} else if (isST) {
+				stRequired.forEach((key) => {
 					if (isEmpty(values[key as keyof ContractFormValuesType])) {
 						errors[key] = INPUT_REQUIRED;
 					}
@@ -241,6 +292,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { globalError, ...fields } = data;
 			const isBlueline = fields.company === 'blueline_works';
+			const isST = fields.company === 'casa_di_lusso' && fields.contract_category === 'sous_traitance';
 			const payload: Record<string, unknown> = {
 				...fields,
 				montant_ht: fields.montant_ht ? parseFloat(fields.montant_ht) : undefined,
@@ -250,19 +302,32 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				mode_paiement_texte: fields.mode_paiement_texte || null,
 				rib: fields.rib || null,
 				/* CDL numeric conversions */
-				delai_retard: !isBlueline && fields.delai_retard ? parseInt(fields.delai_retard, 10) : isBlueline ? null : 5,
-				frais_redemarrage: !isBlueline && fields.frais_redemarrage ? parseFloat(fields.frais_redemarrage) : null,
-				delai_reserves: !isBlueline && fields.delai_reserves ? parseInt(fields.delai_reserves, 10) : isBlueline ? null : 7,
-				services: !isBlueline ? fields.services : [],
-				tranches: !isBlueline ? fields.tranches : [],
-				clauses_actives: !isBlueline ? fields.clauses_actives : [],
+				delai_retard: !isBlueline && !isST && fields.delai_retard ? parseInt(fields.delai_retard, 10) : isBlueline || isST ? null : 5,
+				frais_redemarrage: !isBlueline && !isST && fields.frais_redemarrage ? parseFloat(fields.frais_redemarrage) : null,
+				delai_reserves: !isBlueline && !isST && fields.delai_reserves ? parseInt(fields.delai_reserves, 10) : isBlueline || isST ? null : 7,
+				services: !isBlueline && !isST ? fields.services : [],
+				tranches: !isBlueline && !isST ? fields.tranches : [],
+				clauses_actives: !isBlueline && !isST ? fields.clauses_actives : [],
 				/* Blueline numeric conversions */
 				garantie_nb: isBlueline && fields.garantie_nb ? parseInt(fields.garantie_nb, 10) : null,
 				acompte: isBlueline && fields.acompte ? parseFloat(fields.acompte) : null,
 				tranche2: isBlueline && fields.tranche2 ? parseFloat(fields.tranche2) : null,
 				prestations: isBlueline ? fields.prestations : [],
+				/* ST numeric conversions */
+				st_projet: isST && fields.st_projet ? parseInt(fields.st_projet, 10) : null,
+				st_retenue_garantie: isST && fields.st_retenue_garantie ? parseFloat(fields.st_retenue_garantie) : null,
+				st_avance: isST && fields.st_avance ? parseFloat(fields.st_avance) : null,
+				st_penalite_taux: isST && fields.st_penalite_taux ? parseFloat(fields.st_penalite_taux) : null,
+				st_plafond_penalite: isST && fields.st_plafond_penalite ? parseFloat(fields.st_plafond_penalite) : null,
+				st_delai_paiement: isST && fields.st_delai_paiement ? parseInt(fields.st_delai_paiement, 10) : null,
+				st_tranches: isST ? fields.st_tranches : [],
+				st_delai_val: isST && fields.st_delai_val ? parseInt(fields.st_delai_val, 10) : null,
+				st_garantie_mois: isST && fields.st_garantie_mois ? parseInt(fields.st_garantie_mois, 10) : null,
+				st_delai_reserves: isST && fields.st_delai_reserves ? parseInt(fields.st_delai_reserves, 10) : null,
+				st_delai_med: isST && fields.st_delai_med ? parseInt(fields.st_delai_med, 10) : null,
+				st_clauses_actives: isST ? fields.st_clauses_actives : [],
 			};
-			/* Clear Blueline fields when Casa di Lusso */
+			/* Clear Blueline fields when not Blueline */
 			if (!isBlueline) {
 				payload.client_ville = '';
 				payload.client_cp = '';
@@ -281,8 +346,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				payload.clause_resiliation = '';
 				payload.notes = '';
 			}
-			/* Clear CDL fields when Blueline */
-			if (isBlueline) {
+			/* Clear CDL standard fields when Blueline or ST */
+			if (isBlueline || isST) {
 				payload.services = [];
 				payload.conditions_acces = '';
 				payload.tranches = [];
@@ -295,6 +360,41 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				payload.architecte = '';
 				payload.version_document = '';
 				payload.annexes = '';
+			}
+			/* Clear ST fields when not ST */
+			if (!isST) {
+				payload.st_projet = null;
+				payload.st_name = '';
+				payload.st_forme = '';
+				payload.st_capital = '';
+				payload.st_rc = '';
+				payload.st_ice = '';
+				payload.st_if = '';
+				payload.st_cnss = '';
+				payload.st_addr = '';
+				payload.st_rep = '';
+				payload.st_cin = '';
+				payload.st_qualite = '';
+				payload.st_tel = '';
+				payload.st_email = '';
+				payload.st_rib = '';
+				payload.st_banque = '';
+				payload.st_lot_type = '';
+				payload.st_lot_description = '';
+				payload.st_type_prix = '';
+				payload.st_retenue_garantie = null;
+				payload.st_avance = null;
+				payload.st_penalite_taux = null;
+				payload.st_plafond_penalite = null;
+				payload.st_delai_paiement = null;
+				payload.st_tranches = [];
+				payload.st_delai_val = null;
+				payload.st_delai_unit = '';
+				payload.st_garantie_mois = null;
+				payload.st_delai_reserves = null;
+				payload.st_delai_med = null;
+				payload.st_clauses_actives = [];
+				payload.st_observations = '';
 			}
 			try {
 				if (isEditMode) {
@@ -322,6 +422,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const fieldLabels = useMemo<Record<string, string>>(
 		() => ({
 			company: 'Société',
+			contract_category: 'Catégorie de contrat',
 			numero_contrat: 'Numéro de contrat',
 			date_contrat: 'Date du contrat',
 			statut: 'Statut',
@@ -377,6 +478,39 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			tranche2: 'Tranche 2 (%)',
 			clause_resiliation: 'Clause de résiliation',
 			notes: 'Notes',
+			/* ST fields */
+			st_projet: 'Projet',
+			st_name: 'Raison sociale du sous-traitant',
+			st_forme: 'Forme juridique',
+			st_capital: 'Capital',
+			st_rc: 'Registre du commerce',
+			st_ice: 'ICE',
+			st_if: 'Identifiant fiscal',
+			st_cnss: 'CNSS',
+			st_addr: 'Adresse du sous-traitant',
+			st_rep: 'Représentant légal',
+			st_cin: 'CIN du représentant',
+			st_qualite: 'Qualité du représentant',
+			st_tel: 'Téléphone du sous-traitant',
+			st_email: 'Email du sous-traitant',
+			st_rib: 'RIB du sous-traitant',
+			st_banque: 'Banque',
+			st_lot_type: 'Type de lot',
+			st_lot_description: 'Description du lot',
+			st_type_prix: 'Type de prix',
+			st_retenue_garantie: 'Retenue de garantie (%)',
+			st_avance: 'Avance (%)',
+			st_penalite_taux: 'Taux de pénalité (‰/jour)',
+			st_plafond_penalite: 'Plafond pénalité (%)',
+			st_delai_paiement: 'Délai de paiement (jours)',
+			st_tranches: 'Échéancier ST',
+			st_delai_val: 'Délai d\'exécution',
+			st_delai_unit: 'Unité de délai',
+			st_garantie_mois: 'Garantie (mois)',
+			st_delai_reserves: 'Délai levée réserves (jours)',
+			st_delai_med: 'Délai médiation (jours)',
+			st_clauses_actives: 'Clauses actives ST',
+			st_observations: 'Observations',
 			globalError: 'Erreur globale',
 		}),
 		[],
@@ -439,17 +573,49 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		}
 	}, [formik]);
 
+	/* ── ST: Tranches helpers ── */
+	const addStTranche = useCallback(() => {
+		const current = formik.values.st_tranches ?? [];
+		formik.setFieldValue('st_tranches', [...current, { label: '', pourcentage: 0 }]);
+	}, [formik]);
+
+	const removeStTranche = useCallback((index: number) => {
+		const current = formik.values.st_tranches ?? [];
+		formik.setFieldValue('st_tranches', current.filter((_: STTrancheType, i: number) => i !== index));
+	}, [formik]);
+
+	const updateStTranche = useCallback((index: number, field: keyof STTrancheType, value: string | number) => {
+		const current = [...(formik.values.st_tranches ?? [])];
+		current[index] = { ...current[index], [field]: value };
+		formik.setFieldValue('st_tranches', current);
+	}, [formik]);
+
+	/* ── ST: Clauses toggle ── */
+	const toggleStClause = useCallback((key: string) => {
+		const current = formik.values.st_clauses_actives ?? [];
+		if (current.includes(key)) {
+			formik.setFieldValue('st_clauses_actives', current.filter((c: string) => c !== key));
+		} else {
+			formik.setFieldValue('st_clauses_actives', [...current, key]);
+		}
+	}, [formik]);
+
 	const validationErrors = useMemo(() => {
 		const errors: Record<string, string> = {};
 		const currentCompany = formik.values.company;
+		const currentCategory = formik.values.contract_category;
 		const blFields = new Set(['prestations', 'fournitures', 'eau_electricite', 'acompte', 'tranche2', 'clause_resiliation', 'client_ville', 'client_cp', 'chantier_ville', 'chantier_etage', 'garantie_nb', 'garantie_unite', 'garantie_type', 'exclusions_garantie', 'materiaux_detail', 'notes']);
 		const cdlFields = new Set(['type_contrat', 'services', 'tranches', 'delai_retard', 'frais_redemarrage', 'delai_reserves', 'clauses_actives', 'clause_spec', 'exclusions', 'architecte', 'version_document', 'annexes', 'conditions_acces']);
+		const stFields = new Set(['st_projet', 'st_name', 'st_forme', 'st_capital', 'st_rc', 'st_ice', 'st_if', 'st_cnss', 'st_addr', 'st_rep', 'st_cin', 'st_qualite', 'st_tel', 'st_email', 'st_rib', 'st_banque', 'st_lot_type', 'st_lot_description', 'st_type_prix', 'st_retenue_garantie', 'st_avance', 'st_penalite_taux', 'st_plafond_penalite', 'st_delai_paiement', 'st_tranches', 'st_delai_val', 'st_delai_unit', 'st_garantie_mois', 'st_delai_reserves', 'st_delai_med', 'st_clauses_actives', 'st_observations']);
+		const currentIsST = currentCompany === 'casa_di_lusso' && currentCategory === 'sous_traitance';
 		if (hasAttemptedSubmit) {
 			Object.entries(formik.errors).forEach(([key, value]) => {
 				if (key === 'globalError') return;
-				/* Skip errors for the other company's fields */
+				/* Skip errors for the other company's / category's fields */
 				if (currentCompany === 'casa_di_lusso' && blFields.has(key)) return;
-				if (currentCompany === 'blueline_works' && cdlFields.has(key)) return;
+				if (currentCompany === 'blueline_works' && (cdlFields.has(key) || stFields.has(key))) return;
+				if (currentIsST && cdlFields.has(key)) return;
+				if (!currentIsST && stFields.has(key)) return;
 				if (typeof value === 'string') {
 					errors[key] = value;
 				}
@@ -463,7 +629,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			}
 		}
 		return errors;
-	}, [formik.errors, formik.values.company, hasAttemptedSubmit]);
+	}, [formik.errors, formik.values.company, formik.values.contract_category, hasAttemptedSubmit]);
 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
 	const isLoading = isAddLoading || isEditLoading || isPending || (isEditMode && isDataLoading) || (!isEditMode && isCodeLoading);
@@ -473,11 +639,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const typeContratDisplay = typeContratItems.find((t) => t.code === formik.values.type_contrat)?.value ?? formik.values.type_contrat;
 
 	const isBlueline = formik.values.company === 'blueline_works';
+	const isST = formik.values.company === 'casa_di_lusso' && formik.values.contract_category === 'sous_traitance';
+	const isCDL = !isBlueline && !isST;
 
 	/* ── Required-field helpers ── */
 	const isBluelineRequired = (field: string) => isBlueline && (bluelineRequired as readonly string[]).includes(field);
-	const isCdlRequired = (field: string) => !isBlueline && (casaDiLussoRequired as readonly string[]).includes(field);
-	const isRequired = (field: string) => isBluelineRequired(field) || isCdlRequired(field);
+	const isCdlRequired = (field: string) => isCDL && (casaDiLussoRequired as readonly string[]).includes(field);
+	const isStRequired = (field: string) => isST && (stRequired as readonly string[]).includes(field);
+	const isRequired = (field: string) => isBluelineRequired(field) || isCdlRequired(field) || isStRequired(field);
 
 	/* ── Stable ref so the effect below always sees the latest formik state ── */
 	const formikRef = useRef(formik);
@@ -485,15 +654,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		formikRef.current = formik;
 	});
 
-	/* ── Auto-seed the required first row when the company type changes ── */
+	/* ── Auto-seed the required first row when the company/category changes ── */
 	useEffect(() => {
 		const { setFieldValue, values } = formikRef.current;
 		if (isBlueline && !values.prestations?.length) {
 			setFieldValue('prestations', [{ nom: '', description: '', quantite: 0, unite: 'm2', prix_unitaire: 0 }]);
-		} else if (!isBlueline && !values.tranches?.length) {
+		} else if (isST && !values.st_tranches?.length) {
+			setFieldValue('st_tranches', [{ label: '', pourcentage: 0 }]);
+		} else if (isCDL && !values.tranches?.length) {
 			setFieldValue('tranches', [{ label: '', pourcentage: 0 }]);
 		}
-	}, [isBlueline]);
+	}, [isBlueline, isST, isCDL]);
 
 	/* ── Prestations helpers ── */
 	const addPrestation = useCallback(() => {
@@ -812,6 +983,90 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		[formik.values.tranches],
 	);
 
+	/* ── ST: Tranche DataGrid columns ── */
+	const stTrancheColumns: GridColDef[] = useMemo(() => [
+		{
+			field: 'label',
+			headerName: 'Tranche',
+			flex: 2,
+			minWidth: 200,
+			renderCell: (params: GridRenderCellParams) => {
+				const realIdx = Number(params.id);
+				const tr = (formik.values.st_tranches ?? [])[realIdx];
+				if (!tr) return null;
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<CustomTextInput
+							id={`st_tranches.${realIdx}.label`}
+							type="text"
+							label=""
+							value={tr.label}
+							onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateStTranche(realIdx, 'label', e.target.value)}
+							size="small"
+							theme={gridCellInputTheme}
+						/>
+					</Box>
+				);
+			},
+		},
+		{
+			field: 'pourcentage',
+			headerName: 'Pourcentage',
+			flex: 1,
+			minWidth: 120,
+			renderCell: (params: GridRenderCellParams) => {
+				const realIdx = Number(params.id);
+				const tr = (formik.values.st_tranches ?? [])[realIdx];
+				if (!tr) return null;
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<CustomTextInput
+							id={`st_tranches.${realIdx}.pourcentage`}
+							type="text"
+							label=""
+							value={String(tr.pourcentage || '')}
+							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+								if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) {
+									updateStTranche(realIdx, 'pourcentage', parseFloat(e.target.value.replace(',', '.')) || 0);
+								}
+							}}
+							size="small"
+							theme={gridCellInputTheme}
+							endIcon={<InputAdornment position="end">%</InputAdornment>}
+						/>
+					</Box>
+				);
+			},
+		},
+		{
+			field: 'actions',
+			headerName: '',
+			flex: 0.4,
+			minWidth: 50,
+			sortable: false,
+			filterable: false,
+			renderCell: (params: GridRenderCellParams) => {
+				const realIdx = Number(params.id);
+				const total = (formik.values.st_tranches ?? []).length;
+				if (total <= 1) return null;
+				return (
+					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+						<Tooltip title="Supprimer">
+							<IconButton size="small" color="error" onClick={() => removeStTranche(realIdx)}>
+								<DeleteIcon />
+							</IconButton>
+						</Tooltip>
+					</Box>
+				);
+			},
+		},
+	], [formik.values.st_tranches, updateStTranche, removeStTranche]);
+
+	const stTrancheRows = useMemo(() =>
+		(formik.values.st_tranches ?? []).map((tr, i) => ({ id: i, ...tr })),
+		[formik.values.st_tranches],
+	);
+
 	return (
 		<Stack spacing={3} sx={{ p: { xs: 2, md: 3 } }}>
 			<Stack direction={isMobile ? 'column' : 'row'} pt={2} justifyContent="space-between" spacing={2}>
@@ -885,6 +1140,37 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										</ToggleButton>
 									))}
 								</ToggleButtonGroup>
+								{formik.values.company === 'casa_di_lusso' && (
+									<Box sx={{ mt: 2 }}>
+										<Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>
+											Catégorie de contrat
+										</Typography>
+										<ToggleButtonGroup
+											value={formik.values.contract_category}
+											exclusive
+											onChange={(_e, val: string | null) => {
+												if (val) formik.setFieldValue('contract_category', val);
+											}}
+											sx={{ width: '100%' }}
+										>
+											{contractCategoryItemsList.map((c) => (
+												<ToggleButton
+													key={c.code}
+													value={c.code}
+													sx={{
+														flex: 1,
+														fontFamily: 'Poppins',
+														fontWeight: formik.values.contract_category === c.code ? 700 : 400,
+														textTransform: 'none',
+														fontSize: '0.9rem',
+													}}
+												>
+													{c.value}
+												</ToggleButton>
+											))}
+										</ToggleButtonGroup>
+									</Box>
+								)}
 							</CardContent>
 						</Card>
 
@@ -943,7 +1229,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											theme={customDropdownTheme()}
 											startIcon={<FlagIcon fontSize="small" />}
 										/>
-										{!isBlueline && (
+										{isCDL && (
 											<CustomDropDownSelect
 												id="type_contrat"
 												label={`Type de contrat${isRequired('type_contrat') ? ' *' : ''}`}
@@ -1346,7 +1632,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						</Card>
 
 						{/* ── CDL: Services ── */}
-						{!isBlueline && (
+						{isCDL && (
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
@@ -1371,7 +1657,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						)}
 
 						{/* ── CDL: Projet ── */}
-						{!isBlueline && (
+						{isCDL && (
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
@@ -1412,7 +1698,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						)}
 
 						{/* ── CDL: Échéancier (Tranches) ── */}
-						{!isBlueline && (
+						{isCDL && (
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
 									<Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
@@ -1502,7 +1788,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						)}
 
 						{/* ── CDL: Clauses actives ── */}
-						{!isBlueline && (
+						{isCDL && (
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
@@ -1530,7 +1816,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 						)}
 
 						{/* ── CDL: Clauses additionnelles ── */}
-						{!isBlueline && (
+						{isCDL && (
 							<Card elevation={2} sx={{ borderRadius: 2 }}>
 								<CardContent sx={{ p: 3 }}>
 									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
@@ -1594,6 +1880,609 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											startIcon={<AttachmentIcon fontSize="small" />}
 										/>
 									</Stack>
+								</CardContent>
+							</Card>
+						)}
+
+						{/* ── ST: Sous-Traitant Identity ── */}
+						{isST && (
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<PersonIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>Sous-Traitant</Typography>
+									</Stack>
+									<Divider sx={{ mb: 3 }} />
+									<Stack spacing={2.5}>
+										{projectsList && projectsList.length > 0 && (
+											<CustomDropDownSelect
+												id="st_projet"
+												label="Projet"
+												items={projectsList.map((p) => p.name)}
+												value={projectsList.find((p) => String(p.id) === formik.values.st_projet)?.name ?? ''}
+												onChange={(e: SelectChangeEvent) => {
+													const selected = projectsList.find((p) => p.name === e.target.value);
+													formik.setFieldValue('st_projet', selected ? String(selected.id) : '');
+												}}
+												size="small"
+												theme={customDropdownTheme()}
+												startIcon={<ArchitectureIcon fontSize="small" />}
+											/>
+										)}
+										<CustomTextInput
+											id="st_name"
+											type="text"
+											label={`Raison sociale du sous-traitant${isRequired('st_name') ? ' *' : ''}`}
+											value={formik.values.st_name}
+											onChange={formik.handleChange('st_name')}
+											onBlur={formik.handleBlur('st_name')}
+											error={formik.touched.st_name && Boolean(formik.errors.st_name)}
+											helperText={formik.touched.st_name ? formik.errors.st_name : ''}
+											fullWidth
+											size="small"
+											theme={inputTheme}
+											startIcon={<BusinessIcon fontSize="small" />}
+										/>
+										<Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomDropDownSelect
+													id="st_forme"
+													label="Forme juridique"
+													items={stFormeJuridiqueItemsList.map((i) => i.value)}
+													value={stFormeJuridiqueItemsList.find((i) => i.code === formik.values.st_forme)?.value ?? formik.values.st_forme}
+													onChange={(e: SelectChangeEvent) => {
+														const selected = stFormeJuridiqueItemsList.find((i) => i.value === e.target.value);
+														formik.setFieldValue('st_forme', selected?.code ?? e.target.value);
+													}}
+													size="small"
+													theme={customDropdownTheme()}
+													startIcon={<DescriptionIcon fontSize="small" />}
+												/>
+											</Box>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomTextInput
+													id="st_capital"
+													type="text"
+													label="Capital"
+													value={formik.values.st_capital}
+													onChange={formik.handleChange('st_capital')}
+													onBlur={formik.handleBlur('st_capital')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<AttachMoneyIcon fontSize="small" />}
+												/>
+											</Box>
+										</Stack>
+										<Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomTextInput
+													id="st_rc"
+													type="text"
+													label="Registre du commerce"
+													value={formik.values.st_rc}
+													onChange={formik.handleChange('st_rc')}
+													onBlur={formik.handleBlur('st_rc')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<BadgeIcon fontSize="small" />}
+												/>
+											</Box>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomTextInput
+													id="st_ice"
+													type="text"
+													label="ICE"
+													value={formik.values.st_ice}
+													onChange={formik.handleChange('st_ice')}
+													onBlur={formik.handleBlur('st_ice')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<FingerprintIcon fontSize="small" />}
+												/>
+											</Box>
+										</Stack>
+										<Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomTextInput
+													id="st_if"
+													type="text"
+													label="Identifiant fiscal"
+													value={formik.values.st_if}
+													onChange={formik.handleChange('st_if')}
+													onBlur={formik.handleBlur('st_if')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<BadgeIcon fontSize="small" />}
+												/>
+											</Box>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomTextInput
+													id="st_cnss"
+													type="text"
+													label="CNSS"
+													value={formik.values.st_cnss}
+													onChange={formik.handleChange('st_cnss')}
+													onBlur={formik.handleBlur('st_cnss')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<ShieldIcon fontSize="small" />}
+												/>
+											</Box>
+										</Stack>
+										<CustomTextInput
+											id="st_addr"
+											type="text"
+											label="Adresse du sous-traitant"
+											value={formik.values.st_addr}
+											onChange={formik.handleChange('st_addr')}
+											onBlur={formik.handleBlur('st_addr')}
+											fullWidth
+											size="small"
+											theme={inputTheme}
+											startIcon={<HomeIcon fontSize="small" />}
+										/>
+										<Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomTextInput
+													id="st_rep"
+													type="text"
+													label="Représentant légal"
+													value={formik.values.st_rep}
+													onChange={formik.handleChange('st_rep')}
+													onBlur={formik.handleBlur('st_rep')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<PersonIcon fontSize="small" />}
+												/>
+											</Box>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomTextInput
+													id="st_cin"
+													type="text"
+													label="CIN du représentant"
+													value={formik.values.st_cin}
+													onChange={formik.handleChange('st_cin')}
+													onBlur={formik.handleBlur('st_cin')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<BadgeIcon fontSize="small" />}
+												/>
+											</Box>
+										</Stack>
+										<CustomTextInput
+											id="st_qualite"
+											type="text"
+											label="Qualité du représentant"
+											value={formik.values.st_qualite}
+											onChange={formik.handleChange('st_qualite')}
+											onBlur={formik.handleBlur('st_qualite')}
+											fullWidth
+											size="small"
+											theme={inputTheme}
+											startIcon={<DescriptionIcon fontSize="small" />}
+										/>
+										<Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomTextInput
+													id="st_tel"
+													type="text"
+													label="Téléphone"
+													value={formik.values.st_tel}
+													onChange={formik.handleChange('st_tel')}
+													onBlur={formik.handleBlur('st_tel')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<PhoneIcon fontSize="small" />}
+												/>
+											</Box>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomTextInput
+													id="st_email"
+													type="email"
+													label="Email"
+													value={formik.values.st_email}
+													onChange={formik.handleChange('st_email')}
+													onBlur={formik.handleBlur('st_email')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<EmailIcon fontSize="small" />}
+												/>
+											</Box>
+										</Stack>
+										<Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomTextInput
+													id="st_rib"
+													type="text"
+													label="RIB"
+													value={formik.values.st_rib}
+													onChange={formik.handleChange('st_rib')}
+													onBlur={formik.handleBlur('st_rib')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<AccountBalanceIcon fontSize="small" />}
+												/>
+											</Box>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomTextInput
+													id="st_banque"
+													type="text"
+													label="Banque"
+													value={formik.values.st_banque}
+													onChange={formik.handleChange('st_banque')}
+													onBlur={formik.handleBlur('st_banque')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<AccountBalanceIcon fontSize="small" />}
+												/>
+											</Box>
+										</Stack>
+									</Stack>
+								</CardContent>
+							</Card>
+						)}
+
+						{/* ── ST: Lot & Type ── */}
+						{isST && (
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<CategoryIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>Lot & Type</Typography>
+									</Stack>
+									<Divider sx={{ mb: 3 }} />
+									<Stack spacing={2.5}>
+										<CustomDropDownSelect
+											id="st_lot_type"
+											label={`Type de lot${isRequired('st_lot_type') ? ' *' : ''}`}
+											items={stLotTypeItemsList.map((i) => i.value)}
+											value={stLotTypeItemsList.find((i) => i.code === formik.values.st_lot_type)?.value ?? formik.values.st_lot_type}
+											onChange={(e: SelectChangeEvent) => {
+												const selected = stLotTypeItemsList.find((i) => i.value === e.target.value);
+												formik.setFieldValue('st_lot_type', selected?.code ?? e.target.value);
+											}}
+											size="small"
+											theme={customDropdownTheme()}
+											startIcon={<CategoryIcon fontSize="small" />}
+											error={formik.touched.st_lot_type && Boolean(formik.errors.st_lot_type)}
+											helperText={formik.touched.st_lot_type ? (formik.errors.st_lot_type as string) : ''}
+										/>
+										<CustomTextInput
+											id="st_lot_description"
+											type="text"
+											label="Description du lot"
+											multiline
+											rows={3}
+											value={formik.values.st_lot_description}
+											onChange={formik.handleChange('st_lot_description')}
+											onBlur={formik.handleBlur('st_lot_description')}
+											fullWidth
+											size="small"
+											theme={inputTheme}
+											startIcon={<NotesIcon fontSize="small" />}
+										/>
+										<CustomDropDownSelect
+											id="st_type_prix"
+											label={`Type de prix${isRequired('st_type_prix') ? ' *' : ''}`}
+											items={stTypePrixItemsList.map((i) => i.value)}
+											value={stTypePrixItemsList.find((i) => i.code === formik.values.st_type_prix)?.value ?? formik.values.st_type_prix}
+											onChange={(e: SelectChangeEvent) => {
+												const selected = stTypePrixItemsList.find((i) => i.value === e.target.value);
+												formik.setFieldValue('st_type_prix', selected?.code ?? e.target.value);
+											}}
+											size="small"
+											theme={customDropdownTheme()}
+											startIcon={<AttachMoneyIcon fontSize="small" />}
+											error={formik.touched.st_type_prix && Boolean(formik.errors.st_type_prix)}
+											helperText={formik.touched.st_type_prix ? (formik.errors.st_type_prix as string) : ''}
+										/>
+									</Stack>
+								</CardContent>
+							</Card>
+						)}
+
+						{/* ── ST: Financial ── */}
+						{isST && (
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<AttachMoneyIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>Financier ST</Typography>
+									</Stack>
+									<Divider sx={{ mb: 3 }} />
+									<Stack spacing={2.5}>
+										<Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomTextInput
+													id="st_retenue_garantie"
+													type="text"
+													label="Retenue de garantie"
+													value={formik.values.st_retenue_garantie}
+													onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+														if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) formik.setFieldValue('st_retenue_garantie', e.target.value);
+													}}
+													onBlur={formik.handleBlur('st_retenue_garantie')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<PercentIcon fontSize="small" />}
+													endIcon="%"
+												/>
+											</Box>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomTextInput
+													id="st_avance"
+													type="text"
+													label="Avance"
+													value={formik.values.st_avance}
+													onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+														if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) formik.setFieldValue('st_avance', e.target.value);
+													}}
+													onBlur={formik.handleBlur('st_avance')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<PercentIcon fontSize="small" />}
+													endIcon="%"
+												/>
+											</Box>
+										</Stack>
+										<Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomTextInput
+													id="st_penalite_taux"
+													type="text"
+													label="Taux de pénalité (‰/jour)"
+													value={formik.values.st_penalite_taux}
+													onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+														if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) formik.setFieldValue('st_penalite_taux', e.target.value);
+													}}
+													onBlur={formik.handleBlur('st_penalite_taux')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<PercentIcon fontSize="small" />}
+													endIcon="‰"
+												/>
+											</Box>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomTextInput
+													id="st_plafond_penalite"
+													type="text"
+													label="Plafond pénalité"
+													value={formik.values.st_plafond_penalite}
+													onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+														if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) formik.setFieldValue('st_plafond_penalite', e.target.value);
+													}}
+													onBlur={formik.handleBlur('st_plafond_penalite')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<PercentIcon fontSize="small" />}
+													endIcon="%"
+												/>
+											</Box>
+										</Stack>
+										<CustomTextInput
+											id="st_delai_paiement"
+											type="text"
+											label="Délai de paiement (jours)"
+											value={formik.values.st_delai_paiement}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+												if (/^\d*$/.test(e.target.value)) formik.setFieldValue('st_delai_paiement', e.target.value);
+											}}
+											onBlur={formik.handleBlur('st_delai_paiement')}
+											fullWidth={false}
+											size="small"
+											theme={inputTheme}
+											startIcon={<TimerIcon fontSize="small" />}
+										/>
+									</Stack>
+								</CardContent>
+							</Card>
+						)}
+
+						{/* ── ST: Échéancier (Tranches) ── */}
+						{isST && (
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+										<Stack direction="row" spacing={2} alignItems="center">
+											<PlaylistAddCheckIcon color="primary" />
+											<Typography variant="h6" fontWeight={700}>Échéancier ST</Typography>
+										</Stack>
+										<Button
+											variant="contained"
+											size="small"
+											startIcon={<AddIcon />}
+											onClick={() => addStTranche()}
+										>
+											Ajouter une tranche
+										</Button>
+									</Stack>
+									<Divider sx={{ mb: 3 }} />
+									<Box sx={{ width: '100%' }}>
+										<DataGrid
+											rows={stTrancheRows}
+											columns={stTrancheColumns}
+											localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
+											rowHeight={52}
+											disableColumnMenu
+											disableRowSelectionOnClick
+											hideFooter={(formik.values.st_tranches ?? []).length <= 5}
+											pageSizeOptions={[5, 10, 25]}
+											initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+											sx={{
+												border: 1,
+												borderColor: 'divider',
+												borderRadius: 2,
+												'& .MuiDataGrid-cell': { display: 'flex', alignItems: 'center' },
+												'& .MuiDataGrid-columnHeaders': { fontFamily: 'Poppins', fontWeight: 700 },
+											}}
+										/>
+									</Box>
+								</CardContent>
+							</Card>
+						)}
+
+						{/* ── ST: Délais ── */}
+						{isST && (
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<TimerIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>Délais & Garantie ST</Typography>
+									</Stack>
+									<Divider sx={{ mb: 3 }} />
+									<Stack spacing={2.5}>
+										<Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomTextInput
+													id="st_delai_val"
+													type="text"
+													label="Délai d'exécution"
+													value={formik.values.st_delai_val}
+													onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+														if (/^\d*$/.test(e.target.value)) formik.setFieldValue('st_delai_val', e.target.value);
+													}}
+													onBlur={formik.handleBlur('st_delai_val')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<TimerIcon fontSize="small" />}
+												/>
+											</Box>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomDropDownSelect
+													id="st_delai_unit"
+													label="Unité de délai"
+													items={stDelaiUnitItemsList.map((i) => i.value)}
+													value={stDelaiUnitItemsList.find((i) => i.code === formik.values.st_delai_unit)?.value ?? formik.values.st_delai_unit}
+													onChange={(e: SelectChangeEvent) => {
+														const selected = stDelaiUnitItemsList.find((i) => i.value === e.target.value);
+														formik.setFieldValue('st_delai_unit', selected?.code ?? e.target.value);
+													}}
+													size="small"
+													theme={customDropdownTheme()}
+													startIcon={<TimerIcon fontSize="small" />}
+												/>
+											</Box>
+										</Stack>
+										<Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomTextInput
+													id="st_garantie_mois"
+													type="text"
+													label="Garantie (mois)"
+													value={formik.values.st_garantie_mois}
+													onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+														if (/^\d*$/.test(e.target.value)) formik.setFieldValue('st_garantie_mois', e.target.value);
+													}}
+													onBlur={formik.handleBlur('st_garantie_mois')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<ShieldIcon fontSize="small" />}
+												/>
+											</Box>
+											<Box sx={{ flex: 1, minWidth: 0 }}>
+												<CustomTextInput
+													id="st_delai_reserves"
+													type="text"
+													label="Délai levée réserves (jours)"
+													value={formik.values.st_delai_reserves}
+													onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+														if (/^\d*$/.test(e.target.value)) formik.setFieldValue('st_delai_reserves', e.target.value);
+													}}
+													onBlur={formik.handleBlur('st_delai_reserves')}
+													fullWidth
+													size="small"
+													theme={inputTheme}
+													startIcon={<TimerIcon fontSize="small" />}
+												/>
+											</Box>
+										</Stack>
+										<CustomTextInput
+											id="st_delai_med"
+											type="text"
+											label="Délai médiation (jours)"
+											value={formik.values.st_delai_med}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+												if (/^\d*$/.test(e.target.value)) formik.setFieldValue('st_delai_med', e.target.value);
+											}}
+											onBlur={formik.handleBlur('st_delai_med')}
+											fullWidth={false}
+											size="small"
+											theme={inputTheme}
+											startIcon={<GavelIcon fontSize="small" />}
+										/>
+									</Stack>
+								</CardContent>
+							</Card>
+						)}
+
+						{/* ── ST: Clauses actives ── */}
+						{isST && (
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<GavelIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>Clauses actives ST</Typography>
+									</Stack>
+									<Divider sx={{ mb: 3 }} />
+									<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1 }}>
+										{stClausesActivesList.map((opt) => (
+											<FormControlLabel
+												key={opt.key}
+												control={
+													<Checkbox
+														checked={(formik.values.st_clauses_actives ?? []).includes(opt.key)}
+														onChange={() => toggleStClause(opt.key)}
+														size="small"
+													/>
+												}
+												label={<Typography variant="body2" sx={{ fontFamily: 'Poppins' }}>{opt.label}</Typography>}
+											/>
+										))}
+									</Box>
+								</CardContent>
+							</Card>
+						)}
+
+						{/* ── ST: Observations ── */}
+						{isST && (
+							<Card elevation={2} sx={{ borderRadius: 2 }}>
+								<CardContent sx={{ p: 3 }}>
+									<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+										<NotesIcon color="primary" />
+										<Typography variant="h6" fontWeight={700}>Observations</Typography>
+									</Stack>
+									<Divider sx={{ mb: 3 }} />
+									<CustomTextInput
+										id="st_observations"
+										type="text"
+										label="Observations"
+										multiline
+										rows={4}
+										value={formik.values.st_observations}
+										onChange={formik.handleChange('st_observations')}
+										onBlur={formik.handleBlur('st_observations')}
+										fullWidth
+										size="small"
+										theme={inputTheme}
+										startIcon={<NotesIcon fontSize="small" />}
+									/>
 								</CardContent>
 							</Card>
 						)}

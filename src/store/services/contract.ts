@@ -6,11 +6,11 @@ import type { ContractClass } from '@/models/classes';
 import type { ApiErrorResponseType, PaginationResponseType, SuccessResponseType } from '@/types/_initTypes';
 import type { RootState } from '@/store/store';
 import { initToken } from '@/store/slices/_initSlice';
-import type { ContractStatutType } from '@/types/contractTypes';
+import type { ContractStatutType, ProjectType, CompanyConfigType } from '@/types/contractTypes';
 
 export const contractApi = createApi({
 	reducerPath: 'contractApi',
-	tagTypes: ['Contract'],
+	tagTypes: ['Contract', 'Project', 'CompanyConfig'],
 	baseQuery: axiosBaseQuery((api) =>
 		isAuthenticatedInstance(
 			() => getInitStateToken(api.getState() as RootState),
@@ -110,6 +110,34 @@ export const contractApi = createApi({
 			}),
 			invalidatesTags: ['Contract'],
 		}),
+
+		/* ── Projects ── */
+		getProjectsList: builder.query<ProjectType[], { company?: string }>({
+			query: ({ company }) => ({
+				url: process.env.NEXT_PUBLIC_PROJECT_LIST,
+				method: 'GET',
+				params: company ? { company } : undefined,
+			}),
+			providesTags: ['Project'],
+		}),
+
+		addProject: builder.mutation<ProjectType, { data: Partial<ProjectType> }>({
+			query: ({ data }) => ({
+				url: process.env.NEXT_PUBLIC_PROJECT_LIST,
+				method: 'POST',
+				data,
+			}),
+			invalidatesTags: ['Project'],
+		}),
+
+		/* ── Company Config ── */
+		getCompanyConfigsList: builder.query<CompanyConfigType[], void>({
+			query: () => ({
+				url: process.env.NEXT_PUBLIC_COMPANY_CONFIG_LIST,
+				method: 'GET',
+			}),
+			providesTags: ['CompanyConfig'],
+		}),
 	}),
 });
 
@@ -122,4 +150,7 @@ export const {
 	usePatchContractStatutMutation,
 	useDeleteContractMutation,
 	useBulkDeleteContractsMutation,
+	useGetProjectsListQuery,
+	useAddProjectMutation,
+	useGetCompanyConfigsListQuery,
 } = contractApi;

@@ -4,6 +4,9 @@ import { setupApiStore } from '@/store/setupApiStore';
 beforeAll(() => {
 	process.env.NEXT_PUBLIC_CONTRACT_LIST ||= 'https://example.com/contracts/';
 	process.env.NEXT_PUBLIC_CONTRACT_ROOT ||= 'https://example.com';
+	process.env.NEXT_PUBLIC_PROJECT_LIST ||= 'https://example.com/projects/';
+	process.env.NEXT_PUBLIC_COMPANY_CONFIG_LIST ||= 'https://example.com/company-config/';
+	process.env.NEXT_PUBLIC_CONTRACT_GENERATE_CODE_REFERENCE ||= 'https://example.com/generate/';
 });
 
 jest.mock('@/utils/axiosBaseQuery', () => ({
@@ -72,6 +75,56 @@ describe('contractApi', () => {
 
 	it('deleteContract mutation completes without error', async () => {
 		const result = await storeRef.store.dispatch(contractApi.endpoints.deleteContract.initiate({ id: 1 }));
+		expect('error' in result).toBe(false);
+	});
+
+	it('bulkDeleteContracts mutation completes without error', async () => {
+		const result = await storeRef.store.dispatch(
+			contractApi.endpoints.bulkDeleteContracts.initiate({ ids: [1, 2] }),
+		);
+		expect('error' in result).toBe(false);
+	});
+
+	/* ── Projects endpoints ── */
+
+	it('getProjectsList query completes without error', async () => {
+		const result = await storeRef.store.dispatch(
+			contractApi.endpoints.getProjectsList.initiate({ company: 'casa_di_lusso' }),
+		);
+		expect('error' in result).toBe(false);
+	});
+
+	it('getProjectsList query without company filter completes', async () => {
+		const result = await storeRef.store.dispatch(
+			contractApi.endpoints.getProjectsList.initiate({}),
+		);
+		expect('error' in result).toBe(false);
+	});
+
+	it('addProject mutation completes without error', async () => {
+		const result = await storeRef.store.dispatch(
+			contractApi.endpoints.addProject.initiate({
+				data: { name: 'Test project', company: 'casa_di_lusso' },
+			}),
+		);
+		expect('error' in result).toBe(false);
+	});
+
+	/* ── Company Config endpoint ── */
+
+	it('getCompanyConfigsList query completes without error', async () => {
+		const result = await storeRef.store.dispatch(
+			contractApi.endpoints.getCompanyConfigsList.initiate(),
+		);
+		expect('error' in result).toBe(false);
+	});
+
+	/* ── Code Reference endpoint ── */
+
+	it('getCodeReference query completes without error', async () => {
+		const result = await storeRef.store.dispatch(
+			contractApi.endpoints.getCodeReference.initiate(),
+		);
 		expect('error' in result).toBe(false);
 	});
 });
