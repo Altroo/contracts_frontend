@@ -122,12 +122,12 @@ export type ProjectType = {
 	company: ContractCompanyType;
 	company_display: string;
 	name: string;
-	type: STProjetType | string;
-	type_display: string;
-	description: string;
-	adresse: string;
-	maitre_ouvrage: string;
-	permis: string;
+	type: STProjetType | string | null;
+	type_display: string | null;
+	description: string | null;
+	adresse: string | null;
+	maitre_ouvrage: string | null;
+	permis: string | null;
 	is_predefined: boolean;
 	created_by_user: number | null;
 	date_created: string;
