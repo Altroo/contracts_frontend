@@ -282,7 +282,7 @@ export const contractSchema = z
 		st_tranches: z
 			.array(
 				z.object({
-					label: z.string().min(1, { error: INPUT_REQUIRED }),
+					label: z.preprocess((val) => (val === undefined ? '' : val), z.string().min(1, { error: INPUT_REQUIRED })),
 					pourcentage: z.number().min(0).max(100),
 				}),
 			)

@@ -359,11 +359,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				payload.frais_redemarrage = null;
 				payload.delai_reserves = 7;
 				payload.clauses_actives = [];
-				payload.clause_spec = '';
-				payload.exclusions = '';
-				payload.architecte = '';
-				payload.version_document = '';
-				payload.annexes = '';
+				payload.clause_spec = null;
+				payload.exclusions = null;
+				payload.architecte = null;
+				payload.version_document = 'v1.0 \u2013 D\u00e9finitif';
+				payload.annexes = null;
 			}
 			/* For ST: send null instead of empty string for optional client_nom */
 			if (isST && !fields.client_nom) {
@@ -635,6 +635,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				);
 				if (hasCellErrors) errors['prestations'] = 'Veuillez corriger les erreurs dans les prestations';
 			}
+			/* Per-cell ST tranche errors (array) — show only for ST */
+			if (currentIsST && Array.isArray(formik.errors.st_tranches)) {
+				const hasCellErrors = (formik.errors.st_tranches as unknown[]).some(
+					(rowErr) => rowErr && typeof rowErr === 'object' && Object.keys(rowErr as object).length > 0,
+				);
+				if (hasCellErrors) errors['st_tranches'] = 'Veuillez corriger les erreurs dans les tranches ST';
+			}
 		}
 		return errors;
 	}, [formik.errors, formik.values.company, formik.values.contract_category, hasAttemptedSubmit]);
@@ -691,6 +698,22 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		current[index] = { ...current[index], [field]: value };
 		formik.setFieldValue('prestations', current);
 	}, [formik]);
+
+	/* ── ST Tranche cell errors ── */
+	const stTrancheCellErrors = useMemo(() => {
+		const errors: Record<string, string> = {};
+		const raw = formik.errors.st_tranches;
+		if (Array.isArray(raw)) {
+			raw.forEach((rowErr, i) => {
+				if (rowErr && typeof rowErr === 'object') {
+					Object.entries(rowErr as Record<string, string>).forEach(([field, msg]) => {
+						errors[`${i}_${field}`] = msg;
+					});
+				}
+			});
+		}
+		return errors;
+	}, [formik.errors.st_tranches]);
 
 	/* ── Prestations DataGrid columns ── */
 	const prestationCellErrors = useMemo(() => {
@@ -1002,18 +1025,24 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				const realIdx = Number(params.id);
 				const tr = (formik.values.st_tranches ?? [])[realIdx];
 				if (!tr) return null;
+				const errKey = `${realIdx}_label`;
+				const hasError = hasAttemptedSubmit && !!stTrancheCellErrors[errKey];
+				const errMsg = stTrancheCellErrors[errKey] ?? '';
 				return (
-					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-						<CustomTextInput
-							id={`st_tranches.${realIdx}.label`}
-							type="text"
-							label=""
-							value={tr.label}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateStTranche(realIdx, 'label', e.target.value)}
-							size="small"
-							theme={gridCellInputTheme}
-						/>
-					</Box>
+					<Tooltip title={hasError ? errMsg : ''} arrow>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<CustomTextInput
+								id={`st_tranches.${realIdx}.label`}
+								type="text"
+								label=""
+								value={tr.label}
+								onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateStTranche(realIdx, 'label', e.target.value)}
+								size="small"
+								theme={gridCellInputTheme}
+								error={hasError}
+							/>
+						</Box>
+					</Tooltip>
 				);
 			},
 		},
@@ -1068,7 +1097,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				);
 			},
 		},
-	], [formik.values.st_tranches, updateStTranche, removeStTranche]);
+	], [formik.values.st_tranches, updateStTranche, removeStTranche, stTrancheCellErrors, hasAttemptedSubmit]);
 
 	const stTrancheRows = useMemo(() =>
 		(formik.values.st_tranches ?? []).map((tr, i) => ({ id: i, ...tr })),
