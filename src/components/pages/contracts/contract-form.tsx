@@ -166,11 +166,31 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 	const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
 	const today = formatLocalDate(new Date());
+	const initialCompany = (rawData?.company as ContractCompanyType) ?? 'casa_di_lusso';
+	const initialContractCategory = (rawData?.contract_category as ContractCategoryType) ?? 'standard';
+	const initialIsBlueline = initialCompany === 'blueline_works';
+	const initialIsST = initialCompany === 'casa_di_lusso' && initialContractCategory === 'sous_traitance';
+	const initialIsCDL = !initialIsBlueline && !initialIsST;
+	const initialPrestations = rawData?.prestations?.length
+		? rawData.prestations
+		: initialIsBlueline
+			? [{ nom: '', description: '', quantite: 0, unite: 'm2', prix_unitaire: 0 }]
+			: [];
+	const initialTranches = rawData?.tranches?.length
+		? rawData.tranches
+		: initialIsCDL
+			? [{ label: '', pourcentage: 0 }]
+			: [];
+	const initialStTranches = rawData?.st_tranches?.length
+		? rawData.st_tranches
+		: initialIsST
+			? [{ label: '', pourcentage: 0 }]
+			: [];
 
 	const formik = useFormik<ContractFormValuesType>({
 		initialValues: {
-			company: (rawData?.company as ContractCompanyType) ?? 'casa_di_lusso',
-			contract_category: (rawData?.contract_category as ContractCategoryType) ?? 'standard',
+			company: initialCompany,
+			contract_category: initialContractCategory,
 			numero_contrat: isEditMode ? (rawData?.numero_contrat ?? '') : (generatedCodeData?.numero_contrat ?? ''),
 			date_contrat: isEditMode ? (rawData?.date_contrat ?? today) : today,
 			statut: rawData?.statut ?? 'Brouillon',
@@ -201,7 +221,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			/* ── Casa Di Lusso fields ── */
 			services: rawData?.services ?? [],
 			conditions_acces: rawData?.conditions_acces ?? '',
-			tranches: rawData?.tranches ?? [],
+			tranches: initialTranches,
 			delai_retard: rawData?.delai_retard != null ? String(rawData.delai_retard) : '5',
 			frais_redemarrage: rawData?.frais_redemarrage != null ? String(rawData.frais_redemarrage) : '',
 			delai_reserves: rawData?.delai_reserves != null ? String(rawData.delai_reserves) : '7',
@@ -216,7 +236,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			client_cp: rawData?.client_cp ?? '',
 			chantier_ville: rawData?.chantier_ville ?? '',
 			chantier_etage: rawData?.chantier_etage ?? '',
-			prestations: rawData?.prestations ?? [],
+			prestations: initialPrestations,
 			fournitures: rawData?.fournitures ?? '',
 			materiaux_detail: rawData?.materiaux_detail ?? '',
 			eau_electricite: rawData?.eau_electricite ?? '',
@@ -253,7 +273,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			st_penalite_taux: rawData?.st_penalite_taux != null ? String(rawData.st_penalite_taux) : '0.5',
 			st_plafond_penalite: rawData?.st_plafond_penalite != null ? String(rawData.st_plafond_penalite) : '10',
 			st_delai_paiement: rawData?.st_delai_paiement != null ? String(rawData.st_delai_paiement) : '30',
-			st_tranches: rawData?.st_tranches ?? [],
+			st_tranches: initialStTranches,
 			st_delai_val: rawData?.st_delai_val != null ? String(rawData.st_delai_val) : '',
 			st_delai_unit: rawData?.st_delai_unit ?? 'mois',
 			st_garantie_mois: rawData?.st_garantie_mois != null ? String(rawData.st_garantie_mois) : '12',
@@ -264,7 +284,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			globalError: '',
 		},
 		enableReinitialize: true,
-		validateOnMount: true,
 		validationSchema: toFormikValidationSchema(contractSchema),
 		validate: (values) => {
 			const errors: Partial<Record<string, string>> = {};

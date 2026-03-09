@@ -176,14 +176,6 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 		setPrintMenuItemId(null);
 	}, []);
 
-	const companyFilterOptions = React.useMemo(
-		() => [
-			{ value: 'casa_di_lusso', label: 'Casa di Lusso', color: 'warning' as const },
-			{ value: 'blueline_works', label: 'Blueline Works', color: 'info' as const },
-		],
-		[],
-	);
-
 	const statutFilterOptions = React.useMemo(
 		() => [
 			{ value: 'Brouillon', label: 'Brouillon', color: 'default' as const },
@@ -247,7 +239,7 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			headerName: 'Société',
 			flex: 0.9,
 			minWidth: 120,
-			filterOperators: createDropdownFilterOperators(companyFilterOptions, 'Toutes les sociétés', true),
+			filterable: false,
 			renderCell: (params: GridRenderCellParams<ContractClass>) => {
 				const label = params.row.company_display ?? params.value ?? '—';
 				return (
@@ -267,6 +259,7 @@ const ContractsListClient: React.FC<SessionProps> = ({ session }: SessionProps) 
 			headerName: 'Catégorie',
 			flex: 0.9,
 			minWidth: 130,
+			filterable: false,
 			renderCell: (params: GridRenderCellParams<ContractClass>) => {
 				const catCode = params.value as string | undefined;
 				const catItem = contractCategoryItemsList.find((c) => c.code === catCode);
