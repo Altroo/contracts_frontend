@@ -118,6 +118,12 @@ import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 const inputTheme = textInputTheme();
 const gridCellInputTheme = gridInputTheme();
 const gridCellDropdownTheme = customGridDropdownTheme();
+const ECHEANCIER_TOTAL_ERROR = 'Le total des pourcentages de l\'échéancier doit être égal à 100%.';
+
+const getTrancheTotal = (tranches?: Array<{ pourcentage: number }>) =>
+	(tranches ?? []).reduce((sum, tranche) => sum + Number(tranche.pourcentage || 0), 0);
+
+const hasValidTrancheTotal = (tranches?: Array<{ pourcentage: number }>) => Math.abs(getTrancheTotal(tranches) - 100) < 0.001;
 
 type FormikContentProps = {
 	token: string | undefined;
@@ -612,6 +618,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		const errors: Record<string, string> = {};
 		const currentCompany = formik.values.company;
 		const currentCategory = formik.values.contract_category;
+		const currentTranches = formik.values.tranches ?? [];
+		const currentStTranches = formik.values.st_tranches ?? [];
 		const blFields = new Set(['prestations', 'fournitures', 'eau_electricite', 'acompte', 'tranche2', 'clause_resiliation', 'client_ville', 'client_cp', 'chantier_ville', 'chantier_etage', 'garantie_nb', 'garantie_unite', 'garantie_type', 'exclusions_garantie', 'materiaux_detail', 'notes']);
 		const cdlFields = new Set(['type_contrat', 'services', 'tranches', 'delai_retard', 'frais_redemarrage', 'delai_reserves', 'clauses_actives', 'clause_spec', 'exclusions', 'architecte', 'version_document', 'annexes', 'conditions_acces']);
 		const stFields = new Set(['st_projet', 'st_name', 'st_forme', 'st_capital', 'st_rc', 'st_ice', 'st_if', 'st_cnss', 'st_addr', 'st_rep', 'st_cin', 'st_qualite', 'st_tel', 'st_email', 'st_rib', 'st_banque', 'st_lot_type', 'st_lot_description', 'st_type_prix', 'st_retenue_garantie', 'st_avance', 'st_penalite_taux', 'st_plafond_penalite', 'st_delai_paiement', 'st_tranches', 'st_delai_val', 'st_delai_unit', 'st_garantie_mois', 'st_delai_reserves', 'st_delai_med', 'st_clauses_actives', 'st_observations']);
@@ -635,16 +643,31 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				);
 				if (hasCellErrors) errors['prestations'] = 'Veuillez corriger les erreurs dans les prestations';
 			}
+			/* Per-cell CDL tranche errors (array) — show only for standard CDL */
+			if (!currentIsST && currentCompany === 'casa_di_lusso' && Array.isArray(formik.errors.tranches)) {
+				const hasCellErrors = (formik.errors.tranches as unknown[]).some(
+					(rowErr) => rowErr && typeof rowErr === 'object' && Object.keys(rowErr as object).length > 0,
+				);
+				if (!hasValidTrancheTotal(currentTranches)) {
+					errors['tranches'] = ECHEANCIER_TOTAL_ERROR;
+				} else if (hasCellErrors) {
+					errors['tranches'] = 'Veuillez corriger les erreurs dans l\'échéancier de paiement';
+				}
+			}
 			/* Per-cell ST tranche errors (array) — show only for ST */
 			if (currentIsST && Array.isArray(formik.errors.st_tranches)) {
 				const hasCellErrors = (formik.errors.st_tranches as unknown[]).some(
 					(rowErr) => rowErr && typeof rowErr === 'object' && Object.keys(rowErr as object).length > 0,
 				);
-				if (hasCellErrors) errors['st_tranches'] = 'Veuillez corriger les erreurs dans les tranches ST';
+				if (!hasValidTrancheTotal(currentStTranches)) {
+					errors['st_tranches'] = ECHEANCIER_TOTAL_ERROR;
+				} else if (hasCellErrors) {
+					errors['st_tranches'] = 'Veuillez corriger les erreurs dans les tranches ST';
+				}
 			}
 		}
 		return errors;
-	}, [formik.errors, formik.values.company, formik.values.contract_category, hasAttemptedSubmit]);
+	}, [formik.errors, formik.values.company, formik.values.contract_category, formik.values.tranches, formik.values.st_tranches, hasAttemptedSubmit]);
 
 	const hasValidationErrors = Object.keys(validationErrors).length > 0;
 	const isLoading = isAddLoading || isEditLoading || isPending || (isEditMode && isDataLoading) || (!isEditMode && isCodeLoading);
@@ -679,7 +702,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		} else if (isCDL && !values.tranches?.length) {
 			setFieldValue('tranches', [{ label: '', pourcentage: 0 }]);
 		}
-	}, [isBlueline, isST, isCDL]);
+	}, [
+		isBlueline,
+		isST,
+		isCDL,
+		formik.values.prestations?.length,
+		formik.values.st_tranches?.length,
+		formik.values.tranches?.length,
+	]);
 
 	/* ── Prestations helpers ── */
 	const addPrestation = useCallback(() => {
@@ -714,6 +744,24 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 		}
 		return errors;
 	}, [formik.errors.st_tranches]);
+
+	const trancheCellErrors = useMemo(() => {
+		const errors: Record<string, string> = {};
+		const raw = formik.errors.tranches;
+		if (Array.isArray(raw)) {
+			raw.forEach((rowErr, i) => {
+				if (rowErr && typeof rowErr === 'object') {
+					Object.entries(rowErr as Record<string, string>).forEach(([field, msg]) => {
+						errors[`${i}_${field}`] = msg;
+					});
+				}
+			});
+		}
+		return errors;
+	}, [formik.errors.tranches]);
+
+	const cdlTrancheTotalInvalid = hasAttemptedSubmit && isCDL && !hasValidTrancheTotal(formik.values.tranches);
+	const stTrancheTotalInvalid = hasAttemptedSubmit && isST && !hasValidTrancheTotal(formik.values.st_tranches);
 
 	/* ── Prestations DataGrid columns ── */
 	const prestationCellErrors = useMemo(() => {
@@ -941,18 +989,24 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				const realIdx = Number(params.id);
 				const tr = (formik.values.tranches ?? [])[realIdx];
 				if (!tr) return null;
+				const errKey = `${realIdx}_label`;
+				const hasError = hasAttemptedSubmit && !!trancheCellErrors[errKey];
+				const errMsg = trancheCellErrors[errKey] ?? '';
 				return (
-					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-						<CustomTextInput
-							id={`tranches.${realIdx}.label`}
-							type="text"
-							label=""
-							value={tr.label}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateTranche(realIdx, 'label', e.target.value)}
-							size="small"
-							theme={gridCellInputTheme}
-						/>
-					</Box>
+					<Tooltip title={hasError ? errMsg : ''} arrow>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<CustomTextInput
+								id={`tranches.${realIdx}.label`}
+								type="text"
+								label=""
+								value={tr.label}
+								onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateTranche(realIdx, 'label', e.target.value)}
+								size="small"
+								theme={gridCellInputTheme}
+								error={hasError}
+							/>
+						</Box>
+					</Tooltip>
 				);
 			},
 		},
@@ -965,23 +1019,30 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				const realIdx = Number(params.id);
 				const tr = (formik.values.tranches ?? [])[realIdx];
 				if (!tr) return null;
+				const errKey = `${realIdx}_pourcentage`;
+				const hasFieldError = hasAttemptedSubmit && !!trancheCellErrors[errKey];
+				const hasError = hasFieldError || cdlTrancheTotalInvalid;
+				const errMsg = hasFieldError ? (trancheCellErrors[errKey] ?? '') : ECHEANCIER_TOTAL_ERROR;
 				return (
-					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-						<CustomTextInput
-							id={`tranches.${realIdx}.pourcentage`}
-							type="text"
-							label=""
-							value={String(tr.pourcentage || '')}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-								if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) {
-									updateTranche(realIdx, 'pourcentage', parseFloat(e.target.value.replace(',', '.')) || 0);
-								}
-							}}
-							size="small"
-							theme={gridCellInputTheme}
-							endIcon={<InputAdornment position="end">%</InputAdornment>}
-						/>
-					</Box>
+					<Tooltip title={hasError ? errMsg : ''} arrow>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<CustomTextInput
+								id={`tranches.${realIdx}.pourcentage`}
+								type="text"
+								label=""
+								value={String(tr.pourcentage || '')}
+								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+									if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) {
+										updateTranche(realIdx, 'pourcentage', parseFloat(e.target.value.replace(',', '.')) || 0);
+									}
+								}}
+								size="small"
+								theme={gridCellInputTheme}
+								error={hasError}
+								endIcon={<InputAdornment position="end">%</InputAdornment>}
+							/>
+						</Box>
+					</Tooltip>
 				);
 			},
 		},
@@ -1007,7 +1068,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				);
 			},
 		},
-	], [formik.values.tranches, updateTranche, removeTranche]);
+	], [formik.values.tranches, updateTranche, removeTranche, trancheCellErrors, hasAttemptedSubmit, cdlTrancheTotalInvalid]);
 
 	const trancheRows = useMemo(() =>
 		(formik.values.tranches ?? []).map((tr, i) => ({ id: i, ...tr })),
@@ -1055,23 +1116,30 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				const realIdx = Number(params.id);
 				const tr = (formik.values.st_tranches ?? [])[realIdx];
 				if (!tr) return null;
+				const errKey = `${realIdx}_pourcentage`;
+				const hasFieldError = hasAttemptedSubmit && !!stTrancheCellErrors[errKey];
+				const hasError = hasFieldError || stTrancheTotalInvalid;
+				const errMsg = hasFieldError ? (stTrancheCellErrors[errKey] ?? '') : ECHEANCIER_TOTAL_ERROR;
 				return (
-					<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-						<CustomTextInput
-							id={`st_tranches.${realIdx}.pourcentage`}
-							type="text"
-							label=""
-							value={String(tr.pourcentage || '')}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-								if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) {
-									updateStTranche(realIdx, 'pourcentage', parseFloat(e.target.value.replace(',', '.')) || 0);
-								}
-							}}
-							size="small"
-							theme={gridCellInputTheme}
-							endIcon={<InputAdornment position="end">%</InputAdornment>}
-						/>
-					</Box>
+					<Tooltip title={hasError ? errMsg : ''} arrow>
+						<Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+							<CustomTextInput
+								id={`st_tranches.${realIdx}.pourcentage`}
+								type="text"
+								label=""
+								value={String(tr.pourcentage || '')}
+								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+									if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) {
+										updateStTranche(realIdx, 'pourcentage', parseFloat(e.target.value.replace(',', '.')) || 0);
+									}
+								}}
+								size="small"
+								theme={gridCellInputTheme}
+								error={hasError}
+								endIcon={<InputAdornment position="end">%</InputAdornment>}
+							/>
+						</Box>
+					</Tooltip>
 				);
 			},
 		},
@@ -1097,7 +1165,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				);
 			},
 		},
-	], [formik.values.st_tranches, updateStTranche, removeStTranche, stTrancheCellErrors, hasAttemptedSubmit]);
+	], [formik.values.st_tranches, updateStTranche, removeStTranche, stTrancheCellErrors, hasAttemptedSubmit, stTrancheTotalInvalid]);
 
 	const stTrancheRows = useMemo(() =>
 		(formik.values.st_tranches ?? []).map((tr, i) => ({ id: i, ...tr })),

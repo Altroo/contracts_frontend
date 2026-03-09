@@ -98,11 +98,32 @@ const optionalTVANumberField = (min: number = 0, max?: number) =>
 			.nullable(),
 	);
 
+const trancheLabelField = z.preprocess(
+	(val) => (val === undefined ? '' : val),
+	z.string().min(1, { error: INPUT_REQUIRED }),
+);
+
+const tranchePourcentageField = z.preprocess(
+	(val) => (val === undefined || val === null || val === '' ? NaN : Number(val)),
+	z
+		.number({ error: INPUT_REQUIRED })
+		.refine((value) => !Number.isNaN(value), { error: INPUT_REQUIRED })
+		.refine((value) => value > 0, { error: INPUT_REQUIRED })
+		.max(100, { error: INPUT_MAX(100) }),
+);
+
 const singleDigit = z
 	.string()
 	.min(1, { error: SHORT_INPUT_REQUIRED })
 	.regex(/^\d$/, { error: SHORT_INPUT_REQUIRED })
 	.transform((val) => Number(val));
+
+const ECHEANCIER_TOTAL_ERROR = 'Le total des pourcentages de l\'échéancier doit être égal à 100%.';
+
+const hasValidEcheancierTotal = (tranches?: Array<{ pourcentage: number }>) => {
+	const total = (tranches ?? []).reduce((sum, tranche) => sum + tranche.pourcentage, 0);
+	return Math.abs(total - 100) < 0.001;
+};
 
 export const loginSchema = z.object({
 	email: z.email({ error: MINI_INPUT_EMAIL }),
@@ -213,8 +234,8 @@ export const contractSchema = z
 		tranches: z
 			.array(
 				z.object({
-					label: z.string().min(1, { error: INPUT_REQUIRED }),
-					pourcentage: z.number().min(0).max(100),
+					label: trancheLabelField,
+					pourcentage: tranchePourcentageField,
 				}),
 			)
 			.optional(),
@@ -282,8 +303,8 @@ export const contractSchema = z
 		st_tranches: z
 			.array(
 				z.object({
-					label: z.preprocess((val) => (val === undefined ? '' : val), z.string().min(1, { error: INPUT_REQUIRED })),
-					pourcentage: z.number().min(0).max(100),
+					label: trancheLabelField,
+					pourcentage: tranchePourcentageField,
 				}),
 			)
 			.optional(),
@@ -340,6 +361,15 @@ export const contractSchema = z
 				ctx.addIssue({ path: ['prestations'], code: 'custom', message: INPUT_REQUIRED });
 			}
 		}
+
+		if (data.company === 'casa_di_lusso' && !isST && !hasValidEcheancierTotal(data.tranches)) {
+			ctx.addIssue({ path: ['tranches'], code: 'custom', message: ECHEANCIER_TOTAL_ERROR });
+		}
+
+		if (isST && !hasValidEcheancierTotal(data.st_tranches)) {
+			ctx.addIssue({ path: ['st_tranches'], code: 'custom', message: ECHEANCIER_TOTAL_ERROR });
+		}
+
 		// Cross-field: acompte + tranche2 must not exceed 100%
 		const a = typeof data.acompte === 'number' ? data.acompte : 0;
 		const t = typeof data.tranche2 === 'number' ? data.tranche2 : 0;

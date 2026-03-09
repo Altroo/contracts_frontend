@@ -252,6 +252,10 @@ describe('Zod Schema Validation', () => {
 			montant_ht: '50000',
 			devise: 'MAD',
 			tva: '20',
+			tranches: [
+				{ label: 'Acompte', pourcentage: 40 },
+				{ label: 'Solde', pourcentage: 60 },
+			],
 			garantie: '12 mois',
 			tribunal: 'Tribunal de Casablanca',
 			responsable_projet: 'Ahmed',
@@ -280,6 +284,7 @@ describe('Zod Schema Validation', () => {
 				client_nom: 'Jean Dupont',
 				montant_ht: '50000',
 				type_contrat: 'travaux_finition',
+				tranches: [{ label: 'Unique', pourcentage: 100 }],
 			};
 			expect(() => contractSchema.parse(minimalContract)).not.toThrow();
 		});
@@ -291,6 +296,7 @@ describe('Zod Schema Validation', () => {
 				client_nom: 'Jean',
 				montant_ht: '100',
 				type_contrat: 'travaux_finition',
+				tranches: [{ label: 'Unique', pourcentage: 100 }],
 				statut: undefined,
 				ville_signature: undefined,
 				client_cin: undefined,
@@ -321,6 +327,7 @@ describe('Zod Schema Validation', () => {
 				client_nom: 'Jean',
 				montant_ht: '100',
 				type_contrat: 'travaux_finition',
+				tranches: [{ label: 'Unique', pourcentage: 100 }],
 				statut: null,
 				devise: null,
 				confidentialite: null,
@@ -335,11 +342,33 @@ describe('Zod Schema Validation', () => {
 				client_nom: 'Jean',
 				montant_ht: '100',
 				type_contrat: 'travaux_finition',
+				tranches: [{ label: 'Unique', pourcentage: 100 }],
 				statut: '',
 				devise: '',
 				confidentialite: '',
 			});
 			expect(result.success).toBe(true);
+		});
+		it('fails when CDL tranche total is not 100%', () => {
+			const result = contractSchema.safeParse({
+				...validContract,
+				tranches: [
+					{ label: 'Acompte', pourcentage: 30 },
+					{ label: 'Solde', pourcentage: 60 },
+				],
+			});
+			expect(result.success).toBe(false);
+		});
+		it('fails with meaningful errors when CDL tranche fields are empty', () => {
+			const result = contractSchema.safeParse({
+				...validContract,
+				tranches: [{ label: undefined, pourcentage: 0 }],
+			});
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(result.error.issues.some((issue) => issue.path.join('.') === 'tranches.0.label' && issue.message === 'Ce champ est obligatoire.')).toBe(true);
+				expect(result.error.issues.some((issue) => issue.path.join('.') === 'tranches.0.pourcentage' && issue.message === 'Ce champ est obligatoire.')).toBe(true);
+			}
 		});
 		it('fails when required field is undefined (preprocess converts to empty)', () => {
 			const result = contractSchema.safeParse({
@@ -364,6 +393,10 @@ describe('Zod Schema Validation', () => {
 			st_name: 'Sub Corp SARL',
 			st_lot_type: 'gros_oeuvre',
 			st_type_prix: 'forfaitaire',
+			st_tranches: [
+				{ label: 'Acompte', pourcentage: 30 },
+				{ label: 'Solde', pourcentage: 70 },
+			],
 		};
 
 		it('validates a complete sous-traitance contract', () => {
@@ -428,6 +461,28 @@ describe('Zod Schema Validation', () => {
 				],
 			});
 			expect(result.success).toBe(true);
+		});
+
+		it('fails when ST tranche total is not 100%', () => {
+			const result = contractSchema.safeParse({
+				...validSTContract,
+				st_tranches: [
+					{ label: 'Acompte', pourcentage: 20 },
+					{ label: 'Solde', pourcentage: 50 },
+				],
+			});
+			expect(result.success).toBe(false);
+		});
+		it('fails with meaningful errors when ST tranche fields are empty', () => {
+			const result = contractSchema.safeParse({
+				...validSTContract,
+				st_tranches: [{ label: undefined, pourcentage: 0 }],
+			});
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(result.error.issues.some((issue) => issue.path.join('.') === 'st_tranches.0.label' && issue.message === 'Ce champ est obligatoire.')).toBe(true);
+				expect(result.error.issues.some((issue) => issue.path.join('.') === 'st_tranches.0.pourcentage' && issue.message === 'Ce champ est obligatoire.')).toBe(true);
+			}
 		});
 
 		it('accepts ST clauses actives array', () => {
@@ -516,6 +571,7 @@ describe('Zod Schema Validation', () => {
 				client_nom: 'Jean',
 				montant_ht: '100',
 				type_contrat: 'travaux_finition',
+				tranches: [{ label: 'Unique', pourcentage: 100 }],
 			});
 			expect(result.success).toBe(true);
 		});
