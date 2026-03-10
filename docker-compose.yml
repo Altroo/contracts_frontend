@@ -3,7 +3,7 @@
 services:
   web:
     build: .
-    container_name: contracts_frontend_web
+    container_name: contracts_web
     restart: always
     env_file:
       - .env.production
