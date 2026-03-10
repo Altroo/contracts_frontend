@@ -179,7 +179,7 @@ const LoginClient: React.FC = () => {
 				<div style={{ display: 'flex', width: '100%', height: '100%' }}>
 					<main className={Styles.main}>
 						<Stack direction="row" alignItems="center" justifyContent="center">
-							<Image src={Logo} alt="" width="0" height="0" sizes="100vw" className={Styles.logo} />
+							<Image src={Logo} alt="E.B.H Contrats - Logo" width="0" height="0" sizes="100vw" className={Styles.logo} />
 						</Stack>
 						<LoginPageContent />
 					</main>
