@@ -52,6 +52,8 @@ export const typeBienItemsList: Array<{ code: string; value: string }> = [
 	{ code: 'appartement', value: 'Appartement' },
 	{ code: 'villa', value: 'Villa' },
 	{ code: 'duplex', value: 'Duplex' },
+	{ code: 'residence', value: 'Résidence' },
+	{ code: 'hotel', value: 'Hôtel' },
 	{ code: 'riad_maison_traditionnelle', value: 'Riad / Maison Traditionnelle' },
 	{ code: 'bureau_local_commercial', value: 'Bureau / Local Commercial' },
 	{ code: 'commerce_local', value: 'Commerce / Local' },
@@ -73,6 +75,8 @@ export const clientQualiteItemsList: Array<{ code: string; value: string }> = [
 ];
 
 export const garantieItemsList: Array<{ code: string; value: string }> = [
+	{ code: '1 mois', value: '1 mois' },
+	{ code: '3 mois', value: '3 mois' },
 	{ code: '6 mois', value: '6 mois' },
 	{ code: '1 an', value: '1 an' },
 	{ code: '2 ans', value: '2 ans' },

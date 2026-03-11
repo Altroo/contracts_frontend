@@ -245,6 +245,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 						<Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" alignItems={isMobile ? 'stretch' : 'center'} spacing={2}>
 							<Button
 								variant="outlined"
+								size="large"
 								startIcon={<ArrowBackIcon />}
 								onClick={() => router.push(CONTRACTS_LIST)}
 								sx={{ width: isMobile ? '100%' : 'auto' }}
@@ -454,7 +455,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 									<Stack spacing={0}>
 										<InfoRow icon={<PersonIcon />} label="Nom" value={contract?.client_nom} />
 										<Divider />
-										<InfoRow icon={<BadgeIcon />} label="CIN / N° ent." value={contract?.client_cin} />
+										<InfoRow icon={<BadgeIcon />} label="CIN/ICE" value={contract?.client_cin} />
 										<Divider />
 										<InfoRow icon={<WorkIcon />} label="Qualité" value={resolveLabel(clientQualiteItemsList, contract?.client_qualite)} />
 										<Divider />
@@ -539,7 +540,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 												value={contract?.montant_ttc != null ? `${Number(contract.montant_ttc).toLocaleString('fr-MA')} ${contract.devise}` : undefined}
 											/>
 											<Divider />
-											<InfoRow icon={<PercentIcon />} label="Pénalité de retard (%/j)" value={contract?.penalite_retard != null ? String(contract.penalite_retard) : undefined} />
+											<InfoRow icon={<MoneyIcon />} label="Pénalité de retard (MAD/j)" value={contract?.penalite_retard != null ? `${contract.penalite_retard} MAD/j` : undefined} />
 											{!isBlueline && (
 												<>
 													<Divider />
@@ -694,7 +695,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 									)}
 
 									{/* Détails additionnels CDL */}
-									{(contract?.clause_spec || contract?.exclusions || contract?.version_document || contract?.annexes) && (
+									{(contract?.clause_spec || contract?.exclusions || contract?.annexes) && (
 										<Card elevation={2} sx={{ borderRadius: 2 }}>
 											<CardContent sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
 												<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
@@ -706,8 +707,6 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 													<InfoRow icon={<GavelIcon />} label="Clause spécifique" value={contract?.clause_spec} />
 													<Divider />
 													<InfoRow icon={<GavelIcon />} label="Exclusions" value={contract?.exclusions} />
-													<Divider />
-													<InfoRow icon={<AttachmentIcon />} label="Version du document" value={contract?.version_document} />
 													<Divider />
 													<InfoRow icon={<AttachmentIcon />} label="Annexes" value={contract?.annexes} />
 												</Stack>
@@ -731,7 +730,7 @@ const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 											<Stack spacing={0}>
 												{contract?.st_projet_detail && (
 													<>
-														<InfoRow icon={<ArchitectureIcon />} label="Projet" value={contract.st_projet_detail.name} />
+														<InfoRow icon={<ArchitectureIcon />} label="Architecte/Designer" value={contract.st_projet_detail.name} />
 														<Divider />
 													</>
 												)}

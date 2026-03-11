@@ -211,7 +211,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			montant_ht: rawData?.montant_ht != null ? String(rawData.montant_ht) : '',
 			devise: rawData?.devise ?? 'MAD',
 			tva: rawData?.tva != null ? String(rawData.tva) : '20',
-			penalite_retard: rawData?.penalite_retard != null ? String(rawData.penalite_retard) : '1.5',
+			penalite_retard: rawData?.penalite_retard != null ? String(rawData.penalite_retard) : '500',
 			garantie: rawData?.garantie ?? '1 an',
 			tribunal: rawData?.tribunal ?? 'Tanger',
 			responsable_projet: rawData?.responsable_projet ?? '',
@@ -462,7 +462,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			type_contrat: 'Type de contrat',
 			ville_signature: 'Ville de signature',
 			client_nom: 'Nom du client',
-			client_cin: 'CIN / N° entreprise',
+			client_cin: 'CIN/ICE',
 			client_qualite: 'Qualité',
 			client_adresse: 'Adresse client',
 			client_tel: 'Téléphone',
@@ -512,7 +512,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			clause_resiliation: 'Clause de résiliation',
 			notes: 'Notes',
 			/* ST fields */
-			st_projet: 'Projet',
+			st_projet: 'Architecte/Designer',
 			st_name: 'Raison sociale du sous-traitant',
 			st_forme: 'Forme juridique',
 			st_capital: 'Capital',
@@ -551,9 +551,36 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
 	/* ── CDL: Available services and clauses ── */
 	const cdlServiceOptions = useMemo(() => [
-		'Design d\'intérieur', 'Travaux de finition', 'Gros œuvre',
-		'Ameublement', 'Suivi de chantier', 'Plans & Visuels 3D',
-		'Coordination corps de métier', 'Livraison clé en main',
+		'Design et conception',
+		'Démolition et gros œuvre intérieur',
+		'Maçonnerie et structure',
+		'Faux plafonds et habillages',
+		'Revêtements de sols',
+		'Revêtements muraux',
+		'Menuiserie bois et sur mesure',
+		'Menuiserie aluminium et PVC',
+		'Métallerie et ferronnerie',
+		'Vitrerie et miroiterie',
+		'Plomberie et sanitaire',
+		'Électricité',
+		'Domotique et maison intelligente',
+		'Climatisation, chauffage et ventilation (CVC)',
+		'Isolation thermique et acoustique',
+		'Peinture et finitions',
+		'Plâtrerie et staff',
+		'Carrelage et revêtement céramique',
+		'Marbre et pierre naturelle',
+		'Cuisine',
+		'Salle de bain et spa',
+		'Dressing et rangement',
+		'Escaliers',
+		'Piscine et espace aquatique',
+		'Aménagement extérieur et paysager',
+		'Mobilier et décoration',
+		'Ascenseurs et monte-charge',
+		'Sécurité et protection incendie',
+		'Traitement et étanchéité',
+		'Coordination et gestion de projet',
 	], []);
 
 	const cdlClauseOptions = useMemo(() => [
@@ -1316,7 +1343,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 									<CustomTextInput
 										id="numero_contrat"
 										type="text"
-										label="Numéro de contrat *"
+										label="Numéro de contrat"
 										value={formik.values.numero_contrat}
 										onChange={formik.handleChange('numero_contrat')}
 										onBlur={formik.handleBlur('numero_contrat')}
@@ -1326,6 +1353,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										size="small"
 										theme={inputTheme}
 										startIcon={<FingerprintIcon fontSize="small" />}
+										disabled
 									/>
 									<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
 										<DatePicker
@@ -1656,7 +1684,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										<CustomTextInput
 											id="penalite_retard"
 											type="number"
-											label="Pénalité de retard"
+											label="Pénalité de retard (MAD/j)"
 											value={formik.values.penalite_retard}
 											onChange={formik.handleChange('penalite_retard')}
 											onBlur={formik.handleBlur('penalite_retard')}
@@ -1664,13 +1692,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											helperText={
 												formik.touched.penalite_retard && formik.errors.penalite_retard
 													? (formik.errors.penalite_retard as string)
-													: 'Entre 0 et 100'
+													: ''
 											}
 											fullWidth
 											size="small"
 											theme={inputTheme}
-											startIcon={<PercentIcon fontSize="small" />}
-											endIcon="%"
+											startIcon={<AttachMoneyIcon fontSize="small" />}
+											endIcon="MAD/j"
 										/>
 									</Stack>
 									<Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
@@ -1984,18 +2012,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 											startIcon={<ShieldIcon fontSize="small" />}
 										/>
 										<CustomTextInput
-											id="version_document"
-											type="text"
-											label="Version du document"
-											value={formik.values.version_document}
-											onChange={formik.handleChange('version_document')}
-											onBlur={formik.handleBlur('version_document')}
-											fullWidth={false}
-											size="small"
-											theme={inputTheme}
-											startIcon={<AttachmentIcon fontSize="small" />}
-										/>
-										<CustomTextInput
 											id="annexes"
 											type="text"
 											label="Annexes"
@@ -2027,7 +2043,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 										{projectsList && projectsList.length > 0 && (
 											<CustomDropDownSelect
 												id="st_projet"
-												label="Projet"
+												label="Architecte/Designer"
 												items={projectsList.map((p) => p.name)}
 												value={projectsList.find((p) => String(p.id) === formik.values.st_projet)?.name ?? ''}
 												onChange={(e: SelectChangeEvent) => {
