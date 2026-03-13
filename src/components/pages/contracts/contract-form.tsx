@@ -326,7 +326,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 				...fields,
 				montant_ht: fields.montant_ht ? parseFloat(fields.montant_ht) : undefined,
 				surface: fields.surface ? parseFloat(fields.surface) : undefined,
-				tva: fields.tva ? parseFloat(fields.tva) : undefined,
+				tva: fields.tva !== '' && fields.tva != null ? parseFloat(fields.tva) : 0,
 				penalite_retard: fields.penalite_retard ? parseFloat(fields.penalite_retard) : undefined,
 				mode_paiement_texte: fields.mode_paiement_texte || null,
 				rib: fields.rib || null,
