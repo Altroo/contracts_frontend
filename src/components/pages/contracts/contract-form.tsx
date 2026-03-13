@@ -324,10 +324,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			const isST = fields.company === 'casa_di_lusso' && fields.contract_category === 'sous_traitance';
 			const payload: Record<string, unknown> = {
 				...fields,
-				montant_ht: fields.montant_ht ? parseFloat(fields.montant_ht) : undefined,
-				surface: fields.surface ? parseFloat(fields.surface) : undefined,
+				montant_ht: fields.montant_ht !== '' && fields.montant_ht != null ? parseFloat(fields.montant_ht) : undefined,
+				surface: fields.surface !== '' && fields.surface != null ? parseFloat(fields.surface) : undefined,
 				tva: fields.tva !== '' && fields.tva != null ? parseFloat(fields.tva) : 0,
-				penalite_retard: fields.penalite_retard ? parseFloat(fields.penalite_retard) : undefined,
+				penalite_retard: fields.penalite_retard !== '' && fields.penalite_retard != null ? parseFloat(fields.penalite_retard) : 0,
 				mode_paiement_texte: fields.mode_paiement_texte || null,
 				rib: fields.rib || null,
 				/* CDL numeric conversions */
