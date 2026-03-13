@@ -92,8 +92,8 @@ const optionalTVANumberField = (min: number = 0, max?: number) =>
 		z
 			.number({ message: TVA_INPUT_INVALID })
 			.refine((val) => Number.isFinite(val), { message: TVA_INPUT_INVALID })
-			.min(min, { message: INPUT_MIN(min) })
-			.max(max ?? Number.MAX_SAFE_INTEGER, { message: INPUT_MAX(max ?? Number.MAX_SAFE_INTEGER) })
+			.min(min, { message: TVA_INPUT_INVALID })
+			.max(max ?? Number.MAX_SAFE_INTEGER, { message: TVA_INPUT_INVALID })
 			.optional()
 			.nullable(),
 	);
@@ -221,7 +221,7 @@ export const contractSchema = z
 		description_travaux: optionalTextField(1, 2000),
 		devise: optionalChoiceField(),
 		tva: optionalTVANumberField(0, 100),
-		penalite_retard: optionalNumberField(0, 100),
+		penalite_retard: optionalNumberField(0),
 		garantie: optionalTextField(1, 255),
 		tribunal: optionalTextField(1, 255),
 		responsable_projet: optionalTextField(1, 255),

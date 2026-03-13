@@ -211,7 +211,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 			montant_ht: rawData?.montant_ht != null ? String(rawData.montant_ht) : '',
 			devise: rawData?.devise ?? 'MAD',
 			tva: rawData?.tva != null ? String(rawData.tva) : '20',
-			penalite_retard: rawData?.penalite_retard != null ? String(rawData.penalite_retard) : '500',
+			penalite_retard: rawData?.penalite_retard != null ? String(rawData.penalite_retard) : '100',
 			garantie: rawData?.garantie ?? '1 an',
 			tribunal: rawData?.tribunal ?? 'Tanger',
 			responsable_projet: rawData?.responsable_projet ?? '',
