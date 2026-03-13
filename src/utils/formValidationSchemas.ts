@@ -221,7 +221,7 @@ export const contractSchema = z
 		description_travaux: optionalTextField(1, 2000),
 		devise: optionalChoiceField(),
 		tva: optionalTVANumberField(0, 100),
-		penalite_retard: optionalNumberField(0, 1_000_000),
+		penalite_retard: optionalNumberField(0, 100),
 		garantie: optionalTextField(1, 255),
 		tribunal: optionalTextField(1, 255),
 		responsable_projet: optionalTextField(1, 255),
