@@ -6,8 +6,8 @@ import { Box, Chip, Divider, Paper, Stack, Typography } from '@mui/material';
 import BuildCircleOutlinedIcon from '@mui/icons-material/BuildCircleOutlined';
 import { useAppSelector } from '@/utils/hooks';
 import { getWSMaintenanceState } from '@/store/selectors';
-import Logo from '../../../../../public/assets/images/contrats-logo.png';
-import MaintenanceSVG from '../../../../../public/assets/images/auth_illu/maintenance.svg';
+import Logo from '../../../../public/assets/images/contrats-logo.png';
+import DocumentSVG from '../../../../public/assets/images/auth_illu/document.svg';
 
 const Maintenance: React.FC = () => {
 	const maintenance = useAppSelector(getWSMaintenanceState);
@@ -55,7 +55,7 @@ const Maintenance: React.FC = () => {
 					/>
 					<Box sx={{ width: '100%', maxWidth: 420 }}>
 						<Image
-							src={MaintenanceSVG}
+							src={DocumentSVG}
 							alt=""
 							priority
 							style={{ width: '100%', height: 'auto' }}
