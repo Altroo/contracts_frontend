@@ -441,7 +441,7 @@ interface Props extends SessionProps {
 }
 
 const UsersFormClient: React.FC<Props> = ({ session, id }: Props) => {
-	const token = useInitAccessToken();
+	const token = useInitAccessToken(session);
 	const isEditMode = id !== undefined;
 
 	return (

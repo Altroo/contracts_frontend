@@ -149,7 +149,7 @@ interface Props extends SessionProps {
 
 const ContractViewClient: React.FC<Props> = ({ session, id }) => {
 	const router = useRouter();
-	const token = useInitAccessToken();
+	const token = useInitAccessToken(session);
 	const { data: contract, isLoading, error } = useGetContractQuery({ id }, { skip: !token });
 	const axiosError = useMemo(
 		() => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),

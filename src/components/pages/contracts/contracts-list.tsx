@@ -45,7 +45,7 @@ import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelect
 const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
   const router = useRouter();
   const {onSuccess, onError} = useToast();
-  const token = useInitAccessToken();
+  const token = useInitAccessToken(session);
 
   const [paginationModel, setPaginationModel] = useState<{ page: number; pageSize: number }>({
     page: 0,

@@ -3023,7 +3023,7 @@ interface Props extends SessionProps {
 }
 
 const ContractFormClient: React.FC<Props> = ({ session, id }: Props) => {
-	const token = useInitAccessToken();
+	const token = useInitAccessToken(session);
 	const isEditMode = id !== undefined;
 
 	return (
@@ -3042,5 +3042,3 @@ const ContractFormClient: React.FC<Props> = ({ session, id }: Props) => {
 };
 
 export default ContractFormClient;
-
-
