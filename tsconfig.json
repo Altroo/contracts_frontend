@@ -18,16 +18,20 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "incremental": true,
-    "types": ["node", "react", "react-dom"],
+    "types": [
+      "node",
+      "react",
+      "react-dom"
+    ],
     "paths": {
-        "@/*": [
-            "./src/*"
-        ]
+      "@/*": [
+        "./src/*"
+      ]
     },
     "plugins": [
-        {
-          "name": "next"
-        }
+      {
+        "name": "next"
+      }
     ]
   },
   "include": [

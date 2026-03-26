@@ -1,22 +1,22 @@
-import { redirect } from 'next/navigation';
-import { type Metadata } from 'next';
-import { auth } from '@/auth';
+import {redirect} from 'next/navigation';
+import {type Metadata} from 'next';
+import {auth} from '@/auth';
 import LoginClient from '@/components/pages/auth/login/login';
-import { DASHBOARD } from '@/utils/routes';
+import {DASHBOARD} from '@/utils/routes';
 
 export const metadata: Metadata = {
-	title: 'Connexion',
-	description: 'Connexion à votre compte',
+  title: 'Connexion',
+  description: 'Connexion à votre compte',
 };
 
 const LoginPage = async () => {
-	const session = await auth();
+  const session = await auth();
 
-	if (session) {
-		redirect(DASHBOARD);
-	}
+  if (session) {
+    redirect(DASHBOARD);
+  }
 
-	return <LoginClient />;
+  return <LoginClient/>;
 };
 
 export default LoginPage;

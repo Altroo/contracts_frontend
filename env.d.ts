@@ -1,44 +1,46 @@
 declare namespace NodeJS {
-	interface ProcessEnv {
-		// Protocol
-		DEBUG_MODE: string;
-		NEXT_PUBLIC_HTTP_PROTOCOLE: 'http' | 'https';
-		HTTP: string;
-		WS: string;
-		ALLOWED_ORIGINS: string;
-		// Next.js backend proxy (for cookies)
-		NEXT_PUBLIC_BACKEND_DOMAIN: string;
-		NEXT_PUBLIC_BACKEND_API: string;
-		NEXT_PUBLIC_API_ROOT_URL: string;
-		NEXT_PUBLIC_API_ROOT_PORT: string;
-		NEXT_PUBLIC_API_URL: string;
-		// Base URLs
-		NEXT_PUBLIC_ROOT_API_URL: string;
-		AUTH_TRUST_HOST: string;
-		NEXTAUTH_SECRET: string;
-		NEXTAUTH_URL: string;
-		NEXT_PUBLIC_DOMAIN_URL_PREFIX: string;
-		// Account
-		NEXT_PUBLIC_ACCOUNT_ROOT: string;
-		NEXT_PUBLIC_ACCOUNT_REFRESH_TOKEN: string;
-		NEXT_PUBLIC_ACCOUNT_LOGIN: string;
-		NEXT_PUBLIC_ACCOUNT_LOGOUT: string;
-		NEXT_PUBLIC_ACCOUNT_CREATE_ACCOUNT: string;
-		NEXT_PUBLIC_ACCOUNT_CHECK_EMAIL: string;
-		NEXT_PUBLIC_ACCOUNT_PASSWORD_CHANGE: string;
-		NEXT_PUBLIC_ACCOUNT_SEND_PASSWORD_RESET: string;
-		NEXT_PUBLIC_ACCOUNT_PASSWORD_RESET: string;
-		NEXT_PUBLIC_ACCOUNT_PROFIL: string;
-		NEXT_PUBLIC_USERS_ROOT: string;
-		// Contracts
-		NEXT_PUBLIC_CONTRACT_ROOT: string;
-		NEXT_PUBLIC_CONTRACT_LIST: string;
-		NEXT_PUBLIC_CONTRACT_PDF: string;
-		NEXT_PUBLIC_CONTRACT_DOCX: string;
-		NEXT_PUBLIC_CONTRACT_GENERATE_CODE_REFERENCE: string;
-		// Projects & Company Config
-		NEXT_PUBLIC_PROJECT_ROOT: string;
-		NEXT_PUBLIC_PROJECT_LIST: string;
-		NEXT_PUBLIC_COMPANY_CONFIG_LIST: string;
-	}
+  interface ProcessEnv {
+    // Protocol
+    DEBUG_MODE: string;
+    NEXT_PUBLIC_HTTP_PROTOCOLE: 'http' | 'https';
+    HTTP: string;
+    WS: string;
+    ALLOWED_ORIGINS: string;
+    // Next.js backend proxy (for cookies)
+    NEXT_PUBLIC_BACKEND_DOMAIN: string;
+    NEXT_PUBLIC_BACKEND_API: string;
+    NEXT_PUBLIC_API_ROOT_URL: string;
+    NEXT_PUBLIC_API_ROOT_PORT: string;
+    NEXT_PUBLIC_API_URL: string;
+    // Base URLs
+    NEXT_PUBLIC_ROOT_API_URL: string;
+    NEXT_PUBLIC_ROOT_WS_URL: string;
+    NEXT_PUBLIC_WS_MAINTENANCE_ROOT: string;
+    AUTH_TRUST_HOST: string;
+    NEXTAUTH_SECRET: string;
+    NEXTAUTH_URL: string;
+    NEXT_PUBLIC_DOMAIN_URL_PREFIX: string;
+    // Account
+    NEXT_PUBLIC_ACCOUNT_ROOT: string;
+    NEXT_PUBLIC_ACCOUNT_REFRESH_TOKEN: string;
+    NEXT_PUBLIC_ACCOUNT_LOGIN: string;
+    NEXT_PUBLIC_ACCOUNT_LOGOUT: string;
+    NEXT_PUBLIC_ACCOUNT_CREATE_ACCOUNT: string;
+    NEXT_PUBLIC_ACCOUNT_CHECK_EMAIL: string;
+    NEXT_PUBLIC_ACCOUNT_PASSWORD_CHANGE: string;
+    NEXT_PUBLIC_ACCOUNT_SEND_PASSWORD_RESET: string;
+    NEXT_PUBLIC_ACCOUNT_PASSWORD_RESET: string;
+    NEXT_PUBLIC_ACCOUNT_PROFIL: string;
+    NEXT_PUBLIC_USERS_ROOT: string;
+    // Contracts
+    NEXT_PUBLIC_CONTRACT_ROOT: string;
+    NEXT_PUBLIC_CONTRACT_LIST: string;
+    NEXT_PUBLIC_CONTRACT_PDF: string;
+    NEXT_PUBLIC_CONTRACT_DOCX: string;
+    NEXT_PUBLIC_CONTRACT_GENERATE_CODE_REFERENCE: string;
+    // Projects & Company Config
+    NEXT_PUBLIC_PROJECT_ROOT: string;
+    NEXT_PUBLIC_PROJECT_LIST: string;
+    NEXT_PUBLIC_COMPANY_CONFIG_LIST: string;
+  }
 }

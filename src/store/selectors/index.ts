@@ -1,6 +1,6 @@
-import type { RootState } from '@/store/store';
-import type { UserClass } from '@/models/classes';
-import type { InitStateToken } from '@/types/_initTypes';
+import type {RootState} from '@/store/store';
+import type {UserClass} from '@/models/classes';
+import type {InitStateToken} from '@/types/_initTypes';
 
 // _Init
 export const getInitStateToken = (state: RootState): InitStateToken => state._init.initStateToken;

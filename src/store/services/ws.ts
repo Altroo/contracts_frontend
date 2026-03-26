@@ -1,8 +1,25 @@
-import type { EventChannel } from 'redux-saga';
-import { END, eventChannel } from 'redux-saga';
-import { WSMaintenanceAction } from '@/store/actions/wsActions';
+import type {EventChannel} from 'redux-saga';
+import {END, eventChannel} from 'redux-saga';
+import {WSMaintenanceAction, WSUserAvatarAction} from '@/store/actions/wsActions';
+import {WSAction, WSEnvelope} from "@/types/wsTypes";
 
-type WSAction = ReturnType<typeof WSMaintenanceAction>;
+
+const isObjectRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null;
+};
+
+const isWSEnvelope = (value: unknown): value is WSEnvelope => {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  const message = value.message;
+  if (!isObjectRecord(message)) {
+    return false;
+  }
+
+  return typeof message.type === 'string';
+};
 
 let ws: WebSocket;
 
@@ -25,16 +42,22 @@ export function initWebsocket(token: string): EventChannel<WSAction> {
         };
         ws.onmessage = (e: MessageEvent) => {
           try {
-            const msg = JSON.parse(e.data);
-            if (msg && msg.message && typeof msg.message.type === 'string') {
-              const signalType = msg.message.type as string;
-              if (signalType === 'MAINTENANCE') {
-                const maintenance = Boolean(msg.message.maintenance);
-                emitter(WSMaintenanceAction(maintenance));
+            const parsedMessage: unknown = JSON.parse(e.data);
+            if (isWSEnvelope(parsedMessage)) {
+              const { message } = parsedMessage;
+              const signalType = message.type;
+              if (signalType === 'USER_AVATAR') {
+                if (typeof message.pk === 'number' && typeof message.avatar === 'string') {
+                  emitter(WSUserAvatarAction(message.pk, message.avatar));
+                }
+              } else if (signalType === 'MAINTENANCE') {
+                if (typeof message.maintenance === 'boolean') {
+                  emitter(WSMaintenanceAction(message.maintenance));
+                }
               }
             }
           } catch {
-            // ignore malformed messages
+            // Skip malformed message and continue listening
           }
         };
         ws.onclose = (e: CloseEvent) => {

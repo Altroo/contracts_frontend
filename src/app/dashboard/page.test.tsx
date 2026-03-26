@@ -1,65 +1,65 @@
-import { jest } from '@jest/globals';
+import {jest} from '@jest/globals';
 
 type SessionUser = { pk: number; email: string };
 type Session = { user: SessionUser } | null;
 
 const mockAuth = jest.fn() as jest.MockedFunction<() => Promise<Session>>;
 jest.mock('@/auth', () => ({
-	__esModule: true,
-	auth: mockAuth,
+  __esModule: true,
+  auth: mockAuth,
 }));
 
-const REDIRECT_SENTINEL = (to: string) => ({ redirectedTo: to });
+const REDIRECT_SENTINEL = (to: string) => ({redirectedTo: to});
 const mockRedirect = jest.fn((url: string | URL) => REDIRECT_SENTINEL(String(url)));
 jest.mock('next/navigation', () => ({
-	__esModule: true,
-	redirect: mockRedirect,
+  __esModule: true,
+  redirect: mockRedirect,
 }));
 
 const AUTH_LOGIN = '/login';
 const CONTRACTS_LIST = '/dashboard/contracts';
 jest.mock('@/utils/routes', () => ({
-	__esModule: true,
-	AUTH_LOGIN,
-	CONTRACTS_LIST,
+  __esModule: true,
+  AUTH_LOGIN,
+  CONTRACTS_LIST,
 }));
 
 beforeEach(() => {
-	jest.resetModules();
-	jest.clearAllMocks();
+  jest.resetModules();
+  jest.clearAllMocks();
 });
 
 afterEach(() => {
-	jest.clearAllMocks();
+  jest.clearAllMocks();
 });
 
 describe('DashboardPage server component', () => {
-	it('redirects to AUTH_LOGIN when no session', async () => {
-		mockAuth.mockResolvedValueOnce(null);
+  it('redirects to AUTH_LOGIN when no session', async () => {
+    mockAuth.mockResolvedValueOnce(null);
 
-		let Page: () => Promise<unknown>;
-		jest.isolateModules(() => {
-			// eslint-disable-next-line @typescript-eslint/no-require-imports
-			const mod = require('./page');
-			Page = mod.default as () => Promise<unknown>;
-		});
+    let Page: () => Promise<unknown>;
+    jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const mod = require('./page');
+      Page = mod.default as () => Promise<unknown>;
+    });
 
-		await Page!();
-		expect(mockRedirect).toHaveBeenCalledWith(AUTH_LOGIN);
-	});
+    await Page!();
+    expect(mockRedirect).toHaveBeenCalledWith(AUTH_LOGIN);
+  });
 
-	it('redirects to CONTRACTS_LIST when session exists', async () => {
-		const sessionValue: Session = { user: { pk: 1, email: 'user@site.com' } };
-		mockAuth.mockResolvedValueOnce(sessionValue);
+  it('redirects to CONTRACTS_LIST when session exists', async () => {
+    const sessionValue: Session = {user: {pk: 1, email: 'user@site.com'}};
+    mockAuth.mockResolvedValueOnce(sessionValue);
 
-		let Page: () => Promise<unknown>;
-		jest.isolateModules(() => {
-			// eslint-disable-next-line @typescript-eslint/no-require-imports
-			const mod = require('./page');
-			Page = mod.default as () => Promise<unknown>;
-		});
+    let Page: () => Promise<unknown>;
+    jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const mod = require('./page');
+      Page = mod.default as () => Promise<unknown>;
+    });
 
-		await Page!();
-		expect(mockRedirect).toHaveBeenCalledWith(CONTRACTS_LIST);
-	});
+    await Page!();
+    expect(mockRedirect).toHaveBeenCalledWith(CONTRACTS_LIST);
+  });
 });

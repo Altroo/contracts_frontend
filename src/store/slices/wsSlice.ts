@@ -1,23 +1,23 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import {createSlice, type PayloadAction} from '@reduxjs/toolkit';
 
 interface WSState {
-	maintenance: boolean;
+  maintenance: boolean;
 }
 
 const initialState: WSState = {
-	maintenance: false,
+  maintenance: false,
 };
 
 const wsSlice = createSlice({
-	name: 'ws',
-	initialState,
-	reducers: {
-		setWSMaintenance: (state, action: PayloadAction<boolean>) => {
-			state.maintenance = action.payload;
-		},
-	},
+  name: 'ws',
+  initialState,
+  reducers: {
+    setWSMaintenance: (state, action: PayloadAction<boolean>) => {
+      state.maintenance = action.payload;
+    },
+  },
 });
 
-export const { setWSMaintenance } = wsSlice.actions;
+export const {setWSMaintenance} = wsSlice.actions;
 
 export default wsSlice.reducer;

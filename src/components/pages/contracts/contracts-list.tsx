@@ -14,7 +14,7 @@ import {
   Visibility as VisibilityIcon,
 } from '@mui/icons-material';
 import {GridColDef, GridFilterModel, GridLogicOperator, GridRenderCellParams} from '@mui/x-data-grid';
-import { useInitAccessToken } from '@/contexts/InitContext';
+import {useInitAccessToken} from '@/contexts/InitContext';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
   useBulkDeleteContractsMutation,
@@ -519,5 +519,3 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
 };
 
 export default ContractsListClient;
-
-

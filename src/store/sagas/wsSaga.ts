@@ -1,11 +1,11 @@
-import { take, call, put, select } from 'redux-saga/effects';
-import { initWebsocket } from '@/store/services/ws';
-import { getAccessToken } from '@/store/selectors';
-import type { RootState } from '@/store/store';
-import type { Action } from 'redux';
-import type { EventChannel, SagaIterator } from 'redux-saga';
+import {call, put, select, take} from 'redux-saga/effects';
+import {initWebsocket} from '@/store/services/ws';
+import {getAccessToken} from '@/store/selectors';
+import type {RootState} from '@/store/store';
+import type {Action} from 'redux';
+import type {EventChannel, SagaIterator} from 'redux-saga';
 import * as Types from '@/store/actions';
-import { setWSMaintenance } from '@/store/slices/wsSlice';
+import {setWSMaintenance} from '@/store/slices/wsSlice';
 
 type WSChannelAction = Action & {
   maintenance?: boolean;
