@@ -14,7 +14,7 @@ import {
   Visibility as VisibilityIcon,
 } from '@mui/icons-material';
 import {GridColDef, GridFilterModel, GridLogicOperator, GridRenderCellParams} from '@mui/x-data-grid';
-import {getAccessTokenFromSession} from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {
   useBulkDeleteContractsMutation,
@@ -45,7 +45,7 @@ import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelect
 const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
   const router = useRouter();
   const {onSuccess, onError} = useToast();
-  const token = getAccessTokenFromSession(session);
+  const token = useInitAccessToken();
 
   const [paginationModel, setPaginationModel] = useState<{ page: number; pageSize: number }>({
     page: 0,
@@ -519,3 +519,5 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
 };
 
 export default ContractsListClient;
+
+

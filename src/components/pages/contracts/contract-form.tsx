@@ -110,7 +110,7 @@ import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiP
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 import type { ContractFormValuesType, ContractPrestationType, ContractCompanyType, ContractCategoryType, ContractTrancheType, STTrancheType } from '@/types/contractTypes';
 import type { SelectChangeEvent } from '@mui/material/Select';
-import { getAccessTokenFromSession } from '@/store/session';
+import { useInitAccessToken } from '@/contexts/InitContext';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import { Protected } from '@/components/layouts/protected/protected';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
@@ -3023,7 +3023,7 @@ interface Props extends SessionProps {
 }
 
 const ContractFormClient: React.FC<Props> = ({ session, id }: Props) => {
-	const token = getAccessTokenFromSession(session);
+	const token = useInitAccessToken();
 	const isEditMode = id !== undefined;
 
 	return (
@@ -3042,4 +3042,5 @@ const ContractFormClient: React.FC<Props> = ({ session, id }: Props) => {
 };
 
 export default ContractFormClient;
+
 
