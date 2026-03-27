@@ -2,15 +2,17 @@ import React from 'react';
 import {render, screen} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {Protected} from './protected';
-import {usePermission} from '@/utils/hooks';
+import {usePermission, useAppSelector} from '@/utils/hooks';
 
 // 🧩 Mock hooks module
 jest.mock('@/utils/hooks', () => ({
   usePermission: jest.fn(),
+  useAppSelector: jest.fn(),
 }));
 
 describe('Protected component', () => {
   it('renders children when is_staff is true (default permission)', () => {
+    (useAppSelector as jest.Mock).mockReturnValue({ id: 1 });
     (usePermission as jest.Mock).mockReturnValue({
       is_staff: true,
       can_view: false,
@@ -31,6 +33,7 @@ describe('Protected component', () => {
   });
 
   it('renders access denied message when is_staff is false (default permission)', () => {
+    (useAppSelector as jest.Mock).mockReturnValue({ id: 1 });
     (usePermission as jest.Mock).mockReturnValue({
       is_staff: false,
       can_view: false,
@@ -52,6 +55,7 @@ describe('Protected component', () => {
   });
 
   it('renders children when specific permission is granted', () => {
+    (useAppSelector as jest.Mock).mockReturnValue({ id: 1 });
     (usePermission as jest.Mock).mockReturnValue({
       is_staff: false,
       can_view: true,
@@ -72,6 +76,7 @@ describe('Protected component', () => {
   });
 
   it('renders access denied when specific permission is not granted', () => {
+    (useAppSelector as jest.Mock).mockReturnValue({ id: 1 });
     (usePermission as jest.Mock).mockReturnValue({
       is_staff: false,
       can_view: false,
