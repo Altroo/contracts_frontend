@@ -247,7 +247,6 @@ export const contractSchema = z
     clause_spec: optionalTextField(1, 5000),
     exclusions: optionalTextField(1, 5000),
     architecte: optionalTextField(1, 255),
-    version_document: optionalTextField(1, 255),
     annexes: optionalTextField(1, 5000),
     /* ── Blueline-specific fields (optional at base, required for Blueline via superRefine) ── */
     client_ville: optionalTextField(1, 255),

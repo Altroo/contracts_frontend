@@ -239,7 +239,7 @@ describe('EnterCodeClient', () => {
 
     await waitFor(() => {
       expect(mockSendCodeTrigger).toHaveBeenCalled();
-      expect(mockOnError).toHaveBeenCalledWith('Échec de l\u2019envoi du code.');
+      expect(mockOnError).toHaveBeenCalledWith('Échec de l’envoi du code.');
       expect(mockSetFormikAutoErrors).toHaveBeenCalled();
     });
   });

@@ -83,7 +83,7 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
       refetch();
     } catch (err) {
       // error toast
-      onError(extractApiErrorMessage(err, 'Erreur lors de la suppression de l\u2019utilisateur'));
+      onError(extractApiErrorMessage(err, 'Erreur lors de la suppression de l’utilisateur'));
     } finally {
       setShowDeleteModal(false);
     }

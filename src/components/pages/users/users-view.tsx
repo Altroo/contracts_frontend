@@ -134,7 +134,7 @@ const UsersViewClient: React.FC<Props> = ({session, id}) => {
       onSuccess('Utilisateur supprimé avec succès');
       router.push(USERS_LIST);
     } catch (err) {
-      onError(extractApiErrorMessage(err, 'Erreur lors de la suppression de l\u2019utilisateur'));
+      onError(extractApiErrorMessage(err, 'Erreur lors de la suppression de l’utilisateur'));
     } finally {
       setShowDeleteModal(false);
     }

@@ -191,7 +191,6 @@ export type ContractFormValuesType = {
   clause_spec: string;
   exclusions: string;
   architecte: string;
-  version_document: string;
   annexes: string;
   /* ── Blueline-specific fields ── */
   client_ville: string;

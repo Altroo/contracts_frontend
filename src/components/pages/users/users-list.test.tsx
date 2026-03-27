@@ -329,7 +329,7 @@ describe('UsersListClient', () => {
         fireEvent.click(btns[btns.length - 1]);
       });
       await waitFor(() => {
-        expect(mockOnError).toHaveBeenCalledWith('Erreur lors de la suppression de l\u2019utilisateur');
+        expect(mockOnError).toHaveBeenCalledWith('Erreur lors de la suppression de l’utilisateur');
       });
     });
   });

@@ -104,7 +104,6 @@ export class ContractClass {
     public responsable_projet: string | null,
     public architecte: string | null,
     public confidentialite: ContractConfidentialiteType | string,
-    public version_document: string,
     public annexes: string | null,
     // Blueline-specific fields
     public client_ville: string | null,

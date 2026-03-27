@@ -258,7 +258,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       clause_spec: rawData?.clause_spec ?? '',
       exclusions: rawData?.exclusions ?? '',
       architecte: rawData?.architecte ?? '',
-      version_document: rawData?.version_document ?? 'v1.0 \u2013 D\u00e9finitif',
       annexes: rawData?.annexes ?? '',
       /* ── Blueline fields ── */
       client_ville: rawData?.client_ville ?? '',
@@ -419,7 +418,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
         payload.clause_spec = null;
         payload.exclusions = null;
         payload.architecte = null;
-        payload.version_document = 'v1.0 \u2013 D\u00e9finitif';
         payload.annexes = null;
       }
       /* For ST: send null instead of empty string for optional client_nom */
@@ -516,16 +514,15 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       mode_paiement_texte: 'Mode de paiement',
       rib: 'RIB / Coordonnées bancaires',
       services: 'Services convenus',
-      conditions_acces: 'Conditions d\u2019acc\u00e8s',
-      tranches: '\u00c9ch\u00e9ancier de paiement',
-      delai_retard: 'D\u00e9lai de retard tol\u00e9r\u00e9',
-      frais_redemarrage: 'Frais de red\u00e9marrage',
-      delai_reserves: 'D\u00e9lai r\u00e9serves',
+      conditions_acces: 'Conditions d’accès',
+      tranches: 'Échéancier de paiement',
+      delai_retard: 'Délai de retard toléré',
+      frais_redemarrage: 'Frais de redémarrage',
+      delai_reserves: 'Délai réserves',
       clauses_actives: 'Clauses actives',
-      clause_spec: 'Clauses sp\u00e9cifiques',
+      clause_spec: 'Clauses spécifiques',
       exclusions: 'Exclusions contractuelles',
       architecte: 'Architecte / Designer',
-      version_document: 'Version du document',
       annexes: 'Annexes',
       client_ville: 'Ville du client',
       client_cp: 'Code postal du client',
@@ -718,7 +715,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
     const currentTranches = formik.values.tranches ?? [];
     const currentStTranches = formik.values.st_tranches ?? [];
     const blFields = new Set(['prestations', 'fournitures', 'eau_electricite', 'acompte', 'tranche2', 'clause_resiliation', 'client_ville', 'client_cp', 'chantier_ville', 'chantier_etage', 'garantie_nb', 'garantie_unite', 'garantie_type', 'exclusions_garantie', 'materiaux_detail', 'notes']);
-    const cdlFields = new Set(['type_contrat', 'services', 'tranches', 'delai_retard', 'frais_redemarrage', 'delai_reserves', 'clauses_actives', 'clause_spec', 'exclusions', 'architecte', 'version_document', 'annexes', 'conditions_acces']);
+    const cdlFields = new Set(['type_contrat', 'services', 'tranches', 'delai_retard', 'frais_redemarrage', 'delai_reserves', 'clauses_actives', 'clause_spec', 'exclusions', 'architecte', 'annexes', 'conditions_acces']);
     const stFields = new Set(['st_projet', 'st_name', 'st_forme', 'st_capital', 'st_rc', 'st_ice', 'st_if', 'st_cnss', 'st_addr', 'st_rep', 'st_cin', 'st_qualite', 'st_tel', 'st_email', 'st_rib', 'st_banque', 'st_lot_type', 'st_lot_description', 'st_type_prix', 'st_retenue_garantie', 'st_avance', 'st_penalite_taux', 'st_plafond_penalite', 'st_delai_paiement', 'st_tranches', 'st_delai_val', 'st_delai_unit', 'st_garantie_mois', 'st_delai_reserves', 'st_delai_med', 'st_clauses_actives', 'st_observations']);
     const currentIsST = currentCompany === 'casa_di_lusso' && currentCategory === 'sous_traitance';
     if (hasAttemptedSubmit) {
@@ -1683,7 +1680,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       <CustomTextInput
                         id="duree_estimee"
                         type="text"
-                        label="Dur\u00e9e estim\u00e9e"
+                        label="Durée estimée"
                         value={formik.values.duree_estimee}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                           if (/^\d*$/.test(e.target.value)) formik.setFieldValue('duree_estimee', e.target.value);
@@ -1698,7 +1695,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                     <Box sx={{flex: '0 0 110px'}}>
                       <CustomDropDownSelect
                         id="duree_estimee_unite"
-                        label="Unit\u00e9"
+                        label="Unité"
                         items={dureeEstimeeUniteItemsList.map((i) => i.value)}
                         value={dureeEstimeeUniteItemsList.find((i) => i.code === formik.values.duree_estimee_unite)?.value ?? formik.values.duree_estimee_unite}
                         onChange={(e: SelectChangeEvent) => {

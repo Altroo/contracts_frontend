@@ -122,7 +122,7 @@ const EnterCodePageContent = ({email}: EnterCodePageContentProps) => {
       await reSendPasswordResetCode({email}).unwrap();
       onSuccess('code envoyé.');
     } catch (e) {
-      onError('Échec de l\u2019envoi du code.');
+      onError('Échec de l’envoi du code.');
       const setFieldError = formik.setFieldError;
       setFormikAutoErrors({e, setFieldError});
     }

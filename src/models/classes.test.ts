@@ -145,7 +145,6 @@ describe('ContractClass', () => {
       'Pierre Martin',            // responsable_projet
       'Arch. Leblanc',            // architecte
       'Confidentiel',             // confidentialite
-      '1.0',                      // version_document
       '',                         // annexes
 
       // Blueline-specific fields
