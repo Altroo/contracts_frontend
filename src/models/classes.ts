@@ -20,9 +20,7 @@ import type {
   ProjectType,
   STDelaiUnitType,
   STFormeJuridiqueType,
-  STLotType,
   STTrancheType,
-  STTypePrixType,
 } from '@/types/contractTypes';
 
 export class UserClass {
@@ -144,9 +142,9 @@ export class ContractClass {
     public st_email: string | null,
     public st_rib: string | null,
     public st_banque: string | null,
-    public st_lot_type: STLotType | string | null,
+    public st_lot_type: string[] | null,
     public st_lot_description: string | null,
-    public st_type_prix: STTypePrixType | string | null,
+    public st_type_prix: string[] | null,
     public st_retenue_garantie: number | null,
     public st_avance: number | null,
     public st_penalite_taux: number | null,

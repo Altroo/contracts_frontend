@@ -395,8 +395,8 @@ describe('Zod Schema Validation', () => {
       client_nom: 'Client ST',
       montant_ht: '75000',
       st_name: 'Sub Corp SARL',
-      st_lot_type: 'gros_oeuvre',
-      st_type_prix: 'forfaitaire',
+      st_lot_type: ['gros_oeuvre'],
+      st_type_prix: ['forfaitaire'],
       st_tranches: [
         {label: 'Acompte', pourcentage: 30},
         {label: 'Solde', pourcentage: 70},

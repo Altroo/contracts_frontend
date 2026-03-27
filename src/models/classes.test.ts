@@ -185,9 +185,9 @@ describe('ContractClass', () => {
       '',                         // st_email
       '',                         // st_rib
       '',                         // st_banque
-      '',                         // st_lot_type
+      [],                         // st_lot_type
       '',                         // st_lot_description
-      '',                         // st_type_prix
+      [],                         // st_type_prix
       null,                       // st_retenue_garantie
       null,                       // st_avance
       null,                       // st_penalite_taux
@@ -277,8 +277,8 @@ describe('ContractClass', () => {
     expect(contract.st_projet_detail).toBeNull();
     expect(contract.st_name).toBe('');
     expect(contract.st_forme).toBe('');
-    expect(contract.st_lot_type).toBe('');
-    expect(contract.st_type_prix).toBe('');
+    expect(contract.st_lot_type).toEqual([]);
+    expect(contract.st_type_prix).toEqual([]);
     expect(contract.st_retenue_garantie).toBeNull();
     expect(contract.st_avance).toBeNull();
     expect(contract.st_penalite_taux).toBeNull();
@@ -297,13 +297,13 @@ describe('ContractClass', () => {
   it('allows mutating ST fields', () => {
     const contract = makeContract();
     contract.st_name = 'Sub Corp SARL';
-    contract.st_lot_type = 'gros_oeuvre';
-    contract.st_type_prix = 'forfaitaire';
+    contract.st_lot_type = ['gros_oeuvre'];
+    contract.st_type_prix = ['forfaitaire'];
     contract.contract_category = 'sous_traitance';
 
     expect(contract.st_name).toBe('Sub Corp SARL');
-    expect(contract.st_lot_type).toBe('gros_oeuvre');
-    expect(contract.st_type_prix).toBe('forfaitaire');
+    expect(contract.st_lot_type).toEqual(['gros_oeuvre']);
+    expect(contract.st_type_prix).toEqual(['forfaitaire']);
     expect(contract.contract_category).toBe('sous_traitance');
   });
 

@@ -408,9 +408,9 @@ describe('ContractViewClient', () => {
       expect(screen.getByText('IF')).toBeInTheDocument();
       expect(screen.getByText('CNSS')).toBeInTheDocument();
       expect(screen.getByText('Représentant')).toBeInTheDocument();
-      expect(screen.getByText('Type de lot')).toBeInTheDocument();
+      expect(screen.getByText('Type(s) de lot')).toBeInTheDocument();
       expect(screen.getByText('Description du lot')).toBeInTheDocument();
-      expect(screen.getByText('Type de prix')).toBeInTheDocument();
+      expect(screen.getByText('Type(s) de prix')).toBeInTheDocument();
       expect(screen.getByText('Retenue de garantie')).toBeInTheDocument();
       expect(screen.getByText('Avance')).toBeInTheDocument();
       expect(screen.getByText('Taux de pénalité')).toBeInTheDocument();

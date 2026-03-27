@@ -78,6 +78,7 @@ import {
   contractCategoryItemsList,
   contractStatutItemsList as statutItems,
   deviseItemsList as deviseItems,
+  dureeEstimeeUniteItemsList,
   eauElectriciteItemsList,
   fournituresItemsList,
   garantieItemsList,
@@ -198,8 +199,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
   const initialStTranches = rawData?.st_tranches?.length
     ? rawData.st_tranches
     : initialIsST
-      ? [{label: '', pourcentage: 0}]
+      ? [{label: '', pourcentage: 0, delai_jours: 0}]
       : [];
+
+  // Parse "30 jours" / "6 mois" format from backend into separate value + unit fields
+  let parsedDuree = '';
+  let parsedDureeUnite = 'jours';
+  if (rawData?.duree_estimee) {
+    const match = rawData.duree_estimee.trim().match(/^(\d+)\s*(jours|mois)$/i);
+    if (match) {
+      parsedDuree = match[1];
+      parsedDureeUnite = match[2].toLowerCase();
+    } else {
+      parsedDuree = rawData.duree_estimee;
+    }
+  }
 
   const formik = useFormik<ContractFormValuesType>({
     initialValues: {
@@ -220,7 +234,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       surface: rawData?.surface != null ? String(rawData.surface) : '',
       adresse_travaux: rawData?.adresse_travaux ?? '',
       date_debut: rawData?.date_debut ?? today,
-      duree_estimee: rawData?.duree_estimee ?? '',
+      duree_estimee: parsedDuree,
+      duree_estimee_unite: parsedDureeUnite,
       description_travaux: rawData?.description_travaux ?? '',
       montant_ht: rawData?.montant_ht != null ? String(rawData.montant_ht) : '',
       devise: rawData?.devise ?? 'MAD',
@@ -279,12 +294,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       st_email: rawData?.st_email ?? '',
       st_rib: rawData?.st_rib ?? '',
       st_banque: rawData?.st_banque ?? '',
-      st_lot_type: rawData?.st_lot_type ?? '',
+      st_lot_type: Array.isArray(rawData?.st_lot_type) ? rawData.st_lot_type : rawData?.st_lot_type ? [rawData.st_lot_type as string] : [],
       st_lot_description: rawData?.st_lot_description ?? '',
-      st_type_prix: rawData?.st_type_prix ?? 'forfaitaire',
+      st_type_prix: Array.isArray(rawData?.st_type_prix) ? rawData.st_type_prix : rawData?.st_type_prix ? [rawData.st_type_prix as string] : [],
       st_retenue_garantie: rawData?.st_retenue_garantie != null ? String(rawData.st_retenue_garantie) : '10',
       st_avance: rawData?.st_avance != null ? String(rawData.st_avance) : '',
-      st_penalite_taux: rawData?.st_penalite_taux != null ? String(rawData.st_penalite_taux) : '0.5',
+      st_penalite_taux: rawData?.st_penalite_taux != null ? String(rawData.st_penalite_taux) : '',
       st_plafond_penalite: rawData?.st_plafond_penalite != null ? String(rawData.st_plafond_penalite) : '10',
       st_delai_paiement: rawData?.st_delai_paiement != null ? String(rawData.st_delai_paiement) : '30',
       st_tranches: initialStTranches,
@@ -302,7 +317,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
     validate: (values) => {
       const errors: Partial<Record<string, string>> = {};
       const isEmpty = (val: unknown) =>
-        val === undefined || val === null || (typeof val === 'string' && val.trim() === '') || (typeof val === 'number' && Number.isNaN(val));
+        val === undefined || val === null || (typeof val === 'string' && val.trim() === '') || (typeof val === 'number' && Number.isNaN(val)) || (Array.isArray(val) && val.length === 0);
       const isST = values.company === 'casa_di_lusso' && values.contract_category === 'sous_traitance';
       // client_nom: required for all companies except ST (ST has no traditional client)
       if (!isST && isEmpty(values.client_nom)) {
@@ -333,11 +348,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       setHasAttemptedSubmit(true);
       setIsPending(true);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const {globalError, ...fields} = data;
+      const {globalError, duree_estimee_unite, ...fields} = data;
       const isBlueline = fields.company === 'blueline_works';
       const isST = fields.company === 'casa_di_lusso' && fields.contract_category === 'sous_traitance';
       const payload: Record<string, unknown> = {
         ...fields,
+        duree_estimee: fields.duree_estimee && duree_estimee_unite
+          ? `${fields.duree_estimee} ${duree_estimee_unite}`
+          : (fields.duree_estimee || ''),
         montant_ht: fields.montant_ht !== '' && fields.montant_ht != null ? parseFloat(fields.montant_ht) : undefined,
         surface: fields.surface !== '' && fields.surface != null ? parseFloat(fields.surface) : undefined,
         tva: fields.tva !== '' && fields.tva != null ? parseFloat(fields.tva) : 0,
@@ -426,9 +444,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
         payload.st_email = '';
         payload.st_rib = '';
         payload.st_banque = '';
-        payload.st_lot_type = '';
+        payload.st_lot_type = [];
         payload.st_lot_description = '';
-        payload.st_type_prix = '';
+        payload.st_type_prix = [];
         payload.st_retenue_garantie = null;
         payload.st_avance = null;
         payload.st_penalite_taux = null;
@@ -547,7 +565,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       st_type_prix: 'Type de prix',
       st_retenue_garantie: 'Retenue de garantie (%)',
       st_avance: 'Avance (%)',
-      st_penalite_taux: 'Taux de pénalité (‰/jour)',
+      st_penalite_taux: 'Pénalité de retard (MAD/jour)',
       st_plafond_penalite: 'Plafond pénalité (%)',
       st_delai_paiement: 'Délai de paiement (jours)',
       st_tranches: 'Échéancier ST',
@@ -650,7 +668,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
   /* ── ST: Tranches helpers ── */
   const addStTranche = useCallback(() => {
     const current = formik.values.st_tranches ?? [];
-    formik.setFieldValue('st_tranches', [...current, {label: '', pourcentage: 0}]);
+    formik.setFieldValue('st_tranches', [...current, {label: '', pourcentage: 0, delai_jours: 0}]);
   }, [formik]);
 
   const removeStTranche = useCallback((index: number) => {
@@ -671,6 +689,25 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       formik.setFieldValue('st_clauses_actives', current.filter((c: string) => c !== key));
     } else {
       formik.setFieldValue('st_clauses_actives', [...current, key]);
+    }
+  }, [formik]);
+
+  /* ── ST: Lot & Type prix toggles ── */
+  const toggleStLotType = useCallback((code: string) => {
+    const current = formik.values.st_lot_type ?? [];
+    if (current.includes(code)) {
+      formik.setFieldValue('st_lot_type', current.filter((c) => c !== code));
+    } else {
+      formik.setFieldValue('st_lot_type', [...current, code]);
+    }
+  }, [formik]);
+
+  const toggleStTypePrix = useCallback((code: string) => {
+    const current = formik.values.st_type_prix ?? [];
+    if (current.includes(code)) {
+      formik.setFieldValue('st_type_prix', current.filter((c) => c !== code));
+    } else {
+      formik.setFieldValue('st_type_prix', [...current, code]);
     }
   }, [formik]);
 
@@ -1019,13 +1056,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       renderCell: (params: GridRenderCellParams) => {
         const realIdx = Number(params.id);
         const total = (formik.values.prestations ?? []).length;
-        if (total <= 1) return null;
         return (
           <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
-            <Tooltip title="Supprimer">
-              <IconButton size="small" color="error" onClick={() => removePrestation(realIdx)}>
-                <DeleteIcon/>
-              </IconButton>
+            <Tooltip title={total > 1 ? 'Supprimer' : ''}>
+              <span>
+                <IconButton size="small" color="error" onClick={() => removePrestation(realIdx)} disabled={total <= 1}>
+                  <DeleteIcon/>
+                </IconButton>
+              </span>
             </Tooltip>
           </Box>
         );
@@ -1116,13 +1154,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       renderCell: (params: GridRenderCellParams) => {
         const realIdx = Number(params.id);
         const total = (formik.values.tranches ?? []).length;
-        if (total <= 1) return null;
         return (
           <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
-            <Tooltip title="Supprimer">
-              <IconButton size="small" color="error" onClick={() => removeTranche(realIdx)}>
-                <DeleteIcon/>
-              </IconButton>
+            <Tooltip title={total > 1 ? 'Supprimer' : ''}>
+              <span>
+                <IconButton size="small" color="error" onClick={() => removeTranche(realIdx)} disabled={total <= 1}>
+                  <DeleteIcon/>
+                </IconButton>
+              </span>
             </Tooltip>
           </Box>
         );
@@ -1204,6 +1243,37 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       },
     },
     {
+      field: 'delai_jours',
+      headerName: 'Délai (j)',
+      flex: 0.8,
+      minWidth: 100,
+      sortable: false,
+      filterable: false,
+      renderCell: (params: GridRenderCellParams) => {
+        const realIdx = Number(params.id);
+        const tr = (formik.values.st_tranches ?? [])[realIdx];
+        if (!tr) return null;
+        return (
+          <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
+            <CustomTextInput
+              id={`st_tranches.${realIdx}.delai_jours`}
+              type="text"
+              label=""
+              value={String(tr.delai_jours ?? '')}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                if (/^\d*$/.test(e.target.value)) {
+                  updateStTranche(realIdx, 'delai_jours', parseInt(e.target.value, 10) || 0);
+                }
+              }}
+              size="small"
+              theme={gridCellInputTheme}
+              endIcon={<InputAdornment position="end">j</InputAdornment>}
+            />
+          </Box>
+        );
+      },
+    },
+    {
       field: 'actions',
       headerName: '',
       flex: 0.4,
@@ -1213,13 +1283,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       renderCell: (params: GridRenderCellParams) => {
         const realIdx = Number(params.id);
         const total = (formik.values.st_tranches ?? []).length;
-        if (total <= 1) return null;
         return (
           <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
-            <Tooltip title="Supprimer">
-              <IconButton size="small" color="error" onClick={() => removeStTranche(realIdx)}>
-                <DeleteIcon/>
-              </IconButton>
+            <Tooltip title={total > 1 ? 'Supprimer' : ''}>
+              <span>
+                <IconButton size="small" color="error" onClick={() => removeStTranche(realIdx)} disabled={total <= 1}>
+                  <DeleteIcon/>
+                </IconButton>
+              </span>
             </Tooltip>
           </Box>
         );
@@ -1286,7 +1357,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                   exclusive
                   onChange={(_e, val: string | null) => {
                     if (val) {
-                      formik.setFieldValue('company', val);
+                      formik.setFieldValue('company', val as ContractCompanyType);
+                      formik.setFieldValue('tranches', []);
+                      formik.setFieldValue('st_tranches', []);
+                      formik.setFieldValue('prestations', []);
+                      void formik.setTouched({}, false);
                       setHasAttemptedSubmit(false);
                     }
                   }}
@@ -1318,7 +1393,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       exclusive
                       onChange={(_e, val: string | null) => {
                         if (val) {
-                          formik.setFieldValue('contract_category', val);
+                          formik.setFieldValue('contract_category', val as ContractCategoryType);
+                          formik.setFieldValue('tranches', []);
+                          formik.setFieldValue('st_tranches', []);
+                          void formik.setTouched({}, false);
                           setHasAttemptedSubmit(false);
                         }
                       }}
@@ -1394,12 +1472,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                     <CustomDropDownSelect
                       id="statut"
                       label="Statut"
-                      items={statutItems}
+                      items={isEditMode ? statutItems : ['Brouillon']}
                       value={formik.values.statut}
                       onChange={(e: SelectChangeEvent) => formik.setFieldValue('statut', e.target.value)}
                       size="small"
                       theme={customDropdownTheme()}
                       startIcon={<FlagIcon fontSize="small"/>}
+                      disabled={!isEditMode}
                     />
                     {isCDL && (
                       <CustomDropDownSelect
@@ -1485,11 +1564,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                   />
                   <CustomTextInput
                     id="client_tel"
-                    type="text"
+                    type="tel"
                     label="Téléphone"
                     value={formik.values.client_tel}
                     onChange={formik.handleChange('client_tel')}
                     onBlur={formik.handleBlur('client_tel')}
+                    error={formik.touched.client_tel && Boolean(formik.errors.client_tel)}
+                    helperText={formik.touched.client_tel ? (formik.errors.client_tel as string) : ''}
                     fullWidth={false}
                     size="small"
                     theme={inputTheme}
@@ -1502,6 +1583,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                     value={formik.values.client_email}
                     onChange={formik.handleChange('client_email')}
                     onBlur={formik.handleBlur('client_email')}
+                    error={formik.touched.client_email && Boolean(formik.errors.client_email)}
+                    helperText={formik.touched.client_email ? (formik.errors.client_email as string) : ''}
                     fullWidth={false}
                     size="small"
                     theme={inputTheme}
@@ -1551,9 +1634,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                     label="Surface (m²)"
                     value={formik.values.surface}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) formik.setFieldValue('surface', e.target.value);
+                      if (/^-?(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) formik.setFieldValue('surface', e.target.value);
                     }}
                     onBlur={formik.handleBlur('surface')}
+                    error={formik.touched.surface && Boolean(formik.errors.surface)}
+                    helperText={formik.touched.surface ? (formik.errors.surface as string) : ''}
                     fullWidth={false}
                     size="small"
                     theme={inputTheme}
@@ -1593,18 +1678,38 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       }}
                     />
                   </LocalizationProvider>
-                  <CustomTextInput
-                    id="duree_estimee"
-                    type="text"
-                    label="Durée estimée"
-                    value={formik.values.duree_estimee}
-                    onChange={formik.handleChange('duree_estimee')}
-                    onBlur={formik.handleBlur('duree_estimee')}
-                    fullWidth={false}
-                    size="small"
-                    theme={inputTheme}
-                    startIcon={<TimerIcon fontSize="small"/>}
-                  />
+                  <Stack direction="row" spacing={1} alignItems="flex-start">
+                    <Box sx={{flex: '1 1 120px', minWidth: 100}}>
+                      <CustomTextInput
+                        id="duree_estimee"
+                        type="text"
+                        label="Dur\u00e9e estim\u00e9e"
+                        value={formik.values.duree_estimee}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          if (/^\d*$/.test(e.target.value)) formik.setFieldValue('duree_estimee', e.target.value);
+                        }}
+                        onBlur={formik.handleBlur('duree_estimee')}
+                        fullWidth
+                        size="small"
+                        theme={inputTheme}
+                        startIcon={<TimerIcon fontSize="small"/>}
+                      />
+                    </Box>
+                    <Box sx={{flex: '0 0 110px'}}>
+                      <CustomDropDownSelect
+                        id="duree_estimee_unite"
+                        label="Unit\u00e9"
+                        items={dureeEstimeeUniteItemsList.map((i) => i.value)}
+                        value={dureeEstimeeUniteItemsList.find((i) => i.code === formik.values.duree_estimee_unite)?.value ?? formik.values.duree_estimee_unite}
+                        onChange={(e: SelectChangeEvent) => {
+                          const selected = dureeEstimeeUniteItemsList.find((i) => i.value === e.target.value);
+                          formik.setFieldValue('duree_estimee_unite', selected?.code ?? e.target.value);
+                        }}
+                        size="small"
+                        theme={customDropdownTheme()}
+                      />
+                    </Box>
+                  </Stack>
                   {!isBlueline && (
                     <CustomTextInput
                       id="responsable_projet"
@@ -1683,9 +1788,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       value={formik.values.tva}
                       onChange={formik.handleChange('tva')}
                       onBlur={formik.handleBlur('tva')}
-                      error={formik.touched.tva && Boolean(formik.errors.tva)}
+                      error={(hasAttemptedSubmit || formik.touched.tva) && Boolean(formik.errors.tva)}
                       helperText={
-                        formik.touched.tva && formik.errors.tva
+                        (hasAttemptedSubmit || formik.touched.tva) && formik.errors.tva
                           ? (formik.errors.tva as string)
                           : 'Entre 0 et 100'
                       }
@@ -1907,6 +2012,22 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                         '& .MuiDataGrid-columnHeaders': {fontFamily: 'Poppins', fontWeight: 700},
                       }}
                     />
+                  </Box>
+                  <Box sx={{mt: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1}}>
+                    <Typography
+                      variant="body2"
+                      fontWeight={600}
+                      color={
+                        (formik.values.tranches ?? []).reduce((s, t) => s + (t.pourcentage || 0), 0) === 100
+                          ? 'success.main'
+                          : cdlTrancheTotalInvalid
+                            ? 'error.main'
+                            : 'text.secondary'
+                      }
+                    >
+                      Total : {(formik.values.tranches ?? []).reduce((s, t) => s + (t.pourcentage || 0), 0)
+                        .toLocaleString('fr-MA', {minimumFractionDigits: 0, maximumFractionDigits: 2})} % / 100 %
+                    </Typography>
                   </Box>
                   <Divider sx={{my: 3}}/>
                   <Stack spacing={2.5}>
@@ -2309,21 +2430,31 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                   </Stack>
                   <Divider sx={{mb: 3}}/>
                   <Stack spacing={2.5}>
-                    <CustomDropDownSelect
-                      id="st_lot_type"
-                      label={`Type de lot${isRequired('st_lot_type') ? ' *' : ''}`}
-                      items={stLotTypeItemsList.map((i) => i.value)}
-                      value={stLotTypeItemsList.find((i) => i.code === formik.values.st_lot_type)?.value ?? formik.values.st_lot_type}
-                      onChange={(e: SelectChangeEvent) => {
-                        const selected = stLotTypeItemsList.find((i) => i.value === e.target.value);
-                        formik.setFieldValue('st_lot_type', selected?.code ?? e.target.value);
-                      }}
-                      size="small"
-                      theme={customDropdownTheme()}
-                      startIcon={<CategoryIcon fontSize="small"/>}
-                      error={formik.touched.st_lot_type && Boolean(formik.errors.st_lot_type)}
-                      helperText={formik.touched.st_lot_type ? (formik.errors.st_lot_type as string) : ''}
-                    />
+                    <Box>
+                      <Typography variant="body2" sx={{mb: 1, fontWeight: 600, color: (formik.touched.st_lot_type && formik.errors.st_lot_type) ? 'error.main' : 'text.primary'}}>
+                        {`Type(s) de lot${isRequired('st_lot_type') ? ' *' : ''}`}
+                        {formik.touched.st_lot_type && formik.errors.st_lot_type && (
+                          <Typography component="span" color="error" variant="caption" sx={{ml: 1}}>
+                            {formik.errors.st_lot_type as string}
+                          </Typography>
+                        )}
+                      </Typography>
+                      <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 1}}>
+                        {stLotTypeItemsList.map((item) => {
+                          const selected = (formik.values.st_lot_type ?? []).includes(item.code);
+                          return (
+                            <Chip
+                              key={item.code}
+                              label={item.value}
+                              variant={selected ? 'filled' : 'outlined'}
+                              color={selected ? 'primary' : 'default'}
+                              onClick={() => toggleStLotType(item.code)}
+                              sx={{cursor: 'pointer'}}
+                            />
+                          );
+                        })}
+                      </Box>
+                    </Box>
                     <CustomTextInput
                       id="st_lot_description"
                       type="text"
@@ -2338,21 +2469,31 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       theme={inputTheme}
                       startIcon={<NotesIcon fontSize="small"/>}
                     />
-                    <CustomDropDownSelect
-                      id="st_type_prix"
-                      label={`Type de prix${isRequired('st_type_prix') ? ' *' : ''}`}
-                      items={stTypePrixItemsList.map((i) => i.value)}
-                      value={stTypePrixItemsList.find((i) => i.code === formik.values.st_type_prix)?.value ?? formik.values.st_type_prix}
-                      onChange={(e: SelectChangeEvent) => {
-                        const selected = stTypePrixItemsList.find((i) => i.value === e.target.value);
-                        formik.setFieldValue('st_type_prix', selected?.code ?? e.target.value);
-                      }}
-                      size="small"
-                      theme={customDropdownTheme()}
-                      startIcon={<AttachMoneyIcon fontSize="small"/>}
-                      error={formik.touched.st_type_prix && Boolean(formik.errors.st_type_prix)}
-                      helperText={formik.touched.st_type_prix ? (formik.errors.st_type_prix as string) : ''}
-                    />
+                    <Box>
+                      <Typography variant="body2" sx={{mb: 1, fontWeight: 600, color: (formik.touched.st_type_prix && formik.errors.st_type_prix) ? 'error.main' : 'text.primary'}}>
+                        {`Type(s) de prix${isRequired('st_type_prix') ? ' *' : ''}`}
+                        {formik.touched.st_type_prix && formik.errors.st_type_prix && (
+                          <Typography component="span" color="error" variant="caption" sx={{ml: 1}}>
+                            {formik.errors.st_type_prix as string}
+                          </Typography>
+                        )}
+                      </Typography>
+                      <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 1}}>
+                        {stTypePrixItemsList.map((item) => {
+                          const selected = (formik.values.st_type_prix ?? []).includes(item.code);
+                          return (
+                            <Chip
+                              key={item.code}
+                              label={item.value}
+                              variant={selected ? 'filled' : 'outlined'}
+                              color={selected ? 'primary' : 'default'}
+                              onClick={() => toggleStTypePrix(item.code)}
+                              sx={{cursor: 'pointer'}}
+                            />
+                          );
+                        })}
+                      </Box>
+                    </Box>
                   </Stack>
                 </CardContent>
               </Card>
@@ -2409,7 +2550,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                         <CustomTextInput
                           id="st_penalite_taux"
                           type="text"
-                          label="Taux de pénalité (‰/jour)"
+                          label="Pénalité de retard (MAD/jour)"
                           value={formik.values.st_penalite_taux}
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                             if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) formik.setFieldValue('st_penalite_taux', e.target.value);
@@ -2419,7 +2560,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                           size="small"
                           theme={inputTheme}
                           startIcon={<PercentIcon fontSize="small"/>}
-                          endIcon="‰"
+                          endIcon="MAD/j"
                         />
                       </Box>
                       <Box sx={{flex: 1, minWidth: 0}}>
@@ -2498,11 +2639,25 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       }}
                     />
                   </Box>
+                  <Box sx={{mt: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1}}>
+                    <Typography
+                      variant="body2"
+                      fontWeight={600}
+                      color={
+                        (formik.values.st_tranches ?? []).reduce((s, t) => s + (t.pourcentage || 0), 0) === 100
+                          ? 'success.main'
+                          : stTrancheTotalInvalid
+                            ? 'error.main'
+                            : 'text.secondary'
+                      }
+                    >
+                      Total : {(formik.values.st_tranches ?? []).reduce((s, t) => s + (t.pourcentage || 0), 0)
+                        .toLocaleString('fr-MA', {minimumFractionDigits: 0, maximumFractionDigits: 2})} % / 100 %
+                    </Typography>
+                  </Box>
                 </CardContent>
               </Card>
             )}
-
-            {/* ── ST: Délais ── */}
             {isST && (
               <Card elevation={2} sx={{borderRadius: 2}}>
                 <CardContent sx={{p: 3}}>

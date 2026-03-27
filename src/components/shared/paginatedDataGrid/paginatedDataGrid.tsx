@@ -3,7 +3,7 @@
 import React, {Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Badge, Box, Button, CircularProgress, Stack, ThemeProvider, Typography} from '@mui/material';
 import {FilterList as FilterListIcon, ViewColumn as ViewColumnIcon} from '@mui/icons-material';
-import type {GridColDef, GridFilterModel, GridRowId, GridRowSelectionModel} from '@mui/x-data-grid';
+import type {GridColDef, GridFilterModel, GridRowId, GridRowParams, GridRowSelectionModel} from '@mui/x-data-grid';
 import {ColumnsPanelTrigger, DataGrid, GridLogicOperator, GridSlotProps, ToolbarButton} from '@mui/x-data-grid';
 import {frFR} from '@mui/x-data-grid/locales';
 import {getDefaultTheme} from '@/utils/themes';
@@ -54,6 +54,8 @@ type PaginatedDataGridProps<T> = {
   isAllMatchingSelected?: boolean;
   /** Called when the user clears the all-matching selection */
   onClearAllMatchingSelected?: () => void;
+  /** Called when a row is clicked */
+  onRowClick?: (params: GridRowParams) => void;
 };
 
 /** Type guard for DateRangeFilterValue */
@@ -151,6 +153,7 @@ const PaginatedDataGrid = <T, >(
     selectAllMatchingLoading,
     isAllMatchingSelected,
     onClearAllMatchingSelected,
+    onRowClick,
   }: PaginatedDataGridProps<T>) => {
   const [internalFilterModel, setInternalFilterModel] = useState<GridFilterModel>({
     items: [],
@@ -452,6 +455,7 @@ const PaginatedDataGrid = <T, >(
                 localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
                 disableRowSelectionOnClick
                 keepNonExistentRowsSelected
+                onRowClick={onRowClick}
                 checkboxSelection={checkboxSelection && rows.length > 0}
                 rowSelectionModel={computedRowSelectionModel}
                 onRowSelectionModelChange={checkboxSelection && rows.length > 0 ? handleRowSelectionModelChange : undefined}

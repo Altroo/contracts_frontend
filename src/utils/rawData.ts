@@ -223,6 +223,12 @@ export const stDelaiUnitItemsList: Array<{ code: string; value: string }> = [
   {code: 'jours', value: 'Jours'},
 ];
 
+export const dureeEstimeeUniteItemsList: Array<{ code: string; value: string }> = [
+  {code: 'jours', value: 'Jours'},
+  {code: 'mois', value: 'Mois'},
+];
+
+
 export const stClausesActivesList: Array<{ key: string; label: string }> = [
   {key: 'tConfid', label: 'Confidentialité'},
   {key: 'tNonConc', label: 'Non-concurrence'},

@@ -203,6 +203,10 @@ jest.mock('@/utils/rawData', () => ({
     {key: 'tConfid', label: 'Confidentialité'},
     {key: 'tNonConc', label: 'Non-concurrence'},
   ],
+  dureeEstimeeUniteItemsList: [
+    {code: 'jours', value: 'Jours'},
+    {code: 'mois', value: 'Mois'},
+  ],
 }));
 
 jest.mock('@/utils/formValidationSchemas', () => ({
@@ -432,9 +436,9 @@ describe('ContractFormClient', () => {
       st_email: 'st@example.com',
       st_rib: '123456789012345678901234',
       st_banque: 'Banque Populaire',
-      st_lot_type: 'gros_oeuvre',
+      st_lot_type: ['gros_oeuvre'],
       st_lot_description: 'Gros œuvre complet',
-      st_type_prix: 'forfaitaire',
+      st_type_prix: ['forfaitaire'],
       st_retenue_garantie: '10',
       st_avance: '15',
       st_penalite_taux: '0.5',
@@ -507,9 +511,9 @@ describe('ContractFormClient', () => {
 
     it('renders Lot & Type fields', () => {
       renderWithProviders(<ContractFormClient session={mockSession} id={50}/>);
-      expect(screen.getByTestId('dropdown-st_lot_type')).toBeInTheDocument();
+      expect(screen.getByText(/Type\(s\) de lot/)).toBeInTheDocument();
       expect(screen.getByTestId('input-st_lot_description')).toBeInTheDocument();
-      expect(screen.getByTestId('dropdown-st_type_prix')).toBeInTheDocument();
+      expect(screen.getByText(/Type\(s\) de prix/)).toBeInTheDocument();
     });
 
     it('renders Financier ST fields', () => {
@@ -613,7 +617,7 @@ describe('ContractFormClient', () => {
       renderWithProviders(<ContractFormClient session={mockSession} id={50}/>);
       expect(screen.getByText('Retenue de garantie')).toBeInTheDocument();
       expect(screen.getByText('Avance')).toBeInTheDocument();
-      expect(screen.getByText('Taux de pénalité (‰/jour)')).toBeInTheDocument();
+      expect(screen.getByText('Pénalité de retard (MAD/jour)')).toBeInTheDocument();
       expect(screen.getByText('Plafond pénalité')).toBeInTheDocument();
       expect(screen.getByText('Délai de paiement (jours)')).toBeInTheDocument();
     });

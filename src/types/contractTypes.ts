@@ -115,6 +115,7 @@ export type STDelaiUnitType = 'mois' | 'semaines' | 'jours';
 export type STTrancheType = {
   label: string;
   pourcentage: number;
+  delai_jours?: number;
 };
 
 export type ProjectType = {
@@ -167,6 +168,7 @@ export type ContractFormValuesType = {
   adresse_travaux: string;
   date_debut: string;
   duree_estimee: string;
+  duree_estimee_unite: string;
   description_travaux: string;
   montant_ht: string;
   devise: string;
@@ -225,9 +227,9 @@ export type ContractFormValuesType = {
   st_email: string;
   st_rib: string;
   st_banque: string;
-  st_lot_type: string;
+  st_lot_type: string[];
   st_lot_description: string;
-  st_type_prix: string;
+  st_type_prix: string[];
   st_retenue_garantie: string;
   st_avance: string;
   st_penalite_taux: string;

@@ -396,7 +396,11 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
           },
         ];
 
-        return <MobileActionsMenu actions={actions}/>;
+        return (
+          <Box onClick={(e) => e.stopPropagation()}>
+            <MobileActionsMenu actions={actions}/>
+          </Box>
+        );
       },
     },
   ];
@@ -471,6 +475,7 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
               checkboxSelection
               onSelectionChange={handleSelectionChange}
               selectedIds={selectedContractIds}
+              onRowClick={(params) => router.push(CONTRACTS_VIEW(params.row.id))}
             />
             {showDeleteModal && (
               <ActionModals

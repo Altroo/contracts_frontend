@@ -818,14 +818,14 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                         </Stack>
                         <Divider sx={{mb: {xs: 1.5, md: 2}}}/>
                         <Stack spacing={0}>
-                          <InfoRow icon={<CategoryIcon/>} label="Type de lot"
-                                   value={resolveLabel(stLotTypeItemsList, contract?.st_lot_type)}/>
+                          <InfoRow icon={<CategoryIcon/>} label="Type(s) de lot"
+                                   value={(Array.isArray(contract?.st_lot_type) ? contract.st_lot_type : contract?.st_lot_type ? [contract.st_lot_type] : []).map((c) => resolveLabel(stLotTypeItemsList, c)).join(' / ') || undefined}/>
                           <Divider/>
                           <InfoRow icon={<DescriptionIcon/>} label="Description du lot"
                                    value={contract?.st_lot_description}/>
                           <Divider/>
-                          <InfoRow icon={<MoneyIcon/>} label="Type de prix"
-                                   value={resolveLabel(stTypePrixItemsList, contract?.st_type_prix)}/>
+                          <InfoRow icon={<MoneyIcon/>} label="Type(s) de prix"
+                                   value={(Array.isArray(contract?.st_type_prix) ? contract.st_type_prix : contract?.st_type_prix ? [contract.st_type_prix] : []).map((c) => resolveLabel(stTypePrixItemsList, c)).join(' / ') || undefined}/>
                         </Stack>
                       </CardContent>
                     </Card>

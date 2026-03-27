@@ -218,6 +218,7 @@ export const contractSchema = z
     adresse_travaux: optionalTextField(1, 500),
     date_debut: optionalTextField(1, 255),
     duree_estimee: optionalTextField(1, 255),
+    duree_estimee_unite: optionalChoiceField(),
     description_travaux: optionalTextField(1, 2000),
     devise: optionalChoiceField(),
     tva: optionalTVANumberField(0, 100),
@@ -292,12 +293,12 @@ export const contractSchema = z
     st_email: optionalEmailField,
     st_rib: optionalTextField(1, 200),
     st_banque: optionalTextField(1, 255),
-    st_lot_type: optionalChoiceField(),
+    st_lot_type: z.array(z.string()).optional(),
     st_lot_description: optionalTextField(1, 5000),
-    st_type_prix: optionalChoiceField(),
+    st_type_prix: z.array(z.string()).optional(),
     st_retenue_garantie: optionalNumberField(0, 100),
     st_avance: optionalNumberField(0, 100),
-    st_penalite_taux: optionalNumberField(0, 100),
+    st_penalite_taux: optionalNumberField(0),
     st_plafond_penalite: optionalNumberField(0, 100),
     st_delai_paiement: optionalNumberField(0, 365),
     st_tranches: z
@@ -305,6 +306,7 @@ export const contractSchema = z
         z.object({
           label: trancheLabelField,
           pourcentage: tranchePourcentageField,
+          delai_jours: z.number().int().min(0).optional(),
         }),
       )
       .optional(),
@@ -322,7 +324,8 @@ export const contractSchema = z
       val === undefined ||
       val === null ||
       (typeof val === 'string' && val.trim() === '') ||
-      (typeof val === 'number' && Number.isNaN(val));
+      (typeof val === 'number' && Number.isNaN(val)) ||
+      (Array.isArray(val) && val.length === 0);
 
     const isST = data.company === 'casa_di_lusso' && data.contract_category === 'sous_traitance';
 
