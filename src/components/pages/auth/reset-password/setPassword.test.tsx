@@ -24,6 +24,11 @@ jest.mock('@/utils/clientHelpers', () => ({
   TabletAndMobile: ({children}: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+jest.mock('@/utils/hooks', () => ({
+   
+  useLanguage: () => ({ language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr }),
+}));
+
 jest.mock('@/store/services/account', () => {
   const actual = jest.requireActual('@/store/services/account');
 

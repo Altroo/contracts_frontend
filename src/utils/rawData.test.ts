@@ -1,10 +1,16 @@
 import {
+  deviseItemsList,
+  getContractStatusColor,
+  getTranslatedRawData,
+} from './rawData';
+import {fr} from '@/translations/fr';
+
+const rawData = getTranslatedRawData(fr);
+const {
   confidentialiteItemsList,
   contractCategoryItemsList,
   contractStatutItemsList,
-  deviseItemsList,
   genderItemsList,
-  getContractStatusColor,
   stClausesActivesList,
   stDelaiUnitItemsList,
   stFormeJuridiqueItemsList,
@@ -12,7 +18,7 @@ import {
   stProjetTypeItemsList,
   stTypePrixItemsList,
   typeContratItemsList,
-} from './rawData';
+} = rawData;
 
 describe('items lists', () => {
   describe('genderItemsList', () => {
@@ -41,26 +47,27 @@ describe('items lists', () => {
       expect(contractStatutItemsList).toHaveLength(7);
     });
 
-    it('starts with Brouillon', () => {
-      expect(contractStatutItemsList[0]).toBe('Brouillon');
+    it('starts with Brouillon code', () => {
+      expect(contractStatutItemsList[0].code).toBe('Brouillon');
     });
 
-    it('contains unique entries', () => {
-      expect(new Set(contractStatutItemsList).size).toBe(contractStatutItemsList.length);
+    it('contains unique codes', () => {
+      const codes = contractStatutItemsList.map((i) => i.code);
+      expect(new Set(codes).size).toBe(codes.length);
     });
   });
 
   describe('getContractStatusColor', () => {
     it('returns a color for every status in contractStatutItemsList', () => {
-      for (const statut of contractStatutItemsList) {
-        expect(getContractStatusColor(statut)).toBeDefined();
+      for (const item of contractStatutItemsList) {
+        expect(getContractStatusColor(item.code)).toBeDefined();
       }
     });
 
     it('returns a valid MUI chip color for each status', () => {
       const validColors = ['default', 'warning', 'success', 'error', 'info', 'primary', 'secondary'];
-      for (const statut of contractStatutItemsList) {
-        expect(validColors).toContain(getContractStatusColor(statut));
+      for (const item of contractStatutItemsList) {
+        expect(validColors).toContain(getContractStatusColor(item.code));
       }
     });
 
@@ -97,7 +104,9 @@ describe('items lists', () => {
 
   describe('confidentialiteItemsList', () => {
     it('has 3 confidentiality levels', () => {
-      expect(confidentialiteItemsList).toEqual(['CONFIDENTIEL', 'USAGE INTERNE', 'STANDARD']);
+      expect(confidentialiteItemsList).toHaveLength(3);
+      const codes = confidentialiteItemsList.map((i) => i.code);
+      expect(codes).toEqual(['CONFIDENTIEL', 'USAGE INTERNE', 'STANDARD']);
     });
   });
 

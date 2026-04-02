@@ -5,10 +5,14 @@ import {auth} from '@/auth';
 import {AUTH_RESET_PASSWORD, DASHBOARD} from '@/utils/routes';
 import SetPasswordCompleteClient from '@/components/pages/auth/reset-password/setPasswordComplete';
 import ClearCookiesClient from './clearCookiesClient';
+import {getServerTranslations} from '@/utils/serverTranslations';
 
-export const metadata: Metadata = {
-  title: 'Mot de passe modifié',
-  description: 'Votre mot de passe a été modifié avec succès',
+export const generateMetadata = async (): Promise<Metadata> => {
+  const t = await getServerTranslations();
+  return {
+    title: t.metadata.passwordChangedTitle,
+    description: t.metadata.passwordChangedDescription,
+  };
 };
 
 const SetPasswordCompletePage = async () => {

@@ -6,6 +6,7 @@ import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns';
 import {DatePicker} from '@mui/x-date-pickers/DatePicker';
 import {fr} from 'date-fns/locale';
 import {formatLocalDate} from '@/utils/helpers';
+import {useLanguage} from '@/utils/hooks';
 
 interface DateRangeValue {
   from?: string;
@@ -14,6 +15,7 @@ interface DateRangeValue {
 
 const DateRangeFilterInput: React.FC<GridFilterInputValueProps> = (props) => {
   const {item, applyValue} = props;
+  const {t} = useLanguage();
   const value = (item.value as DateRangeValue) || {};
 
   const [fromDate, setFromDate] = useState<Date | null>(value.from ? new Date(value.from) : null);
@@ -53,7 +55,7 @@ const DateRangeFilterInput: React.FC<GridFilterInputValueProps> = (props) => {
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
       <Box sx={{display: 'inline-flex', flexDirection: 'row', gap: 1, alignItems: 'center', paddingRight: 1}}>
         <DatePicker
-          label="De"
+          label={t.filters.from}
           value={fromDate}
           onChange={handleFromChange}
           maxDate={toDate || undefined}
@@ -65,7 +67,7 @@ const DateRangeFilterInput: React.FC<GridFilterInputValueProps> = (props) => {
           }}
         />
         <DatePicker
-          label="À"
+          label={t.filters.to}
           value={toDate}
           onChange={handleToChange}
           minDate={fromDate || undefined}
@@ -81,9 +83,9 @@ const DateRangeFilterInput: React.FC<GridFilterInputValueProps> = (props) => {
   );
 };
 
-export const createDateRangeFilterOperator = <T extends Record<string, unknown>>(): GridFilterOperator<T>[] => [
+export const createDateRangeFilterOperator = <T extends Record<string, unknown>>(filterLabel?: string): GridFilterOperator<T>[] => [
   {
-    label: 'entre',
+    label: filterLabel ?? 'entre',
     value: 'between',
     getApplyFilterFn: () => {
       // Return null to indicate server-side filtering

@@ -33,7 +33,7 @@ describe('HomePage server component', () => {
   it('redirects to DASHBOARD when session exists', async () => {
     mockAuth.mockResolvedValueOnce({user: {pk: 1, email: 'a@b.com'}});
 
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const mod = require('./page');
     const Page = mod.default as () => Promise<unknown>;
 
@@ -44,7 +44,7 @@ describe('HomePage server component', () => {
   it('redirects to AUTH_LOGIN when no session', async () => {
     mockAuth.mockResolvedValueOnce(null);
 
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const mod = require('./page');
     const Page = mod.default as () => Promise<unknown>;
 

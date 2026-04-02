@@ -20,6 +20,8 @@ jest.mock('@/utils/hooks', () => ({
     can_edit: true,
     can_delete: true
   }),
+   
+  useLanguage: () => ({ language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr }),
 }));
 
 jest.mock('@/store/services/contract', () => ({

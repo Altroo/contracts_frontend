@@ -3,6 +3,10 @@ import CustomPasswordInput from './customPasswordInput';
 import {createTheme} from '@mui/material/styles';
 import '@testing-library/jest-dom';
 
+jest.mock('@/utils/hooks', () => ({
+  useLanguage: () => ({language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr}),
+}));
+
 const theme = createTheme();
 
 describe('CustomPasswordInput', () => {
@@ -68,7 +72,7 @@ describe('CustomPasswordInput', () => {
     const input = screen.getByLabelText('Password');
     expect(input).toHaveAttribute('type', 'password');
 
-    const toggleButton = screen.getByLabelText('toggle password visibility');
+    const toggleButton = screen.getByLabelText('Afficher/masquer le mot de passe');
     fireEvent.click(toggleButton);
 
     expect(input).toHaveAttribute('type', 'text');

@@ -24,7 +24,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/components/pages/auth/login/login', () => ({
   __esModule: true,
   default: () => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const React = require('react');
     return React.createElement('div', null, 'LOGIN_CLIENT_MARKER');
   },
@@ -45,7 +45,7 @@ describe('LoginPage server component', () => {
   it('redirects to DASHBOARD when session exists', async () => {
     mockAuth.mockResolvedValueOnce({user: {pk: 1, email: 'a@b.com'}});
 
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const mod = require('./page');
     const Page = mod.default as () => Promise<unknown>;
 
@@ -56,7 +56,7 @@ describe('LoginPage server component', () => {
   it('returns LoginClient when no session', async () => {
     mockAuth.mockResolvedValueOnce(null);
 
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const mod = require('./page');
     const Page = mod.default as () => Promise<unknown>;
 

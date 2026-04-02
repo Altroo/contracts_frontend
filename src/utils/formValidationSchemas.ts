@@ -9,6 +9,7 @@ import {
   SHORT_INPUT_REQUIRED,
   TVA_INPUT_INVALID,
 } from '@/utils/formValidationErrorMessages';
+import {getT} from '@/utils/helpers';
 
 
 const base64ImageField = z.url().or(z.string().startsWith('data:image/')).nullable().optional();
@@ -17,7 +18,7 @@ const passwordField = z.preprocess(
   (val) => (val === undefined ? '' : val),
   z
     .string()
-    .min(8, {error: INPUT_PASSWORD_MIN(8)})
+    .min(8, {error: () => INPUT_PASSWORD_MIN(8)})
     .nonempty({error: INPUT_REQUIRED}),
 );
 
@@ -39,8 +40,8 @@ const requiredTextField = (min: number, max: number) =>
     (val) => (val === undefined ? '' : val),
     z
       .string()
-      .min(min, {error: INPUT_MIN(min)})
-      .max(max, {error: INPUT_MAX(max)})
+      .min(min, {error: () => INPUT_MIN(min)})
+      .max(max, {error: () => INPUT_MAX(max)})
       .nonempty({error: INPUT_REQUIRED}),
   );
 
@@ -55,8 +56,8 @@ const optionalTextField = (min: number, max: number) =>
     (val) => (val === undefined || val === null || val === '' ? undefined : val),
     z
       .string()
-      .min(min, {error: INPUT_MIN(min)})
-      .max(max, {error: INPUT_MAX(max)})
+      .min(min, {error: () => INPUT_MIN(min)})
+      .max(max, {error: () => INPUT_MAX(max)})
       .optional(),
   );
 
@@ -66,8 +67,8 @@ const requiredNumberField = (min: number = 1, max?: number) =>
     z
       .number({error: INPUT_REQUIRED})
       .refine((val) => !Number.isNaN(val), {error: INPUT_REQUIRED})
-      .min(min, {error: INPUT_MIN(min)})
-      .max(max ?? Number.MAX_SAFE_INTEGER, {error: INPUT_MAX(max ?? Number.MAX_SAFE_INTEGER)}),
+      .min(min, {error: () => INPUT_MIN(min)})
+      .max(max ?? Number.MAX_SAFE_INTEGER, {error: () => INPUT_MAX(max ?? Number.MAX_SAFE_INTEGER)}),
   );
 
 const optionalNumberField = (min: number = 1, max?: number) =>
@@ -76,8 +77,8 @@ const optionalNumberField = (min: number = 1, max?: number) =>
     z
       .number()
       .refine((val) => !Number.isNaN(val), {error: INPUT_REQUIRED})
-      .min(min, {error: INPUT_MIN(min)})
-      .max(max ?? Number.MAX_SAFE_INTEGER, {error: INPUT_MAX(max ?? Number.MAX_SAFE_INTEGER)})
+      .min(min, {error: () => INPUT_MIN(min)})
+      .max(max ?? Number.MAX_SAFE_INTEGER, {error: () => INPUT_MAX(max ?? Number.MAX_SAFE_INTEGER)})
       .optional(),
   );
 
@@ -90,10 +91,10 @@ const optionalTVANumberField = (min: number = 0, max?: number) =>
       return Number(val);
     },
     z
-      .number({message: TVA_INPUT_INVALID})
-      .refine((val) => Number.isFinite(val), {message: TVA_INPUT_INVALID})
-      .min(min, {message: TVA_INPUT_INVALID})
-      .max(max ?? Number.MAX_SAFE_INTEGER, {message: TVA_INPUT_INVALID})
+      .number({error: TVA_INPUT_INVALID})
+      .refine((val) => Number.isFinite(val), {error: TVA_INPUT_INVALID})
+      .min(min, {error: TVA_INPUT_INVALID})
+      .max(max ?? Number.MAX_SAFE_INTEGER, {error: TVA_INPUT_INVALID})
       .optional()
       .nullable(),
   );
@@ -109,7 +110,7 @@ const tranchePourcentageField = z.preprocess(
     .number({error: INPUT_REQUIRED})
     .refine((value) => !Number.isNaN(value), {error: INPUT_REQUIRED})
     .refine((value) => value > 0, {error: INPUT_REQUIRED})
-    .max(100, {error: INPUT_MAX(100)}),
+    .max(100, {error: () => INPUT_MAX(100)}),
 );
 
 const singleDigit = z
@@ -117,8 +118,6 @@ const singleDigit = z
   .min(1, {error: SHORT_INPUT_REQUIRED})
   .regex(/^\d$/, {error: SHORT_INPUT_REQUIRED})
   .transform((val) => Number(val));
-
-const ECHEANCIER_TOTAL_ERROR = 'Le total des pourcentages de l\'échéancier doit être égal à 100%.';
 
 const hasValidEcheancierTotal = (tranches?: Array<{ pourcentage: number }>) => {
   const total = (tranches ?? []).reduce((sum, tranche) => sum + tranche.pourcentage, 0);
@@ -181,13 +180,13 @@ export const profilSchema = z.object({
 
 export const changePasswordSchema = z
   .object({
-    old_password: z.string().min(1, INPUT_REQUIRED).min(8, INPUT_PASSWORD_MIN(8)),
-    new_password: z.string().min(1, INPUT_REQUIRED).min(8, INPUT_PASSWORD_MIN(8)),
-    new_password2: z.string().min(1, INPUT_REQUIRED),
+    old_password: z.string().min(1, {error: INPUT_REQUIRED}).min(8, {error: () => INPUT_PASSWORD_MIN(8)}),
+    new_password: z.string().min(1, {error: INPUT_REQUIRED}).min(8, {error: () => INPUT_PASSWORD_MIN(8)}),
+    new_password2: z.string().min(1, {error: INPUT_REQUIRED}),
     globalError: z.string().optional(),
   })
   .refine((data) => data.new_password === data.new_password2, {
-    message: 'Les mots de passe ne correspondent pas',
+    message: getT().validation.passwordMismatch,
     path: ['new_password2'],
   });
 
@@ -331,12 +330,12 @@ export const contractSchema = z
     if (data.company === 'casa_di_lusso' && !isST) {
       // client_nom is required for CDL standard contracts
       if (isEmpty(data.client_nom)) {
-        ctx.addIssue({path: ['client_nom'], code: 'custom', message: INPUT_REQUIRED});
+        ctx.addIssue({path: ['client_nom'], code: 'custom', message: INPUT_REQUIRED()});
       }
       casaDiLussoRequired.forEach((key) => {
         const val = data[key];
         if (isEmpty(val)) {
-          ctx.addIssue({path: [key], code: 'custom', message: INPUT_REQUIRED});
+          ctx.addIssue({path: [key], code: 'custom', message: INPUT_REQUIRED()});
         }
       });
     } else if (isST) {
@@ -344,39 +343,39 @@ export const contractSchema = z
       stRequired.forEach((key) => {
         const val = data[key as keyof typeof data];
         if (isEmpty(val)) {
-          ctx.addIssue({path: [key], code: 'custom', message: INPUT_REQUIRED});
+          ctx.addIssue({path: [key], code: 'custom', message: INPUT_REQUIRED()});
         }
       });
     } else if (data.company === 'blueline_works') {
       // client_nom is required for Blueline contracts
       if (isEmpty(data.client_nom)) {
-        ctx.addIssue({path: ['client_nom'], code: 'custom', message: INPUT_REQUIRED});
+        ctx.addIssue({path: ['client_nom'], code: 'custom', message: INPUT_REQUIRED()});
       }
       bluelineRequired.forEach((key) => {
         const val = data[key];
         if (isEmpty(val)) {
-          ctx.addIssue({path: [key], code: 'custom', message: INPUT_REQUIRED});
+          ctx.addIssue({path: [key], code: 'custom', message: INPUT_REQUIRED()});
         }
       });
       // Require at least one prestation for Blueline contracts
       if (!data.prestations || data.prestations.length === 0) {
-        ctx.addIssue({path: ['prestations'], code: 'custom', message: INPUT_REQUIRED});
+        ctx.addIssue({path: ['prestations'], code: 'custom', message: INPUT_REQUIRED()});
       }
     }
 
     if (data.company === 'casa_di_lusso' && !isST && !hasValidEcheancierTotal(data.tranches)) {
-      ctx.addIssue({path: ['tranches'], code: 'custom', message: ECHEANCIER_TOTAL_ERROR});
+      ctx.addIssue({path: ['tranches'], code: 'custom', message: getT().contracts.echeancierTotalError});
     }
 
     if (isST && !hasValidEcheancierTotal(data.st_tranches)) {
-      ctx.addIssue({path: ['st_tranches'], code: 'custom', message: ECHEANCIER_TOTAL_ERROR});
+      ctx.addIssue({path: ['st_tranches'], code: 'custom', message: getT().contracts.echeancierTotalError});
     }
 
     // Cross-field: acompte + tranche2 must not exceed 100%
     const a = typeof data.acompte === 'number' ? data.acompte : 0;
     const t = typeof data.tranche2 === 'number' ? data.tranche2 : 0;
     if (a + t > 100) {
-      const msg = 'La somme de l\'acompte et de la tranche 2 ne peut pas dépasser 100%.';
+      const msg = getT().contracts.maxAcompteTrancheError;
       ctx.addIssue({path: ['acompte'], code: 'custom', message: msg});
       ctx.addIssue({path: ['tranche2'], code: 'custom', message: msg});
     }

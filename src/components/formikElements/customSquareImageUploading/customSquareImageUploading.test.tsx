@@ -3,6 +3,10 @@ import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
 import CustomSquareImageUploading from './customSquareImageUploading';
 import '@testing-library/jest-dom';
 
+jest.mock('@/utils/hooks', () => ({
+  useLanguage: () => ({language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr}),
+}));
+
 interface MockCallbacks {
   readyCallback: (() => void) | null;
   cropendCallback: (() => void) | null;
@@ -39,7 +43,7 @@ jest.mock('next/image', () => {
 
 // Mock react-cropper to capture and expose callbacks
 jest.mock('react-cropper', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   const React = require('react');
   return {
     __esModule: true,
@@ -116,7 +120,7 @@ describe('CustomSquareImageUploading (with MUI icon mock)', () => {
       />,
     );
 
-    const preview = screen.getByAltText('Cropped preview');
+    const preview = screen.getByAltText('Aper\u00e7u recadr\u00e9');
     expect(preview).toBeInTheDocument();
   });
 
@@ -142,7 +146,7 @@ describe('CustomSquareImageUploading (with MUI icon mock)', () => {
       />,
     );
 
-    const preview = screen.getByAltText('Cropped preview');
+    const preview = screen.getByAltText('Aper\u00e7u recadr\u00e9');
     fireEvent.click(preview);
 
     const cropper = screen.getByRole('presentation');
@@ -297,7 +301,7 @@ describe('CustomSquareImageUploading (with MUI icon mock)', () => {
     );
 
     // Find the close button by clicking on the parent box
-    const preview = screen.getByAltText('Cropped preview');
+    const preview = screen.getByAltText('Aper\u00e7u recadr\u00e9');
     const parent = preview.closest('div');
     const closeButton = parent?.parentElement?.querySelector('[class*="closeButtonWrapper"]');
     if (closeButton) {
@@ -318,7 +322,7 @@ describe('CustomSquareImageUploading (with MUI icon mock)', () => {
     );
 
     // Enter edit mode by clicking preview
-    const preview = screen.getByAltText('Cropped preview');
+    const preview = screen.getByAltText('Aper\u00e7u recadr\u00e9');
     fireEvent.click(preview);
 
     // Trigger ready callback - should not crop since isNewUpload is false

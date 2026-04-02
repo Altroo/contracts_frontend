@@ -42,6 +42,8 @@ const mockUseAppSelector = jest.fn();
 jest.mock('@/utils/hooks', () => ({
   useAppSelector: (fn: unknown) => mockUseAppSelector(fn),
   useIsClient: () => mockUseIsClient(),
+   
+  useLanguage: () => ({ language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr }),
 }));
 
 describe('NavigationBar', () => {
@@ -179,7 +181,7 @@ describe('NavigationBar', () => {
         </NavigationBar>
       </Provider>,
     );
-    expect(screen.queryByLabelText('toggle drawer')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Basculer le tiroir de navigation')).not.toBeInTheDocument();
 
     mockIsMobile = true;
     rerender(
@@ -189,7 +191,7 @@ describe('NavigationBar', () => {
         </NavigationBar>
       </Provider>,
     );
-    const toggleBtn = screen.getByLabelText('toggle drawer');
+    const toggleBtn = screen.getByLabelText('Basculer le tiroir de navigation');
     expect(toggleBtn).toBeInTheDocument();
     await userEvent.click(toggleBtn);
   });

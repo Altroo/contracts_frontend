@@ -4,6 +4,10 @@ import CustomDropDownSelect from './customDropDownSelect';
 import {createTheme} from '@mui/material/styles';
 import '@testing-library/jest-dom';
 
+jest.mock('@/utils/hooks', () => ({
+  useLanguage: () => ({language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr}),
+}));
+
 jest.mock('@mui/icons-material/CheckCircleOutlined', () => {
   return {
     __esModule: true,

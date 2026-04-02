@@ -34,6 +34,8 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/utils/hooks', () => ({
   __esModule: true,
   useToast: () => ({onSuccess: jest.fn(), onError: jest.fn()}),
+   
+  useLanguage: () => ({ language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr }),
 }));
 
 jest.mock('@/contexts/InitContext', () => ({
@@ -119,94 +121,103 @@ jest.mock('@/utils/helpers', () => ({
 }));
 
 jest.mock('@/utils/rawData', () => ({
-  contractStatutItemsList: ['Brouillon', 'En cours', 'Terminé'],
-  typeContratItemsList: [
-    {code: 'travaux_finition', value: 'Travaux de finition'},
-    {code: 'amenagement', value: 'Aménagement'},
-  ],
-  deviseItemsList: ['MAD', 'EUR', 'USD'],
-  confidentialiteItemsList: ['CONFIDENTIEL', 'PUBLIC'],
   companyItemsList: [
     {code: 'casa_di_lusso', value: 'Casa di Lusso'},
     {code: 'blueline_works', value: 'Blueline Works'},
   ],
-  fournituresItemsList: [
-    {code: 'non_incluses', value: 'Non incluses'},
-    {code: 'incluses', value: 'Incluses'},
-    {code: 'partielles', value: 'Partielles'},
-  ],
-  eauElectriciteItemsList: [
-    {code: 'client', value: 'À la charge du client'},
-    {code: 'entreprise', value: 'À la charge de l\'entreprise'},
-  ],
-  garantieUniteItemsList: [
-    {code: 'mois', value: 'Mois'},
-    {code: 'ans', value: 'Ans'},
-  ],
-  garantieTypeItemsList: [
-    {code: 'defauts', value: 'Défauts'},
-    {code: 'bonne_fin', value: 'Bonne fin'},
-  ],
-  clauseResiliationItemsList: [
-    {code: '30j', value: '30 jours'},
-    {code: '15j', value: '15 jours'},
-  ],
-  prestationNomItemsList: [
-    {code: 'carrelage', value: 'Carrelage'},
-    {code: 'peinture', value: 'Peinture'},
-  ],
-  prestationUniteItemsList: [
-    {code: 'm2', value: 'm²'},
-    {code: 'ml', value: 'ml'},
-  ],
-  modePaiementTexteItemsList: [
-    {code: 'Virement Bancaire', value: 'Virement Bancaire'},
-    {code: 'Espèces', value: 'Espèces'},
-  ],
-  typeBienItemsList: [
-    {code: 'appartement', value: 'Appartement'},
-    {code: 'villa', value: 'Villa'},
-  ],
-  clientQualiteItemsList: [
-    {code: 'particulier', value: 'Particulier'},
-    {code: 'entreprise_societe', value: 'Entreprise / Société'},
-  ],
-  garantieItemsList: [
-    {code: '1 an', value: '1 an'},
-    {code: '2 ans', value: '2 ans'},
-  ],
+  deviseItemsList: ['MAD', 'EUR', 'USD'],
   tribunalItemsList: [
     {code: 'Tanger', value: 'Tanger'},
     {code: 'Casablanca', value: 'Casablanca'},
   ],
-  contractCategoryItemsList: [
-    {code: 'standard', value: 'Standard'},
-    {code: 'sous_traitance', value: 'Sous-Traitance'},
-  ],
-  stLotTypeItemsList: [
-    {code: 'gros_oeuvre', value: 'Travaux de Gros Œuvre'},
-    {code: 'electricite', value: "Travaux d'Électricité"},
-  ],
-  stFormeJuridiqueItemsList: [
-    {code: 'SARL', value: 'SARL'},
-    {code: 'SA', value: 'SA'},
-  ],
-  stTypePrixItemsList: [
-    {code: 'forfaitaire', value: 'Forfaitaire ferme'},
-    {code: 'unitaire', value: 'Prix unitaires'},
-  ],
-  stDelaiUnitItemsList: [
-    {code: 'mois', value: 'Mois'},
-    {code: 'semaines', value: 'Semaines'},
-  ],
-  stClausesActivesList: [
-    {key: 'tConfid', label: 'Confidentialité'},
-    {key: 'tNonConc', label: 'Non-concurrence'},
-  ],
-  dureeEstimeeUniteItemsList: [
-    {code: 'jours', value: 'Jours'},
-    {code: 'mois', value: 'Mois'},
-  ],
+  getTranslatedRawData: () => ({
+    contractStatutItemsList: [
+      {code: 'Brouillon', value: 'Brouillon'},
+      {code: 'En cours', value: 'En cours'},
+      {code: 'Terminé', value: 'Terminé'},
+    ],
+    typeContratItemsList: [
+      {code: 'travaux_finition', value: 'Travaux de finition'},
+      {code: 'amenagement', value: 'Aménagement'},
+    ],
+    confidentialiteItemsList: [
+      {code: 'CONFIDENTIEL', value: 'CONFIDENTIEL'},
+      {code: 'PUBLIC', value: 'PUBLIC'},
+    ],
+    fournituresItemsList: [
+      {code: 'non_incluses', value: 'Non incluses'},
+      {code: 'incluses', value: 'Incluses'},
+      {code: 'partielles', value: 'Partielles'},
+    ],
+    eauElectriciteItemsList: [
+      {code: 'client', value: 'À la charge du client'},
+      {code: 'entreprise', value: "À la charge de l'entreprise"},
+    ],
+    garantieUniteItemsList: [
+      {code: 'mois', value: 'Mois'},
+      {code: 'ans', value: 'Ans'},
+    ],
+    garantieTypeItemsList: [
+      {code: 'defauts', value: 'Défauts'},
+      {code: 'bonne_fin', value: 'Bonne fin'},
+    ],
+    clauseResiliationItemsList: [
+      {code: '30j', value: '30 jours'},
+      {code: '15j', value: '15 jours'},
+    ],
+    prestationNomItemsList: [
+      {code: 'carrelage', value: 'Carrelage'},
+      {code: 'peinture', value: 'Peinture'},
+    ],
+    prestationUniteItemsList: [
+      {code: 'm2', value: 'm²'},
+      {code: 'ml', value: 'ml'},
+    ],
+    modePaiementTexteItemsList: [
+      {code: 'Virement Bancaire', value: 'Virement Bancaire'},
+      {code: 'Espèces', value: 'Espèces'},
+    ],
+    typeBienItemsList: [
+      {code: 'appartement', value: 'Appartement'},
+      {code: 'villa', value: 'Villa'},
+    ],
+    clientQualiteItemsList: [
+      {code: 'particulier', value: 'Particulier'},
+      {code: 'entreprise_societe', value: 'Entreprise / Société'},
+    ],
+    garantieItemsList: [
+      {code: '1 an', value: '1 an'},
+      {code: '2 ans', value: '2 ans'},
+    ],
+    contractCategoryItemsList: [
+      {code: 'standard', value: 'Standard'},
+      {code: 'sous_traitance', value: 'Sous-Traitance'},
+    ],
+    stLotTypeItemsList: [
+      {code: 'gros_oeuvre', value: 'Travaux de Gros Œuvre'},
+      {code: 'electricite', value: "Travaux d'Électricité"},
+    ],
+    stFormeJuridiqueItemsList: [
+      {code: 'SARL', value: 'SARL'},
+      {code: 'SA', value: 'SA'},
+    ],
+    stTypePrixItemsList: [
+      {code: 'forfaitaire', value: 'Forfaitaire ferme'},
+      {code: 'unitaire', value: 'Prix unitaires'},
+    ],
+    stDelaiUnitItemsList: [
+      {code: 'mois', value: 'Mois'},
+      {code: 'semaines', value: 'Semaines'},
+    ],
+    stClausesActivesList: [
+      {key: 'tConfid', label: 'Confidentialité'},
+      {key: 'tNonConc', label: 'Non-concurrence'},
+    ],
+    dureeEstimeeUniteItemsList: [
+      {code: 'jours', value: 'Jours'},
+      {code: 'mois', value: 'Mois'},
+    ],
+  }),
 }));
 
 jest.mock('@/utils/formValidationSchemas', () => ({

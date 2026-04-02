@@ -2,11 +2,15 @@ import {redirect} from 'next/navigation';
 import {auth} from '@/auth';
 import {AUTH_LOGIN} from '@/utils/routes';
 import EditProfilClient from '@/components/pages/settings/edit-profile';
-import {Metadata} from 'next';
+import type {Metadata} from 'next';
+import {getServerTranslations} from '@/utils/serverTranslations';
 
-export const metadata: Metadata = {
-  title: 'Modifier le Profil',
-  description: 'Modifier les informations du profil utilisateur',
+export const generateMetadata = async (): Promise<Metadata> => {
+  const t = await getServerTranslations();
+  return {
+    title: t.metadata.editProfileTitle,
+    description: t.metadata.editProfileDescription,
+  };
 };
 
 const EditProfilePage = async () => {

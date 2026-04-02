@@ -39,7 +39,7 @@ describe('DashboardPage server component', () => {
 
     let Page: () => Promise<unknown>;
     jest.isolateModules(() => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
       const mod = require('./page');
       Page = mod.default as () => Promise<unknown>;
     });
@@ -54,7 +54,7 @@ describe('DashboardPage server component', () => {
 
     let Page: () => Promise<unknown>;
     jest.isolateModules(() => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
       const mod = require('./page');
       Page = mod.default as () => Promise<unknown>;
     });

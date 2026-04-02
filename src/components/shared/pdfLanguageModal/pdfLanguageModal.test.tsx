@@ -17,7 +17,7 @@ interface ActionModalsProps {
 }
 
 jest.mock('@/components/htmlElements/modals/actionModal/actionModals', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   const React = require('react');
   const Mock: React.FC<ActionModalsProps> = ({title, body, actions}) => (
     <div data-testid="action-modals">

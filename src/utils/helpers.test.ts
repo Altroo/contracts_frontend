@@ -177,9 +177,9 @@ jest.mock('@/utils/routes', () => ({SITE_ROOT: 'https://example.com/'}));
 
 describe('handleUnauthorized', () => {
   it('dispatches session-expired event and calls signOut', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const {handleUnauthorized} = require('./helpers');
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const {signOut} = require('next-auth/react');
 
     const events: string[] = [];
@@ -194,7 +194,7 @@ describe('handleUnauthorized', () => {
   });
 
   it('calls the optional onResetToken callback', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const {handleUnauthorized} = require('./helpers');
     const onReset = jest.fn();
     await handleUnauthorized(onReset);
@@ -206,7 +206,7 @@ describe('handleUnauthorized', () => {
 
 describe('isAuthenticatedInstance', () => {
   it('returns an axios instance', () => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const {isAuthenticatedInstance} = require('./helpers');
     const instance = isAuthenticatedInstance();
     expect(typeof instance.request).toBe('function');
@@ -218,7 +218,7 @@ describe('isAuthenticatedInstance', () => {
 
 describe('allowAnyInstance', () => {
   it('returns an axios instance', () => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const {allowAnyInstance} = require('./helpers');
     const instance = allowAnyInstance();
     expect(typeof instance.request).toBe('function');

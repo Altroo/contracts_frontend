@@ -27,6 +27,8 @@ jest.mock('@/utils/hooks', () => ({
     onError: mockOnError,
   }),
   useAppSelector: jest.fn(() => null),
+   
+  useLanguage: () => ({ language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr }),
 }));
 
 jest.mock('@/store/selectors', () => ({
@@ -117,7 +119,7 @@ describe('PasswordClient', () => {
 
   it('renders the page title', () => {
     renderWithProviders(<PasswordClient/>);
-    expect(screen.getByText('Modifier le mot de passe')).toBeInTheDocument();
+    expect(screen.getByRole('heading', {level: 2})).toHaveTextContent('Modifier le mot de passe');
   });
 
   it('renders old password input', () => {
@@ -183,7 +185,7 @@ describe('PasswordClient', () => {
     useAppSelector.mockReturnValue(undefined);
 
     renderWithProviders(<PasswordClient/>);
-    expect(screen.getByText('Modifier le mot de passe')).toBeInTheDocument();
+    expect(screen.getByRole('heading', {level: 2})).toHaveTextContent('Modifier le mot de passe');
     expect(
       screen.queryByText(/Il est recommandé de changer votre mot de passe par défaut/),
     ).not.toBeInTheDocument();
@@ -196,7 +198,7 @@ describe('PasswordClient', () => {
     useAppSelector.mockReturnValue({id: 1, email: 'test@test.com'});
 
     renderWithProviders(<PasswordClient/>);
-    expect(screen.getByText('Modifier le mot de passe')).toBeInTheDocument();
+    expect(screen.getByRole('heading', {level: 2})).toHaveTextContent('Modifier le mot de passe');
     expect(
       screen.queryByText(/Il est recommandé de changer votre mot de passe par défaut/),
     ).not.toBeInTheDocument();

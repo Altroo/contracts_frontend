@@ -1,8 +1,12 @@
+'use client';
+
 import React from 'react';
 import {Box, Button, FormControl, IconButton, MenuItem, Select, Stack, TextField, Typography} from '@mui/material';
 import {Add as AddIcon, Close as CloseIcon} from '@mui/icons-material';
 import type {GridColDef} from '@mui/x-data-grid';
 import {GridLogicOperator} from '@mui/x-data-grid';
+import {useLanguage} from '@/utils/hooks';
+import type {TranslationDictionary} from '@/types/languageTypes';
 
 export interface DateRangeFilterValue {
   from?: string;
@@ -43,14 +47,14 @@ interface OperatorInfo {
 /** Operators that don't require a value input */
 const VALUE_LESS_OPERATORS = new Set(['isEmpty', 'isNotEmpty']);
 
-// Default text operators
-const DEFAULT_TEXT_OPERATORS: OperatorInfo[] = [
-  {value: 'contains', label: 'contient'},
-  {value: 'equals', label: 'égal à'},
-  {value: 'startsWith', label: 'commence par'},
-  {value: 'endsWith', label: 'finit par'},
-  {value: 'isEmpty', label: 'est vide'},
-  {value: 'isNotEmpty', label: "n'est pas vide"},
+// Default text operators (translated)
+const getDefaultTextOperators = (t: TranslationDictionary): OperatorInfo[] => [
+  {value: 'contains', label: t.filters.contains},
+  {value: 'equals', label: t.filters.equals},
+  {value: 'startsWith', label: t.filters.startsWith},
+  {value: 'endsWith', label: t.filters.endsWith},
+  {value: 'isEmpty', label: t.filters.isEmpty},
+  {value: 'isNotEmpty', label: t.filters.isNotEmpty},
 ];
 
 /** Check if a filter item has a meaningful value */
@@ -66,6 +70,7 @@ export function filterHasValue(item: CustomFilterItem): boolean {
 
 // Simple text input for text-based filters
 const TextFilterInput: React.FC<FilterValueInputProps> = ({item, applyValue}) => {
+  const {t} = useLanguage();
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     applyValue({...item, value: event.target.value});
   };
@@ -81,14 +86,14 @@ const TextFilterInput: React.FC<FilterValueInputProps> = ({item, applyValue}) =>
       size="small"
       value={currentValue}
       onChange={handleChange}
-      placeholder="Valeur"
+      placeholder={t.common.value}
       sx={{minWidth: 200}}
     />
   );
 };
 
 // Extract operators from column definition
-function extractOperators(col: GridColDef): OperatorInfo[] {
+function extractOperators(col: GridColDef, t: TranslationDictionary): OperatorInfo[] {
   if (col.filterOperators && col.filterOperators.length > 0) {
     return col.filterOperators.map((op) => ({
       value: op.value,
@@ -96,10 +101,11 @@ function extractOperators(col: GridColDef): OperatorInfo[] {
       InputComponent: op.InputComponent as React.ComponentType<FilterValueInputProps> | undefined,
     }));
   }
-  return DEFAULT_TEXT_OPERATORS;
+  return getDefaultTextOperators(t);
 }
 
 const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({columns, filterModel, onChange}) => {
+  const {t} = useLanguage();
   const filterableColumns = columns.filter((col) => col.field !== 'actions' && col.filterable !== false);
 
   // Use a ref to track the filter counter for generating IDs
@@ -109,7 +115,7 @@ const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({columns, filterMod
     const firstColumn = filterableColumns[0];
     if (!firstColumn) return;
 
-    const operators = extractOperators(firstColumn);
+    const operators = extractOperators(firstColumn, t);
     const defaultOperator = operators[0]?.value ?? 'contains';
 
     // Generate ID in event handler (not during render)
@@ -158,7 +164,7 @@ const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({columns, filterMod
     const column = columns.find((col) => col.field === field);
     if (!column) return;
 
-    const operators = extractOperators(column);
+    const operators = extractOperators(column, t);
     const defaultOperator = operators[0]?.value ?? 'contains';
 
     handleItemChange(id, {
@@ -180,7 +186,7 @@ const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({columns, filterMod
     }
   };
 
-  const logicLabel = filterModel.logicOperator === GridLogicOperator.And ? 'ET' : 'OU';
+  const logicLabel = filterModel.logicOperator === GridLogicOperator.And ? t.filters.and : t.filters.or;
 
   return (
     <Box sx={{
@@ -194,7 +200,7 @@ const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({columns, filterMod
       <Stack spacing={1.5}>
         {filterModel.items.map((item, index) => {
           const column = columns.find((col) => col.field === item.field);
-          const operators = column ? extractOperators(column) : DEFAULT_TEXT_OPERATORS;
+          const operators = column ? extractOperators(column, t) : getDefaultTextOperators(t);
           const currentOperator = operators.find((op) => op.value === item.operator);
           const InputComponent = currentOperator?.InputComponent ?? TextFilterInput;
 
@@ -208,8 +214,8 @@ const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({columns, filterMod
                       value={filterModel.logicOperator}
                       onChange={(e) => handleLogicOperatorChange(e.target.value as GridLogicOperator)}
                     >
-                      <MenuItem value={GridLogicOperator.And}>ET</MenuItem>
-                      <MenuItem value={GridLogicOperator.Or}>OU</MenuItem>
+                      <MenuItem value={GridLogicOperator.And}>{t.filters.and}</MenuItem>
+                      <MenuItem value={GridLogicOperator.Or}>{t.filters.or}</MenuItem>
                     </Select>
                   </FormControl>
                 ) : (
@@ -285,16 +291,16 @@ const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({columns, filterMod
             disabled={filterableColumns.length === 0 || !filterModel.items.every(filterHasValue)}
             sx={{minWidth: 150}}
           >
-            Ajouter un filtre
+            {t.filters.addFilter}
           </Button>
 
           {filterModel.items.length > 0 && (
             <>
               <Button onClick={handleClearAll} size="small" variant="text" color="error">
-                Supprimer tous les filtres
+                {t.filters.removeAllFilters}
               </Button>
               <Typography variant="caption" color="text.secondary" sx={{ml: 'auto'}}>
-                {filterModel.items.filter(filterHasValue).length} filtre(s) actif(s)
+                {t.common.activeFiltersCount(filterModel.items.filter(filterHasValue).length)}
               </Typography>
             </>
           )}

@@ -46,7 +46,7 @@ describe('makeStore', () => {
   let dispatch: AppDispatch;
 
   beforeEach(() => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const {makeStore} = require('./store') as { makeStore: () => SagaStore };
     store = makeStore();
     dispatch = store.dispatch as AppDispatch;

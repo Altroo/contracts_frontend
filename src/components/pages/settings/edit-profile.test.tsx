@@ -28,6 +28,8 @@ jest.mock('@/utils/hooks', () => ({
     onError: mockOnError,
   }),
   useAppDispatch: () => jest.fn(),
+   
+  useLanguage: () => ({ language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr }),
 }));
 
 jest.mock('@/contexts/InitContext', () => ({
@@ -125,10 +127,12 @@ jest.mock('@/utils/themes', () => ({
 }));
 
 jest.mock('@/utils/rawData', () => ({
-  genderItemsList: [
-    {value: 'Homme', label: 'Homme'},
-    {value: 'Femme', label: 'Femme'},
-  ],
+  getTranslatedRawData: () => ({
+    genderItemsList: [
+      {code: 'H', value: 'Homme'},
+      {code: 'F', value: 'Femme'},
+    ],
+  }),
 }));
 
 jest.mock('@/utils/formValidationSchemas', () => ({

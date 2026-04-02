@@ -5,9 +5,12 @@ import {configureStore} from '@reduxjs/toolkit';
 import '@testing-library/jest-dom';
 
 // ─── useAppDispatch / useAppSelector ─────────────────────────────────────────
-import {useAppDispatch, useAppSelector, useIsClient, usePermission, useToast} from './hooks';
+import {useAppDispatch, useAppSelector, useIsClient, useLanguage, usePermission, useToast} from './hooks';
 import {store} from '@/store/store';
 import {ToastContext} from '@/contexts/toastContext';
+import {LanguageContext} from '@/contexts/languageContext';
+import type {LanguageContextType} from '@/contexts/languageContext';
+import {translations} from '@/translations';
 
 const wrapper = ({children}: { children: React.ReactNode }) => (
   <Provider store={store}>{children}</Provider>
@@ -109,5 +112,54 @@ describe('useToast', () => {
     });
     expect(() => renderHook(() => useToast())).toThrow('useToast must be used within ToastProvider');
     jest.restoreAllMocks();
+  });
+});
+
+// ─── useLanguage ─────────────────────────────────────────────────────────────
+
+describe('useLanguage', () => {
+  it('returns the default French translation when wrapped in LanguageContext', () => {
+    const mockCtx: LanguageContextType = {
+      language: 'fr',
+      setLanguage: jest.fn(),
+      t: translations.fr,
+    };
+    const langWrapper = ({children}: { children: React.ReactNode }) => (
+      <LanguageContext.Provider value={mockCtx}>{children}</LanguageContext.Provider>
+    );
+    const {result} = renderHook(() => useLanguage(), {wrapper: langWrapper});
+    expect(result.current.language).toBe('fr');
+    expect(result.current.t).toBe(translations.fr);
+    expect(result.current.t.common.yes).toBe('Oui');
+  });
+
+  it('returns English translations when language is set to en', () => {
+    const mockCtx: LanguageContextType = {
+      language: 'en',
+      setLanguage: jest.fn(),
+      t: translations.en,
+    };
+    const langWrapper = ({children}: { children: React.ReactNode }) => (
+      <LanguageContext.Provider value={mockCtx}>{children}</LanguageContext.Provider>
+    );
+    const {result} = renderHook(() => useLanguage(), {wrapper: langWrapper});
+    expect(result.current.language).toBe('en');
+    expect(result.current.t).toBe(translations.en);
+    expect(result.current.t.common.yes).toBe('Yes');
+  });
+
+  it('provides setLanguage callback', () => {
+    const setLanguage = jest.fn();
+    const mockCtx: LanguageContextType = {
+      language: 'fr',
+      setLanguage,
+      t: translations.fr,
+    };
+    const langWrapper = ({children}: { children: React.ReactNode }) => (
+      <LanguageContext.Provider value={mockCtx}>{children}</LanguageContext.Provider>
+    );
+    const {result} = renderHook(() => useLanguage(), {wrapper: langWrapper});
+    result.current.setLanguage('en');
+    expect(setLanguage).toHaveBeenCalledWith('en');
   });
 });

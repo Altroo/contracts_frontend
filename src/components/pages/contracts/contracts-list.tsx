@@ -28,8 +28,8 @@ import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDa
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type {ContractClass} from '@/models/classes';
 import {extractApiErrorMessage, formatDate} from '@/utils/helpers';
-import {companyItemsList, contractCategoryItemsList, getContractStatusColor} from '@/utils/rawData';
-import {useToast} from '@/utils/hooks';
+import {companyItemsList, getContractStatusColor, getTranslatedRawData} from '@/utils/rawData';
+import {useToast, useLanguage} from '@/utils/hooks';
 import {fetchFileBlob} from '@/utils/apiHelpers';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -45,6 +45,8 @@ import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelect
 const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
   const router = useRouter();
   const {onSuccess, onError} = useToast();
+  const {t} = useLanguage();
+  const {contractCategoryItemsList} = getTranslatedRawData(t);
   const token = useInitAccessToken(session);
 
   const [paginationModel, setPaginationModel] = useState<{ page: number; pageSize: number }>({
@@ -91,18 +93,18 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
   const deleteHandler = async () => {
     try {
       await deleteRecord({id: selectedContractId!}).unwrap();
-      onSuccess('Contrat supprimé avec succès');
+      onSuccess(t.contracts.contractDeletedSuccess);
       refetch();
     } catch (err) {
-      onError(extractApiErrorMessage(err, 'Erreur lors de la suppression du contrat'));
+      onError(extractApiErrorMessage(err, t.errors.deletionError));
     } finally {
       setShowDeleteModal(false);
     }
   };
 
   const deleteModalActions = [
-    {text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon/>, color: '#6B6B6B'},
-    {text: 'Supprimer', active: true, onClick: deleteHandler, icon: <DeleteIcon/>, color: '#D32F2F'},
+    {text: t.common.cancel, active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon/>, color: '#6B6B6B'},
+    {text: t.common.delete, active: true, onClick: deleteHandler, icon: <DeleteIcon/>, color: '#D32F2F'},
   ];
 
   const showDeleteModalCall = (id: number) => {
@@ -117,9 +119,9 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
   const bulkDeleteHandler = async () => {
     try {
       await bulkDeleteContracts({ids: selectedContractIds}).unwrap();
-      onSuccess(`${selectedContractIds.length} contrat(s) supprimé(s) avec succès`);
+      onSuccess(t.contracts.bulkContractDeletedSuccess(selectedContractIds.length));
     } catch (err) {
-      onError(extractApiErrorMessage(err, `Erreur lors de la suppression`));
+      onError(extractApiErrorMessage(err, t.errors.deletionError));
     } finally {
       setSelectedContractIds([]);
       setShowBulkDeleteModal(false);
@@ -129,14 +131,14 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
 
   const bulkDeleteModalActions = [
     {
-      text: 'Annuler',
+      text: t.common.cancel,
       active: false,
       onClick: () => setShowBulkDeleteModal(false),
       icon: <CloseIcon/>,
       color: '#6B6B6B'
     },
     {
-      text: `Supprimer (${selectedContractIds.length})`,
+      text: `${t.common.delete} (${selectedContractIds.length})`,
       active: true,
       onClick: bulkDeleteHandler,
       icon: <DeleteIcon/>,
@@ -174,14 +176,14 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
         window.open(blobUrl, '_blank');
         setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
       } catch {
-        onError("Erreur lors de l'ouverture du document.");
+        onError(t.errors.documentOpenError);
       } finally {
         setPendingDocFormat(null);
         setPrintMenuItemId(null);
         setIsDocLoading(false);
       }
     },
-    [pendingDocFormat, printMenuItemId, token, onError],
+    [pendingDocFormat, printMenuItemId, token, onError, t.errors.documentOpenError],
   );
 
   const handleLanguageModalClose = useCallback(() => {
@@ -192,39 +194,39 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
 
   const statutFilterOptions = React.useMemo(
     () => [
-      {value: 'Brouillon', label: 'Brouillon', color: 'default' as const},
-      {value: 'Envoyé', label: 'Envoyé', color: 'info' as const},
-      {value: 'Signé', label: 'Signé', color: 'primary' as const},
-      {value: 'En cours', label: 'En cours', color: 'warning' as const},
-      {value: 'Terminé', label: 'Terminé', color: 'success' as const},
-      {value: 'Annulé', label: 'Annulé', color: 'error' as const},
-      {value: 'Expiré', label: 'Expiré', color: 'warning' as const},
+      {value: 'Brouillon', label: t.contracts.statusDraft, color: 'default' as const},
+      {value: 'Envoyé', label: t.contracts.statusSent, color: 'info' as const},
+      {value: 'Signé', label: t.contracts.statusSigned, color: 'primary' as const},
+      {value: 'En cours', label: t.contracts.statusInProgress, color: 'warning' as const},
+      {value: 'Terminé', label: t.contracts.statusCompleted, color: 'success' as const},
+      {value: 'Annulé', label: t.contracts.statusCancelled, color: 'error' as const},
+      {value: 'Expiré', label: t.contracts.statusExpired, color: 'warning' as const},
     ],
-    [],
+    [t],
   );
 
   const chipFilters = React.useMemo<ChipFilterConfig[]>(
     () => [
       {
         key: 'company',
-        label: 'Société',
+        label: t.contracts.company,
         paramName: 'company',
         options: companyItemsList.map((c) => ({id: c.code, nom: c.value})),
       },
       {
         key: 'contract_category',
-        label: 'Catégorie',
+        label: t.contracts.category,
         paramName: 'contract_category',
         options: contractCategoryItemsList.map((c) => ({id: c.code, nom: c.value})),
       },
     ],
-    [],
+    [t, contractCategoryItemsList],
   );
 
   const columns: GridColDef[] = [
     {
       field: 'numero_contrat',
-      headerName: 'Référence',
+      headerName: t.contracts.reference,
       flex: 1,
       minWidth: 130,
       renderCell: (params: GridRenderCellParams<ContractClass>) => (
@@ -237,7 +239,7 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
     },
     {
       field: 'client_nom',
-      headerName: 'Client',
+      headerName: t.contracts.client,
       flex: 1.2,
       minWidth: 130,
       renderCell: (params: GridRenderCellParams<ContractClass>) => (
@@ -250,7 +252,7 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
     },
     {
       field: 'company',
-      headerName: 'Société',
+      headerName: t.contracts.company,
       flex: 0.9,
       minWidth: 120,
       filterable: false,
@@ -270,7 +272,7 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
     },
     {
       field: 'contract_category',
-      headerName: 'Catégorie',
+      headerName: t.contracts.category,
       flex: 0.9,
       minWidth: 130,
       filterable: false,
@@ -288,7 +290,7 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
     },
     {
       field: 'type_contrat_display',
-      headerName: 'Type de contrat',
+      headerName: t.contracts.contractType,
       flex: 1.2,
       minWidth: 140,
       renderCell: (params: GridRenderCellParams<ContractClass>) => {
@@ -304,10 +306,10 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
     },
     {
       field: 'statut',
-      headerName: 'Statut',
+      headerName: t.contracts.status,
       flex: 0.8,
       minWidth: 100,
-      filterOperators: createDropdownFilterOperators(statutFilterOptions, 'Tous les statuts', true),
+      filterOperators: createDropdownFilterOperators(statutFilterOptions, t.common.allStatuses, true, t.filters.is),
       renderCell: (params: GridRenderCellParams<ContractClass>) => {
         const statut = params.value as string;
         return (
@@ -323,10 +325,10 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
     },
     {
       field: 'date_contrat',
-      headerName: 'Date du contrat',
+      headerName: t.contracts.contractDate,
       flex: 1,
       minWidth: 130,
-      filterOperators: createDateRangeFilterOperator(),
+      filterOperators: createDateRangeFilterOperator(t.filters.between),
       renderCell: (params: GridRenderCellParams<ContractClass>) => {
         const formatted = formatDate(params.value as string | null);
         return (
@@ -340,7 +342,7 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
     },
     {
       field: 'montant_ht',
-      headerName: 'Montant HT',
+      headerName: t.contracts.amountHT,
       flex: 1,
       minWidth: 120,
       filterOperators: createNumericFilterOperators(),
@@ -359,7 +361,7 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
     },
     {
       field: 'actions',
-      headerName: 'Actions',
+      headerName: t.common.actions,
       flex: 1.5,
       minWidth: 150,
       sortable: false,
@@ -367,19 +369,19 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
       renderCell: (params) => {
         const actions = [
           {
-            label: 'Voir',
+            label: t.common.view,
             icon: <VisibilityIcon/>,
             onClick: () => router.push(CONTRACTS_VIEW(params.row.id)),
             color: 'info' as const,
           },
           {
-            label: 'Modifier',
+            label: t.common.edit,
             icon: <EditIcon/>,
             onClick: () => router.push(CONTRACTS_EDIT(params.row.id)),
             color: 'primary' as const,
           },
           {
-            label: 'Afficher',
+            label: t.common.display,
             icon: <PrintIcon/>,
             onClick: (e?: React.MouseEvent<HTMLElement>) => {
               if (e) {
@@ -389,7 +391,7 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
             color: 'info' as const,
           },
           {
-            label: 'Supprimer',
+            label: t.common.delete,
             icon: <DeleteIcon/>,
             onClick: () => showDeleteModalCall(params.row.id),
             color: 'error' as const,
@@ -413,7 +415,7 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
       mt="48px"
       sx={{overflowX: 'auto', overflowY: 'hidden'}}
     >
-      <NavigationBar title="Liste des contrats">
+      <NavigationBar title={t.navigation.contractsList}>
         <Protected permission="can_view">
           <>
             <Box
@@ -438,7 +440,7 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
                 }}
                 startIcon={<AddIcon fontSize="small"/>}
               >
-                Nouveau contrat
+                {t.navigation.newContract}
               </Button>
               {selectedContractIds.length > 0 && (
                 <Button
@@ -453,7 +455,7 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
                     fontSize: {xs: '0.85rem', sm: '0.9rem', md: '1rem'},
                   }}
                 >
-                  Supprimer ({selectedContractIds.length})
+                  {t.common.delete} ({selectedContractIds.length})
                 </Button>
               )}
             </Box>
@@ -479,8 +481,8 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
             />
             {showDeleteModal && (
               <ActionModals
-                title="Supprimer ce contrat ?"
-                body="Êtes‑vous sûr de vouloir supprimer ce contrat ?"
+                title={t.contracts.deleteContract}
+                body={t.contracts.deleteContractBody}
                 actions={deleteModalActions}
                 titleIcon={<DeleteIcon/>}
                 titleIconColor="#D32F2F"
@@ -488,8 +490,8 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
             )}
             {showBulkDeleteModal && (
               <ActionModals
-                title={`Supprimer ${selectedContractIds.length} contrat(s) ?`}
-                body={`Êtes-vous sûr de vouloir supprimer les ${selectedContractIds.length} contrat(s) sélectionné(s) ?`}
+                title={t.contracts.deleteContractConfirm(selectedContractIds.length)}
+                body={t.contracts.bulkDeleteContractBody(selectedContractIds.length)}
                 actions={bulkDeleteModalActions}
                 titleIcon={<DeleteIcon/>}
                 titleIconColor="#D32F2F"
@@ -504,12 +506,12 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
             >
               <MenuItem onClick={() => handlePrintMenuItemClick('pdf')}>
                 <ListItemIcon sx={{color: '#d32f2f'}}><PictureAsPdfIcon/></ListItemIcon>
-                <ListItemText>Afficher en PDF</ListItemText>
+                <ListItemText>{t.common.displayPdf}</ListItemText>
               </MenuItem>
               <Divider/>
               <MenuItem onClick={() => handlePrintMenuItemClick('docx')}>
                 <ListItemIcon sx={{color: '#1976d2'}}><DescriptionIcon/></ListItemIcon>
-                <ListItemText>Afficher en DOCX</ListItemText>
+                <ListItemText>{t.common.displayDocx}</ListItemText>
               </MenuItem>
             </Menu>
 

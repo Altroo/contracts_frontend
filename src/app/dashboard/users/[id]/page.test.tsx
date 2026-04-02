@@ -21,7 +21,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/components/pages/users/users-view', () => ({
   __esModule: true,
   default: (props: { session?: Session; id?: number }) => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const React = require('react');
     return React.createElement(
       'div',
@@ -54,7 +54,7 @@ describe('UserDetailPage server component', () => {
 
     let Page: (props: { params: Promise<{ id: string }> }) => Promise<unknown>;
     jest.isolateModules(() => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
       const mod = require('./page');
       Page = mod.default as (props: { params: Promise<{ id: string }> }) => Promise<unknown>;
     });
@@ -69,7 +69,7 @@ describe('UserDetailPage server component', () => {
 
     let Page: (props: { params: Promise<{ id: string }> }) => Promise<unknown>;
     jest.isolateModules(() => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
       const mod = require('./page');
       Page = mod.default as (props: { params: Promise<{ id: string }> }) => Promise<unknown>;
     });
@@ -89,7 +89,7 @@ describe('UserDetailPage server component', () => {
 
     let Page: (props: { params: Promise<{ id: string }> }) => Promise<unknown>;
     jest.isolateModules(() => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
       const mod = require('./page');
       Page = mod.default as (props: { params: Promise<{ id: string }> }) => Promise<unknown>;
     });

@@ -55,7 +55,7 @@ describe('auth.ts', () => {
     jest.clearAllMocks();
     // Re-import to trigger NextAuth call
     jest.isolateModules(() => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
       require('./auth');
     });
   });

@@ -34,8 +34,9 @@ import {
   People as PeopleIcon,
   Settings as SettingsIcon,
 } from '@mui/icons-material';
-import {useAppSelector} from '@/utils/hooks';
+import {useAppSelector, useLanguage} from '@/utils/hooks';
 import {getProfilState} from '@/store/selectors';
+import LanguageSwitcher from '@/components/shared/languageSwitcher/languageSwitcher';
 import {cookiesDeleter} from '@/utils/apiHelpers';
 import {
   AUTH_LOGIN,
@@ -54,33 +55,34 @@ import {navigationBarTheme} from '@/utils/themes';
 import Image from 'next/image';
 import Link from 'next/link';
 import {Desktop, TabletAndMobile} from '@/utils/clientHelpers';
+import type {TranslationDictionary} from '@/types/languageTypes';
 
-const getNavigationMenu = (isStaff: boolean) => {
+const getNavigationMenu = (isStaff: boolean, t: TranslationDictionary) => {
   return {
     contrats: {
-      title: 'Contrats',
+      title: t.navigation.contracts,
       icon: <GavelIcon/>,
       items: [
-        {title: 'Liste des contrats', label: 'Liste des contrats', path: CONTRACTS_LIST},
-        {title: 'Nouveau contrat', label: 'Nouveau contrat', path: CONTRACTS_ADD},
+        {title: t.navigation.contractsList, label: t.navigation.contractsList, path: CONTRACTS_LIST},
+        {title: t.navigation.newContract, label: t.navigation.newContract, path: CONTRACTS_ADD},
       ],
     },
     ...(isStaff && {
       utilisateurs: {
-        title: 'Utilisateurs',
+        title: t.navigation.users,
         icon: <PeopleIcon/>,
         items: [
-          {title: 'Liste des utilisateurs', label: 'Liste des utilisateurs', path: USERS_LIST},
-          {title: 'Nouvel utilisateur', label: 'Nouvel utilisateur', path: USERS_ADD},
+          {title: t.navigation.usersList, label: t.navigation.usersList, path: USERS_LIST},
+          {title: t.navigation.newUser, label: t.navigation.newUser, path: USERS_ADD},
         ],
       },
     }),
     parametres: {
-      title: 'Paramètres',
+      title: t.navigation.settings,
       icon: <SettingsIcon/>,
       items: [
-        {title: 'Mon Profil', label: 'Mon Profil', path: DASHBOARD_EDIT_PROFILE},
-        {title: 'Mot de passe', label: 'Changer le mot de passe', path: DASHBOARD_PASSWORD},
+        {title: t.navigation.myProfile, label: t.navigation.myProfile, path: DASHBOARD_EDIT_PROFILE},
+        {title: t.navigation.changePassword, label: t.navigation.changePassword, path: DASHBOARD_PASSWORD},
       ],
     },
   };
@@ -147,7 +149,8 @@ const NavigationBar = (props: Props) => {
   const [open, setOpen] = useState(!isMobile);
   const {data: session, status} = useSession();
   const {avatar_cropped, first_name, last_name, gender, is_staff} = useAppSelector(getProfilState);
-  const navigationMenu = useMemo(() => getNavigationMenu(is_staff), [is_staff]);
+  const {t} = useLanguage();
+  const navigationMenu = useMemo(() => getNavigationMenu(is_staff, t), [is_staff, t]);
 
   const loading = status === 'loading';
 
@@ -234,7 +237,7 @@ const NavigationBar = (props: Props) => {
                 {isMobile && (
                   <IconButton
                     color="inherit"
-                    aria-label="toggle drawer"
+                    aria-label={t.accessibility.toggleDrawer}
                     onClick={handleDrawerToggle}
                     size="small"
                   >
@@ -245,18 +248,19 @@ const NavigationBar = (props: Props) => {
                   {props.title}
                 </Typography>
               </Stack>
-              <Stack direction="row" spacing={1}>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <LanguageSwitcher/>
                 {!loading && session && (
                   <>
                     <Desktop>
                       {is_staff && (
                         <Button variant="text" color="inherit" href={BACKEND_SITE_ADMIN} target="_blank" rel="noopener"
                                 endIcon={<DomainIcon/>}>
-                          Administration
+                          {t.navigation.administration}
                         </Button>
                       )}
                       <Button variant="text" color="inherit" endIcon={<LogoutIcon/>} onClick={logOutHandler}>
-                        Se déconnecter
+                        {t.navigation.logout}
                       </Button>
                     </Desktop>
                     <TabletAndMobile>
@@ -316,7 +320,7 @@ const NavigationBar = (props: Props) => {
             )}
             <Box sx={{display: 'flex', flexDirection: 'column'}}>
               <Typography variant="subtitle1" sx={{fontWeight: 600}}>
-                {gender === 'Homme' ? 'Bienvenu' : gender === 'Femme' ? 'Bienvenue' : 'Bienvenu(e)'}
+                {gender === 'Homme' ? t.navigation.welcomeMale : gender === 'Femme' ? t.navigation.welcomeFemale : t.navigation.welcomeNeutral}
               </Typography>
               <Typography variant="body2" sx={{color: 'text.secondary'}}>
                 {first_name} {last_name}

@@ -3,6 +3,10 @@ import {fireEvent, render, screen} from '@testing-library/react';
 import SquareImageInputFile from './squareImageInputFile';
 import '@testing-library/jest-dom';
 
+jest.mock('@/utils/hooks', () => ({
+  useLanguage: () => ({language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr}),
+}));
+
 jest.mock('@mui/icons-material/Add', () => {
   type AddIconProps = React.SVGProps<SVGSVGElement> & {
     color?: 'inherit' | 'primary' | 'secondary' | 'action' | 'error' | 'disabled';

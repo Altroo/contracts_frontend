@@ -68,10 +68,13 @@ jest.mock('@/utils/helpers', () => ({
   allowAnyInstance: () => ({}),
   setFormikAutoErrors: (p: unknown) => mockSetFormikAutoErrors(p),
   hexToRGB: (hex: string, alpha = 1) => `rgba(0,0,0,${alpha})`,
+  getT: () => require('@/translations').translations.fr,
 }));
 
 jest.mock('@/utils/hooks', () => ({
   useAppDispatch: () => mockDispatch,
+   
+  useLanguage: () => ({ language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr }),
 }));
 
 describe('LoginClient', () => {
@@ -114,8 +117,8 @@ describe('LoginClient', () => {
       );
     });
 
-    const emailInput = screen.getByLabelText(/Adresse email/i) as HTMLInputElement;
-    const passwordInput = screen.getByLabelText(/Mot de passe/i) as HTMLInputElement;
+    const emailInput = screen.getAllByLabelText(/Adresse email/i)[0] as HTMLInputElement;
+    const passwordInput = screen.getAllByPlaceholderText(/Mot de passe/i)[0] as HTMLInputElement;
     const submitButton = screen.getAllByRole('button', {name: /Me connecter/i})[0];
 
     await act(async () => {
@@ -144,8 +147,8 @@ describe('LoginClient', () => {
       );
     });
 
-    const emailInput = screen.getByLabelText(/Adresse email/i) as HTMLInputElement;
-    const passwordInput = screen.getByLabelText(/Mot de passe/i) as HTMLInputElement;
+    const emailInput = screen.getAllByLabelText(/Adresse email/i)[0] as HTMLInputElement;
+    const passwordInput = screen.getAllByPlaceholderText(/Mot de passe/i)[0] as HTMLInputElement;
     const submitButton = screen.getAllByRole('button', {name: /Me connecter/i})[0];
 
     await act(async () => {

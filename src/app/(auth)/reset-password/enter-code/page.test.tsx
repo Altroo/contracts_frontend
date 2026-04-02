@@ -29,7 +29,7 @@ jest.mock('next/headers', () => ({
 jest.mock('@/components/pages/auth/reset-password/enterCode', () => ({
   __esModule: true,
   default: () => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const React = require('react');
     return React.createElement('div', null, 'ENTER_CODE_CLIENT_MARKER');
   },
@@ -60,7 +60,7 @@ describe('EnterCodePage server component', () => {
     let Page: () => Promise<unknown>;
     jest.isolateModules(() => {
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
       const mod = require('./page');
       Page = mod.default as () => Promise<unknown>;
     });
@@ -76,7 +76,7 @@ describe('EnterCodePage server component', () => {
     let Page: () => Promise<unknown>;
     jest.isolateModules(() => {
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
       const mod = require('./page');
       Page = mod.default as () => Promise<unknown>;
     });
@@ -94,7 +94,7 @@ describe('EnterCodePage server component', () => {
     let Page: () => Promise<unknown>;
     jest.isolateModules(() => {
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
       const mod = require('./page');
       Page = mod.default as () => Promise<unknown>;
     });

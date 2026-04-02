@@ -8,6 +8,8 @@ import {usePermission, useAppSelector} from '@/utils/hooks';
 jest.mock('@/utils/hooks', () => ({
   usePermission: jest.fn(),
   useAppSelector: jest.fn(),
+   
+  useLanguage: () => ({ language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr }),
 }));
 
 describe('Protected component', () => {

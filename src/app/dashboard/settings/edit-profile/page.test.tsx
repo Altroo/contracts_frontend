@@ -21,7 +21,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/components/pages/settings/edit-profile', () => ({
   __esModule: true,
   default: (props: { session?: Session }) => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const React = require('react');
     return React.createElement('div', null, `EDIT_PROFILE_CLIENT_MARKER:${JSON.stringify(props?.session ?? null)}`);
   },
@@ -48,7 +48,7 @@ describe('EditProfilePage server component', () => {
 
     let Page: () => Promise<unknown>;
     jest.isolateModules(() => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
       const mod = require('./page');
       Page = mod.default as () => Promise<unknown>;
     });
@@ -63,7 +63,7 @@ describe('EditProfilePage server component', () => {
 
     let Page: () => Promise<unknown>;
     jest.isolateModules(() => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
       const mod = require('./page');
       Page = mod.default as () => Promise<unknown>;
     });

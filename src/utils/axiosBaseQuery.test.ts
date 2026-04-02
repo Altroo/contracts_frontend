@@ -3,6 +3,10 @@ import axios from 'axios';
 import type {BaseQueryApi} from '@reduxjs/toolkit/query';
 import {ApiErrorResponseType, axiosBaseQuery} from './axiosBaseQuery';
 
+jest.mock('@/utils/helpers', () => ({
+  getT: () => require('@/translations').translations.fr,
+}));
+
 function makeBaseQueryApi(state: unknown): BaseQueryApi {
   const api: Partial<BaseQueryApi> = {
     getState: () => state,

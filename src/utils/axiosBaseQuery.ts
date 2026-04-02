@@ -1,5 +1,6 @@
 import axios, {type AxiosInstance} from 'axios';
 import type {BaseQueryApi, BaseQueryFn} from '@reduxjs/toolkit/query';
+import {getT} from '@/utils/helpers';
 
 // Backend error response structure
 export type ApiErrorResponseType = {
@@ -61,8 +62,8 @@ export const axiosBaseQuery =
           const status = err.response?.status ?? 0;
           const errorData: ApiErrorResponseType = err.response?.data ?? {
             status_code: status || 0,
-            message: err.message || 'Erreur réseau',
-            details: {error: ['Impossible de se connecter au serveur']},
+            message: err.message || getT().errors.networkError,
+            details: {error: [getT().errors.cannotConnectServer]},
           };
 
           return {
@@ -79,8 +80,8 @@ export const axiosBaseQuery =
             status: 0,
             data: {
               status_code: 0,
-              message: err instanceof Error ? err.message : 'Erreur inconnue',
-              details: {error: ["Une erreur inattendue s'est produite."]},
+              message: err instanceof Error ? err.message : getT().errors.unknownError,
+              details: {error: [getT().errors.unexpectedError]},
             },
           },
         };

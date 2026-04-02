@@ -9,6 +9,7 @@ import ContractSVG from '../../../../public/assets/images/auth_illu/contract.svg
 import HandshakeSVG from '../../../../public/assets/images/auth_illu/handshake.svg';
 import BlueprintSVG from '../../../../public/assets/images/auth_illu/blueprint.svg';
 import SignatureSVG from '../../../../public/assets/images/auth_illu/signature.svg';
+import {useLanguage} from '@/utils/hooks';
 
 type Props = {
   children?: React.ReactNode;
@@ -21,7 +22,8 @@ export type svgImageType = {
 };
 
 const AuthLayout = forwardRef<HTMLAnchorElement, Props>((props: Props, ref: ForwardedRef<HTMLAnchorElement>) => {
-  const [authIlluRandom] = useState<{ image: svgImageType; color: string }>(() => {
+  const {t} = useLanguage();
+  const [authIlluRandom] = useState<{ image: svgImageType; color: string }>(()  => {
     const availableAuthBgImages: Array<{ image: svgImageType; color: string }> = [
       {
         image: ContractSVG.src,
@@ -59,7 +61,7 @@ const AuthLayout = forwardRef<HTMLAnchorElement, Props>((props: Props, ref: Forw
             backgroundSize: 'contain',
           }}
         >
-          <Image src={Logo} alt="E.B.H Contrats - Logo" width="0" height="0" sizes="100vw" className={Styles.logo}/>
+          <Image src={Logo} alt={t.common.appLogo} width="0" height="0" sizes="100vw" className={Styles.logo}/>
         </Box>
         {/* Right side */}
         <Box className={Styles.rightBox}>

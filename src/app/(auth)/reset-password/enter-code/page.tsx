@@ -4,10 +4,14 @@ import {redirect} from 'next/navigation';
 import {auth} from '@/auth';
 import {AUTH_RESET_PASSWORD, DASHBOARD} from '@/utils/routes';
 import EnterCodeClient from '@/components/pages/auth/reset-password/enterCode';
+import {getServerTranslations} from '@/utils/serverTranslations';
 
-export const metadata: Metadata = {
-  title: 'Entrer le code',
-  description: 'Entrer le code de vérification reçu par email',
+export const generateMetadata = async (): Promise<Metadata> => {
+  const t = await getServerTranslations();
+  return {
+    title: t.metadata.enterCodeTitle,
+    description: t.metadata.enterCodeDescription,
+  };
 };
 
 const EnterCodePage = async () => {

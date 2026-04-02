@@ -2,6 +2,11 @@ import React from 'react';
 import {render, screen} from '@testing-library/react';
 import NoPermission from './noPermission';
 
+jest.mock('@/utils/hooks', () => ({
+   
+  useLanguage: () => ({ language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr }),
+}));
+
 describe('NoPermission', () => {
   test('renders access denied title', () => {
     render(<NoPermission/>);

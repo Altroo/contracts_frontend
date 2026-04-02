@@ -3,10 +3,14 @@ import {auth} from '@/auth';
 import {AUTH_LOGIN} from '@/utils/routes';
 import UsersFormClient from '@/components/pages/users/users-form';
 import type {Metadata} from 'next';
+import {getServerTranslations} from '@/utils/serverTranslations';
 
-export const metadata: Metadata = {
-  title: 'Nouvel utilisateur',
-  description: 'Créer un nouvel utilisateur',
+export const generateMetadata = async (): Promise<Metadata> => {
+  const t = await getServerTranslations();
+  return {
+    title: t.metadata.newUserTitle,
+    description: t.metadata.newUserDescription,
+  };
 };
 
 const UserAddPage = async () => {

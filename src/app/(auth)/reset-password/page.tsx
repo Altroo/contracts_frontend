@@ -1,8 +1,12 @@
-import {type Metadata} from 'next';
+import type {Metadata} from 'next';
 import ResetPasswordClient from '@/components/pages/auth/reset-password/resetPassword';
+import {getServerTranslations} from '@/utils/serverTranslations';
 
-export const metadata: Metadata = {
-  title: 'Réinitialiser le mot de passe',
+export const generateMetadata = async (): Promise<Metadata> => {
+  const t = await getServerTranslations();
+  return {
+    title: t.metadata.resetPasswordTitle,
+  };
 };
 
 const ResetPasswordPage = () => <ResetPasswordClient/>;

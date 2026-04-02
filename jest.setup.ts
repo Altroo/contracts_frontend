@@ -1,5 +1,15 @@
 import '@testing-library/jest-dom';
 import {TextEncoder} from 'util';
+import {translations} from '@/translations';
+
+// --- Mock getT for formValidationSchemas and other non-React modules ---
+jest.mock('@/utils/helpers', () => {
+  const actual = jest.requireActual('@/utils/helpers');
+  return {
+    ...actual,
+    getT: () => translations.fr,
+  };
+});
 
 // --- Mock next-auth ---
 jest.mock('next-auth/react', () => ({

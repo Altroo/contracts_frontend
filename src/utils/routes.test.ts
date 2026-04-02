@@ -12,7 +12,7 @@ describe('routes', () => {
 
   it('builds routes with a prefix', () => {
     process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX = 'https://app.example.com';
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const routes = require('./routes');
 
     expect(routes.SITE_ROOT).toBe('https://app.example.com/');
@@ -28,7 +28,7 @@ describe('routes', () => {
 
   it('builds CONTRACTS routes with a prefix', () => {
     process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX = 'https://app.example.com';
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const routes = require('./routes');
 
     expect(routes.CONTRACTS_LIST).toBe('https://app.example.com/dashboard/contracts');
@@ -39,7 +39,7 @@ describe('routes', () => {
 
   it('builds USERS routes with a prefix', () => {
     process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX = 'https://app.example.com';
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const routes = require('./routes');
 
     expect(routes.USERS_LIST).toBe('https://app.example.com/dashboard/users');
@@ -51,7 +51,7 @@ describe('routes', () => {
   it('builds routes without prefix (undefined)', () => {
     // @ts-expect-error - deleting a required env var for testing purposes
     delete process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX;
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const routes = require('./routes');
 
     expect(routes.SITE_ROOT).toBe('undefined/');

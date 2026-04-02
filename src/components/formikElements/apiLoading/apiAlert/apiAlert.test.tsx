@@ -5,6 +5,10 @@ import ApiAlert from './apiAlert';
 import type {SxProps} from '@mui/system';
 import type {Theme} from '@mui/material/styles';
 
+jest.mock('@/utils/hooks', () => ({
+  useLanguage: () => ({language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr}),
+}));
+
 describe('ApiAlert', () => {
   it('renders error messages when errorDetails contains an "error" array', () => {
     const errorDetails = {error: ['Invalid request', 'Missing fields']};
@@ -39,7 +43,7 @@ describe('ApiAlert', () => {
     // The message part should contain the default fallback text
     const message = container.querySelector('.MuiAlert-message');
     expect(message).toBeInTheDocument();
-    expect(message).toHaveTextContent('Une erreur est survenue. Veuillez réessayer plus tard.');
+    expect(message).toHaveTextContent('Une erreur est survenue. Veuillez réessayer.');
   });
 
   it('handles errorDetails with non-array string values', () => {

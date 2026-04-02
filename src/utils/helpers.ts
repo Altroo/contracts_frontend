@@ -3,6 +3,17 @@ import axios, {AxiosHeaders} from 'axios';
 import {getSession, signOut} from 'next-auth/react';
 import {SITE_ROOT} from '@/utils/routes';
 import type {APIContentTypeInterface, ApiErrorResponseType, InitStateToken} from '@/types/_initTypes';
+import type {Language} from '@/types/languageTypes';
+import {translations} from '@/translations';
+
+/** Module-level language for non-React utility code */
+let currentLang: Language = 'fr';
+export const getT = () => translations[currentLang];
+
+/** Call this from LanguageContextProvider to keep helpers in sync */
+export const setHelpersLanguage = (lang: Language) => {
+  currentLang = lang;
+};
 
 /**
  * Handles unauthorized response by clearing cookies, signing out, and resetting token.
@@ -43,6 +54,8 @@ export const isAuthenticatedInstance = (
       if (token?.access) {
         headers.set('Authorization', `Bearer ${token.access}`);
       }
+      // Send current language to backend for i18n
+      headers.set('Accept-Language', currentLang);
 
       // Let axios auto-set Content-Type (with boundary) for multipart uploads
       if (config.data instanceof FormData) {
@@ -65,10 +78,10 @@ export const isAuthenticatedInstance = (
           return Promise.reject({
             error: {
               status_code: error.response.status,
-              message: 'Erreur serveur.',
+              message: getT().errors.serverError,
               details: {
                 error: [
-                  'Il semble que nous ne puissions pas nous connecter. Veuillez vérifier votre connexion réseau et réessayer.',
+                  getT().errors.networkCheckMessage,
                 ],
               },
             },
@@ -88,8 +101,8 @@ export const isAuthenticatedInstance = (
           return Promise.reject({
             error: {
               status_code: 401,
-              message: errorData.message || 'Non autorisé',
-              details: errorData.details || {error: ['Authentification requise']},
+              message: errorData.message || getT().errors.unauthorized,
+              details: errorData.details || {error: [getT().errors.authRequiredDetail]},
             },
           });
         }
@@ -106,8 +119,8 @@ export const isAuthenticatedInstance = (
       return Promise.reject({
         error: {
           status_code: 0,
-          message: error.message || 'Erreur réseau',
-          details: {error: ['Impossible de se connecter au serveur']},
+          message: error.message || getT().errors.networkError,
+          details: {error: [getT().errors.cannotConnectServer]},
         },
       });
     },
@@ -145,8 +158,8 @@ export const allowAnyInstance = (contentType: APIContentTypeInterface = 'applica
       return Promise.reject({
         error: {
           status_code: error.response?.status || 0,
-          message: error.message || 'Erreur réseau',
-          details: {error: ['Impossible de se connecter au serveur']},
+          message: error.message || getT().errors.networkError,
+          details: {error: [getT().errors.cannotConnectServer]},
         },
       });
     },
@@ -195,11 +208,11 @@ export const hexToRGB = (hex: string, alpha?: number): string => {
   return alpha !== undefined ? `rgba(${r}, ${g}, ${b}, ${alpha})` : `rgb(${r}, ${g}, ${b})`;
 };
 
-export const formatDate = (value: string | null) => {
+export const formatDate = (value: string | null, locale: 'fr' | 'en' = 'fr') => {
   if (!value) return '—'; // display a placeholder for null
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
-  return new Intl.DateTimeFormat('fr-FR', {
+  return new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'fr-FR', {
     year: 'numeric',
     month: 'short',
     day: '2-digit',
@@ -216,25 +229,25 @@ export const formatLocalDate = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
-export const formatDateShort = (value: string | null): string => {
+export const formatDateShort = (value: string | null, locale: 'fr' | 'en' = 'fr'): string => {
   if (!value) return '—';
   // Parse YYYY-MM-DD as local date to avoid timezone shift
   const parts = value.split('-');
   if (parts.length !== 3) return '—';
   const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
   if (Number.isNaN(date.getTime())) return '—';
-  return new Intl.DateTimeFormat('fr-FR', {
+  return new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'fr-FR', {
     year: 'numeric',
     month: 'short',
     day: '2-digit',
   }).format(date);
 };
 
-export const formatNumber = (value: string | number | null | undefined): string => {
+export const formatNumber = (value: string | number | null | undefined, locale: 'fr' | 'en' = 'fr'): string => {
   if (value === null || value === undefined) return '0,00';
   const num = typeof value === 'string' ? parseFloat(value) : value;
   if (Number.isNaN(num)) return '0,00';
-  return num.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  return num.toLocaleString(locale === 'en' ? 'en-US' : 'fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 };
 
 export const parseNumber = (value: string | number): number | null => {

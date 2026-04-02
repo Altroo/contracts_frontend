@@ -1,24 +1,25 @@
 import type {AccountGenderCodeValueType} from '@/types/accountTypes';
+import type {TranslationDictionary} from '@/types/languageTypes';
 
-export const genderItemsList: Array<AccountGenderCodeValueType> = [
-  {code: 'H', value: 'Homme'},
-  {code: 'F', value: 'Femme'},
-];
-
-/* ── Company choices ── */
+/* ── Static (non-translatable) exports ── */
 
 export const companyItemsList: Array<{ code: string; value: string }> = [
   {code: 'casa_di_lusso', value: 'Casa di Lusso'},
   {code: 'blueline_works', value: 'Blueline Works'},
 ];
 
-/* ── Contract statuses ── */
+export const deviseItemsList: string[] = ['MAD', 'EUR', 'USD'];
+
+export const tribunalItemsList: Array<{ code: string; value: string }> = [
+  {code: 'Tanger', value: 'Tanger'},
+  {code: 'Casablanca', value: 'Casablanca'},
+  {code: 'Rabat', value: 'Rabat'},
+  {code: 'Marrakech', value: 'Marrakech'},
+  {code: 'Fès', value: 'Fès'},
+  {code: 'Agadir', value: 'Agadir'},
+];
 
 export type ChipColor = 'default' | 'warning' | 'success' | 'error' | 'info' | 'primary' | 'secondary';
-
-export const contractStatutItemsList: string[] = [
-  'Brouillon', 'Envoyé', 'Signé', 'En cours', 'Terminé', 'Annulé', 'Expiré',
-];
 
 const contractStatusColorsList: Array<{ code: string; color: ChipColor }> = [
   {code: 'Brouillon', color: 'default'},
@@ -34,211 +35,211 @@ export const getContractStatusColor = (statut: string): ChipColor => {
   return contractStatusColorsList.find((item) => item.code === statut)?.color ?? 'default';
 };
 
-/* ── Contract types ── */
+/* ── Translated raw data ── */
 
-export const typeContratItemsList: Array<{ code: string; value: string }> = [
-  {code: 'travaux_finition', value: 'Travaux de Finition'},
-  {code: 'travaux_gros_oeuvre', value: 'Travaux Gros Œuvre'},
-  {code: 'design_interieur', value: 'Design Intérieur'},
-  {code: 'cle_en_main', value: 'Clé en Main'},
-  {code: 'ameublement', value: 'Ameublement'},
-  {code: 'maintenance', value: 'Maintenance'},
-  {code: 'suivi_chantier', value: 'Suivi Chantier'},
-];
+export const getTranslatedRawData = (t: TranslationDictionary) => ({
+  genderItemsList: [
+    {code: 'H', value: t.rawData.genders.male},
+    {code: 'F', value: t.rawData.genders.female},
+  ] as Array<AccountGenderCodeValueType>,
 
-/* ── Type de bien ── */
+  contractStatutItemsList: [
+    {code: 'Brouillon', value: t.rawData.contractStatuses.draft},
+    {code: 'Envoyé', value: t.rawData.contractStatuses.sent},
+    {code: 'Signé', value: t.rawData.contractStatuses.signed},
+    {code: 'En cours', value: t.rawData.contractStatuses.inProgress},
+    {code: 'Terminé', value: t.rawData.contractStatuses.completed},
+    {code: 'Annulé', value: t.rawData.contractStatuses.cancelled},
+    {code: 'Expiré', value: t.rawData.contractStatuses.expired},
+  ],
 
-export const typeBienItemsList: Array<{ code: string; value: string }> = [
-  {code: 'appartement', value: 'Appartement'},
-  {code: 'villa', value: 'Villa'},
-  {code: 'duplex', value: 'Duplex'},
-  {code: 'residence', value: 'Résidence'},
-  {code: 'hotel', value: 'Hôtel'},
-  {code: 'riad_maison_traditionnelle', value: 'Riad / Maison Traditionnelle'},
-  {code: 'bureau_local_commercial', value: 'Bureau / Local Commercial'},
-  {code: 'commerce_local', value: 'Commerce / Local'},
-  {code: 'hotel_riad_hotelier', value: 'Hôtel / Riad Hôtelier'},
-  {code: 'immeuble', value: 'Immeuble'},
-  {code: 'autre', value: 'Autre'},
-];
+  confidentialiteItemsList: [
+    {code: 'CONFIDENTIEL', value: t.rawData.confidentiality.confidential},
+    {code: 'USAGE INTERNE', value: t.rawData.confidentiality.internalUse},
+    {code: 'STANDARD', value: t.rawData.confidentiality.standard},
+  ],
 
-/* ── Other dropdown lists ── */
+  typeContratItemsList: [
+    {code: 'travaux_finition', value: t.rawData.contractTypes.travaux_finition},
+    {code: 'travaux_gros_oeuvre', value: t.rawData.contractTypes.travaux_gros_oeuvre},
+    {code: 'design_interieur', value: t.rawData.contractTypes.design_interieur},
+    {code: 'cle_en_main', value: t.rawData.contractTypes.cle_en_main},
+    {code: 'ameublement', value: t.rawData.contractTypes.ameublement},
+    {code: 'maintenance', value: t.rawData.contractTypes.maintenance},
+    {code: 'suivi_chantier', value: t.rawData.contractTypes.suivi_chantier},
+  ],
 
-export const deviseItemsList: string[] = ['MAD', 'EUR', 'USD'];
-export const confidentialiteItemsList: string[] = ['CONFIDENTIEL', 'USAGE INTERNE', 'STANDARD'];
+  typeBienItemsList: [
+    {code: 'appartement', value: t.rawData.propertyTypes.appartement},
+    {code: 'villa', value: t.rawData.propertyTypes.villa},
+    {code: 'duplex', value: t.rawData.propertyTypes.duplex},
+    {code: 'residence', value: t.rawData.propertyTypes.residence},
+    {code: 'hotel', value: t.rawData.propertyTypes.hotel},
+    {code: 'riad_maison_traditionnelle', value: t.rawData.propertyTypes.riad_maison_traditionnelle},
+    {code: 'bureau_local_commercial', value: t.rawData.propertyTypes.bureau_local_commercial},
+    {code: 'commerce_local', value: t.rawData.propertyTypes.commerce_local},
+    {code: 'hotel_riad_hotelier', value: t.rawData.propertyTypes.hotel_riad_hotelier},
+    {code: 'immeuble', value: t.rawData.propertyTypes.immeuble},
+    {code: 'autre', value: t.rawData.propertyTypes.autre},
+  ],
 
-export const clientQualiteItemsList: Array<{ code: string; value: string }> = [
-  {code: 'particulier', value: 'Particulier'},
-  {code: 'entreprise_societe', value: 'Entreprise / Société'},
-  {code: 'investisseur_immobilier', value: 'Investisseur Immobilier'},
-  {code: 'administration_institution', value: 'Administration / Institution'},
-];
+  clientQualiteItemsList: [
+    {code: 'particulier', value: t.rawData.clientQualities.particulier},
+    {code: 'entreprise_societe', value: t.rawData.clientQualities.entreprise_societe},
+    {code: 'investisseur_immobilier', value: t.rawData.clientQualities.investisseur_immobilier},
+    {code: 'administration_institution', value: t.rawData.clientQualities.administration_institution},
+  ],
 
-export const garantieItemsList: Array<{ code: string; value: string }> = [
-  {code: '1 mois', value: '1 mois'},
-  {code: '3 mois', value: '3 mois'},
-  {code: '6 mois', value: '6 mois'},
-  {code: '1 an', value: '1 an'},
-  {code: '2 ans', value: '2 ans'},
-  {code: '3 ans', value: '3 ans'},
-  {code: 'sans_garantie', value: 'Sans garantie contractuelle'},
-];
+  garantieItemsList: [
+    {code: '1 mois', value: t.rawData.warranties['1_mois']},
+    {code: '3 mois', value: t.rawData.warranties['3_mois']},
+    {code: '6 mois', value: t.rawData.warranties['6_mois']},
+    {code: '1 an', value: t.rawData.warranties['1_an']},
+    {code: '2 ans', value: t.rawData.warranties['2_ans']},
+    {code: '3 ans', value: t.rawData.warranties['3_ans']},
+    {code: 'sans_garantie', value: t.rawData.warranties.sans_garantie},
+  ],
 
-export const tribunalItemsList: Array<{ code: string; value: string }> = [
-  {code: 'Tanger', value: 'Tanger'},
-  {code: 'Casablanca', value: 'Casablanca'},
-  {code: 'Rabat', value: 'Rabat'},
-  {code: 'Marrakech', value: 'Marrakech'},
-  {code: 'Fès', value: 'Fès'},
-  {code: 'Agadir', value: 'Agadir'},
-];
+  fournituresItemsList: [
+    {code: 'non_incluses', value: t.rawData.supplies.non_incluses},
+    {code: 'incluses', value: t.rawData.supplies.incluses},
+    {code: 'partielles', value: t.rawData.supplies.partielles},
+  ],
 
-/* ── Blueline-specific choices ── */
+  eauElectriciteItemsList: [
+    {code: 'client', value: t.rawData.waterElectricity.client},
+    {code: 'entreprise', value: t.rawData.waterElectricity.entreprise},
+    {code: 'partage', value: t.rawData.waterElectricity.partage},
+    {code: 'selon_cas', value: t.rawData.waterElectricity.selon_cas},
+  ],
 
-export const fournituresItemsList: Array<{ code: string; value: string }> = [
-  {code: 'non_incluses', value: 'Non incluses (fournies par le client)'},
-  {code: 'incluses', value: 'Incluses dans le contrat'},
-  {code: 'partielles', value: 'Partiellement incluses'},
-];
+  garantieUniteItemsList: [
+    {code: 'mois', value: t.rawData.warrantyUnits.mois},
+    {code: 'ans', value: t.rawData.warrantyUnits.ans},
+  ],
 
-export const eauElectriciteItemsList: Array<{ code: string; value: string }> = [
-  {code: 'client', value: 'À la charge du client'},
-  {code: 'entreprise', value: "À la charge de l'entreprise"},
-  {code: 'partage', value: 'Partagé'},
-  {code: 'selon_cas', value: 'Selon le cas'},
-];
+  garantieTypeItemsList: [
+    {code: 'defauts', value: t.rawData.warrantyTypes.defauts},
+    {code: 'bonne_fin', value: t.rawData.warrantyTypes.bonne_fin},
+    {code: 'decennale', value: t.rawData.warrantyTypes.decennale},
+    {code: 'aucune', value: t.rawData.warrantyTypes.aucune},
+  ],
 
-export const garantieUniteItemsList: Array<{ code: string; value: string }> = [
-  {code: 'mois', value: 'Mois'},
-  {code: 'ans', value: 'Ans'},
-];
+  clauseResiliationItemsList: [
+    {code: '30j', value: t.rawData.terminationClauses['30j']},
+    {code: '15j', value: t.rawData.terminationClauses['15j']},
+    {code: 'mutuel', value: t.rawData.terminationClauses.mutuel},
+    {code: 'aucune', value: t.rawData.terminationClauses.aucune},
+  ],
 
-export const garantieTypeItemsList: Array<{ code: string; value: string }> = [
-  {code: 'defauts', value: 'Garantie des défauts'},
-  {code: 'bonne_fin', value: 'Garantie de bonne fin'},
-  {code: 'decennale', value: 'Garantie décennale'},
-  {code: 'aucune', value: 'Aucune garantie'},
-];
+  modePaiementTexteItemsList: [
+    {code: 'Virement Bancaire', value: t.rawData.paymentMethods.virement},
+    {code: 'Chèque Certifié', value: t.rawData.paymentMethods.cheque},
+    {code: 'Espèces', value: t.rawData.paymentMethods.especes},
+    {code: 'Paiement Mixte', value: t.rawData.paymentMethods.mixte},
+    {code: 'Mobile Money', value: t.rawData.paymentMethods.mobile},
+    {code: 'Virement ou Chèque', value: t.rawData.paymentMethods.virementOuCheque},
+  ],
 
-export const clauseResiliationItemsList: Array<{ code: string; value: string }> = [
-  {code: '30j', value: 'Préavis de 30 jours'},
-  {code: '15j', value: 'Préavis de 15 jours'},
-  {code: 'mutuel', value: "D'un commun accord"},
-  {code: 'aucune', value: 'Aucune clause'},
-];
+  prestationNomItemsList: [
+    {code: 'pose_carrelage', value: t.rawData.prestationNames.pose_carrelage},
+    {code: 'pose_marbre', value: t.rawData.prestationNames.pose_marbre},
+    {code: 'plan_travail_cuisine', value: t.rawData.prestationNames.plan_travail_cuisine},
+    {code: 'revetement_mural_faience', value: t.rawData.prestationNames.revetement_mural_faience},
+    {code: 'finitions_peinture', value: t.rawData.prestationNames.finitions_peinture},
+    {code: 'pose_parquet', value: t.rawData.prestationNames.pose_parquet},
+    {code: 'enduit_crepi', value: t.rawData.prestationNames.enduit_crepi},
+    {code: 'joints_silicone', value: t.rawData.prestationNames.joints_silicone},
+    {code: 'depose_demolition', value: t.rawData.prestationNames.depose_demolition},
+    {code: 'preparation_surfaces', value: t.rawData.prestationNames.preparation_surfaces},
+    {code: 'seuils_plinthes', value: t.rawData.prestationNames.seuils_plinthes},
+    {code: 'douche_italienne', value: t.rawData.prestationNames.douche_italienne},
+    {code: 'escalier_marbre', value: t.rawData.prestationNames.escalier_marbre},
+    {code: 'terrasse_exterieure', value: t.rawData.prestationNames.terrasse_exterieure},
+    {code: 'main_oeuvre', value: t.rawData.prestationNames.main_oeuvre},
+    {code: 'transport_deplacement', value: t.rawData.prestationNames.transport_deplacement},
+    {code: 'autre', value: t.rawData.prestationNames.autre},
+  ],
 
-export const modePaiementTexteItemsList: Array<{ code: string; value: string }> = [
-  {code: 'Virement Bancaire', value: 'Virement Bancaire'},
-  {code: 'Chèque Certifié', value: 'Chèque Certifié'},
-  {code: 'Espèces', value: 'Espèces'},
-  {code: 'Paiement Mixte', value: 'Paiement Mixte'},
-  {code: 'Mobile Money', value: 'Mobile Money'},
-  {code: 'Virement ou Chèque', value: 'Virement ou Chèque'},
-];
+  prestationUniteItemsList: [
+    {code: 'm2', value: t.rawData.prestationUnits.m2},
+    {code: 'ml', value: t.rawData.prestationUnits.ml},
+    {code: 'm3', value: t.rawData.prestationUnits.m3},
+    {code: 'unite', value: t.rawData.prestationUnits.unite},
+    {code: 'forfait', value: t.rawData.prestationUnits.forfait},
+    {code: 'heure', value: t.rawData.prestationUnits.heure},
+    {code: 'jour', value: t.rawData.prestationUnits.jour},
+    {code: 'kg', value: t.rawData.prestationUnits.kg},
+  ],
 
-export const prestationNomItemsList: Array<{ code: string; value: string }> = [
-  {code: 'pose_carrelage', value: 'Pose de carrelage'},
-  {code: 'pose_marbre', value: 'Pose de marbre'},
-  {code: 'plan_travail_cuisine', value: 'Plan de travail cuisine'},
-  {code: 'revetement_mural_faience', value: 'Revêtement mural faïence'},
-  {code: 'finitions_peinture', value: 'Finitions peinture'},
-  {code: 'pose_parquet', value: 'Pose de parquet'},
-  {code: 'enduit_crepi', value: 'Enduit & crépi'},
-  {code: 'joints_silicone', value: 'Joints & silicone'},
-  {code: 'depose_demolition', value: 'Dépose & démolition'},
-  {code: 'preparation_surfaces', value: 'Préparation des surfaces'},
-  {code: 'seuils_plinthes', value: 'Seuils & plinthes'},
-  {code: 'douche_italienne', value: "Douche à l'italienne"},
-  {code: 'escalier_marbre', value: 'Escalier marbre'},
-  {code: 'terrasse_exterieure', value: 'Terrasse extérieure'},
-  {code: 'main_oeuvre', value: "Main d'œuvre qualifiée"},
-  {code: 'transport_deplacement', value: 'Transport & déplacement'},
-  {code: 'autre', value: 'Autre'},
-];
+  contractCategoryItemsList: [
+    {code: 'standard', value: t.rawData.contractCategories.standard},
+    {code: 'sous_traitance', value: t.rawData.contractCategories.sous_traitance},
+  ],
 
-export const prestationUniteItemsList: Array<{ code: string; value: string }> = [
-  {code: 'm2', value: 'm²'},
-  {code: 'ml', value: 'ml'},
-  {code: 'm3', value: 'm³'},
-  {code: 'unite', value: 'unité'},
-  {code: 'forfait', value: 'forfait'},
-  {code: 'heure', value: 'heure'},
-  {code: 'jour', value: 'jour'},
-  {code: 'kg', value: 'kg'},
-];
+  stLotTypeItemsList: [
+    {code: 'gros_oeuvre', value: t.rawData.stLotTypes.gros_oeuvre},
+    {code: 'electricite', value: t.rawData.stLotTypes.electricite},
+    {code: 'plomberie', value: t.rawData.stLotTypes.plomberie},
+    {code: 'menuiserie_alu', value: t.rawData.stLotTypes.menuiserie_alu},
+    {code: 'menuiserie_bois', value: t.rawData.stLotTypes.menuiserie_bois},
+    {code: 'carrelage', value: t.rawData.stLotTypes.carrelage},
+    {code: 'peinture', value: t.rawData.stLotTypes.peinture},
+    {code: 'etancheite', value: t.rawData.stLotTypes.etancheite},
+    {code: 'ascenseur', value: t.rawData.stLotTypes.ascenseur},
+    {code: 'platre', value: t.rawData.stLotTypes.platre},
+    {code: 'ferronnerie', value: t.rawData.stLotTypes.ferronnerie},
+    {code: 'vrd', value: t.rawData.stLotTypes.vrd},
+    {code: 'climatisation', value: t.rawData.stLotTypes.climatisation},
+    {code: 'cuisine', value: t.rawData.stLotTypes.cuisine},
+  ],
 
-/* ── Contract category ── */
+  stProjetTypeItemsList: [
+    {code: 'immeuble', value: t.rawData.stProjectTypes.immeuble},
+    {code: 'villa', value: t.rawData.stProjectTypes.villa},
+    {code: 'commercial', value: t.rawData.stProjectTypes.commercial},
+    {code: 'industriel', value: t.rawData.stProjectTypes.industriel},
+    {code: 'renovation', value: t.rawData.stProjectTypes.renovation},
+    {code: 'autre', value: t.rawData.stProjectTypes.autre},
+  ],
 
-export const contractCategoryItemsList: Array<{ code: string; value: string }> = [
-  {code: 'standard', value: 'Standard'},
-  {code: 'sous_traitance', value: 'Sous-Traitance'},
-];
+  stFormeJuridiqueItemsList: [
+    {code: 'SARL', value: t.rawData.stLegalForms.SARL},
+    {code: 'SA', value: t.rawData.stLegalForms.SA},
+    {code: 'SARLAU', value: t.rawData.stLegalForms.SARLAU},
+    {code: 'SNC', value: t.rawData.stLegalForms.SNC},
+    {code: 'auto_entrepreneur', value: t.rawData.stLegalForms.auto_entrepreneur},
+    {code: 'personne_physique', value: t.rawData.stLegalForms.personne_physique},
+  ],
 
-/* ── Sous-Traitance (CDL) specific choices ── */
+  stTypePrixItemsList: [
+    {code: 'forfaitaire', value: t.rawData.stPriceTypes.forfaitaire},
+    {code: 'unitaire', value: t.rawData.stPriceTypes.unitaire},
+    {code: 'regie', value: t.rawData.stPriceTypes.regie},
+  ],
 
-export const stLotTypeItemsList: Array<{ code: string; value: string }> = [
-  {code: 'gros_oeuvre', value: 'Travaux de Gros Œuvre'},
-  {code: 'electricite', value: "Travaux d'Électricité"},
-  {code: 'plomberie', value: 'Travaux de Plomberie et Sanitaire'},
-  {code: 'menuiserie_alu', value: 'Travaux de Menuiserie Aluminium'},
-  {code: 'menuiserie_bois', value: 'Travaux de Menuiserie Bois'},
-  {code: 'carrelage', value: 'Travaux de Carrelage et Faïence'},
-  {code: 'peinture', value: 'Travaux de Peinture'},
-  {code: 'etancheite', value: "Travaux d'Étanchéité"},
-  {code: 'ascenseur', value: "Fourniture et Installation d'Ascenseur"},
-  {code: 'platre', value: 'Travaux de Plâtre et Faux Plafond'},
-  {code: 'ferronnerie', value: 'Travaux de Ferronnerie et Garde-Corps'},
-  {code: 'vrd', value: 'Travaux de VRD et Façade'},
-  {code: 'climatisation', value: 'Travaux de Climatisation et Ventilation'},
-  {code: 'cuisine', value: 'Fourniture et Pose de Cuisines Équipées'},
-];
+  stDelaiUnitItemsList: [
+    {code: 'mois', value: t.rawData.stDelayUnits.mois},
+    {code: 'semaines', value: t.rawData.stDelayUnits.semaines},
+    {code: 'jours', value: t.rawData.stDelayUnits.jours},
+  ],
 
-export const stProjetTypeItemsList: Array<{ code: string; value: string }> = [
-  {code: 'immeuble', value: 'Immeuble'},
-  {code: 'villa', value: 'Villa'},
-  {code: 'commercial', value: 'Commercial'},
-  {code: 'industriel', value: 'Industriel'},
-  {code: 'renovation', value: 'Rénovation'},
-  {code: 'autre', value: 'Autre'},
-];
+  dureeEstimeeUniteItemsList: [
+    {code: 'jours', value: t.rawData.durationUnits.jours},
+    {code: 'mois', value: t.rawData.durationUnits.mois},
+  ],
 
-export const stFormeJuridiqueItemsList: Array<{ code: string; value: string }> = [
-  {code: 'SARL', value: 'SARL'},
-  {code: 'SA', value: 'SA'},
-  {code: 'SARLAU', value: 'SARLAU'},
-  {code: 'SNC', value: 'SNC'},
-  {code: 'auto_entrepreneur', value: 'Auto-entrepreneur'},
-  {code: 'personne_physique', value: 'Personne physique'},
-];
-
-export const stTypePrixItemsList: Array<{ code: string; value: string }> = [
-  {code: 'forfaitaire', value: 'Forfaitaire ferme'},
-  {code: 'unitaire', value: 'Prix unitaires'},
-  {code: 'regie', value: 'Régie'},
-];
-
-export const stDelaiUnitItemsList: Array<{ code: string; value: string }> = [
-  {code: 'mois', value: 'Mois'},
-  {code: 'semaines', value: 'Semaines'},
-  {code: 'jours', value: 'Jours'},
-];
-
-export const dureeEstimeeUniteItemsList: Array<{ code: string; value: string }> = [
-  {code: 'jours', value: 'Jours'},
-  {code: 'mois', value: 'Mois'},
-];
-
-
-export const stClausesActivesList: Array<{ key: string; label: string }> = [
-  {key: 'tConfid', label: 'Confidentialité'},
-  {key: 'tNonConc', label: 'Non-concurrence'},
-  {key: 'tNonDeb', label: 'Non-débauchage'},
-  {key: 'tCascade', label: 'Interdiction de sous-traitance en cascade'},
-  {key: 'tEnviro', label: 'Clause environnementale'},
-  {key: 'tPI', label: 'Propriété intellectuelle'},
-  {key: 'tExclus', label: 'Exclusivité'},
-  {key: 'tRevision', label: 'Révision de prix'},
-  {key: 'tTRC', label: 'Assurance Tous Risques Chantier (TRC)'},
-  {key: 'tMediat', label: 'Médiation et arbitrage'},
-  {key: 'tAnnexe', label: 'Annexes'},
-];
+  stClausesActivesList: [
+    {key: 'tConfid', label: t.rawData.stActiveClauses.tConfid},
+    {key: 'tNonConc', label: t.rawData.stActiveClauses.tNonConc},
+    {key: 'tNonDeb', label: t.rawData.stActiveClauses.tNonDeb},
+    {key: 'tCascade', label: t.rawData.stActiveClauses.tCascade},
+    {key: 'tEnviro', label: t.rawData.stActiveClauses.tEnviro},
+    {key: 'tPI', label: t.rawData.stActiveClauses.tPI},
+    {key: 'tExclus', label: t.rawData.stActiveClauses.tExclus},
+    {key: 'tRevision', label: t.rawData.stActiveClauses.tRevision},
+    {key: 'tTRC', label: t.rawData.stActiveClauses.tTRC},
+    {key: 'tMediat', label: t.rawData.stActiveClauses.tMediat},
+    {key: 'tAnnexe', label: t.rawData.stActiveClauses.tAnnexe},
+  ],
+});

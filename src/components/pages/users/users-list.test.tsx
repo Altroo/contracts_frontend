@@ -26,6 +26,8 @@ const mockOnSuccess = jest.fn();
 const mockOnError = jest.fn();
 jest.mock('@/utils/hooks', () => ({
   useToast: () => ({onSuccess: mockOnSuccess, onError: mockOnError}),
+   
+  useLanguage: () => ({ language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr }),
 }));
 
 // Mock RTK Query hooks
@@ -289,7 +291,7 @@ describe('UsersListClient', () => {
         fireEvent.click(screen.getAllByText('Supprimer')[0]);
       });
       expect(screen.getByTestId('action-modal')).toBeInTheDocument();
-      expect(screen.getByText('Supprimer ce utilisateur ?')).toBeInTheDocument();
+      expect(screen.getByText('Supprimer cet utilisateur ?')).toBeInTheDocument();
     });
 
     it('closes delete modal on Annuler', async () => {
@@ -314,7 +316,7 @@ describe('UsersListClient', () => {
       });
       await waitFor(() => {
         expect(mockDeleteUser).toHaveBeenCalled();
-        expect(mockOnSuccess).toHaveBeenCalledWith('Utilisateur supprimée avec succès');
+        expect(mockOnSuccess).toHaveBeenCalledWith('Utilisateur supprimé avec succès');
       });
     });
 
@@ -329,7 +331,7 @@ describe('UsersListClient', () => {
         fireEvent.click(btns[btns.length - 1]);
       });
       await waitFor(() => {
-        expect(mockOnError).toHaveBeenCalledWith('Erreur lors de la suppression de l’utilisateur');
+        expect(mockOnError).toHaveBeenCalledWith("Erreur lors de la suppression de l'utilisateur");
       });
     });
   });
@@ -337,7 +339,7 @@ describe('UsersListClient', () => {
   describe('Column headers', () => {
     it('renders all expected column headers', () => {
       render(<UsersListClient/>);
-      for (const h of ['Avatar', 'Nom', 'Prénom', 'Email', 'Sexe', 'Admin', 'Active', "Date d'inscription", 'Dernière connexion', 'Actions']) {
+      for (const h of ['Avatar', 'Nom', 'Prénom', 'Email', 'Genre', 'Admin', 'Active', "Date d'inscription", 'Dernière connexion', 'Actions']) {
         expect(screen.getByText(h)).toBeInTheDocument();
       }
     });

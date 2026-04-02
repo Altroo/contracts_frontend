@@ -25,7 +25,7 @@ import ActionModals from '@/components/htmlElements/modals/actionModal/actionMod
 import type {UserClass} from '@/models/classes';
 import {extractApiErrorMessage, formatDate} from '@/utils/helpers';
 import {Protected} from '@/components/layouts/protected/protected';
-import {useToast} from '@/utils/hooks';
+import {useToast, useLanguage} from '@/utils/hooks';
 import Image from 'next/image';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import {
@@ -37,6 +37,7 @@ import {createDateRangeFilterOperator} from '@/components/shared/dateRangeFilter
 const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
   const router = useRouter();
   const {onSuccess, onError} = useToast();
+  const {t} = useLanguage();
   const token = useInitAccessToken(session);
 
   const [paginationModel, setPaginationModel] = useState<{ page: number; pageSize: number }>({
@@ -78,20 +79,20 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
     try {
       await deleteRecord({id: selectedUserId!}).unwrap();
       // success toast
-      onSuccess('Utilisateur supprimée avec succès');
+      onSuccess(t.users.userDeletedSuccess);
       // refresh the page / data
       refetch();
     } catch (err) {
       // error toast
-      onError(extractApiErrorMessage(err, 'Erreur lors de la suppression de l’utilisateur'));
+      onError(extractApiErrorMessage(err, t.users.userDeleteError));
     } finally {
       setShowDeleteModal(false);
     }
   };
 
   const deleteModalActions = [
-    {text: 'Annuler', active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon/>, color: '#6B6B6B'},
-    {text: 'Supprimer', active: true, onClick: deleteHandler, icon: <DeleteIcon/>, color: '#D32F2F'},
+    {text: t.common.cancel, active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon/>, color: '#6B6B6B'},
+    {text: t.common.delete, active: true, onClick: deleteHandler, icon: <DeleteIcon/>, color: '#D32F2F'},
   ];
 
   const showDeleteModalCall = (id: number) => {
@@ -106,9 +107,9 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
   const bulkDeleteHandler = async () => {
     try {
       await bulkDeleteUsers({ids: selectedUserIds}).unwrap();
-      onSuccess(`${selectedUserIds.length} utilisateur(s) supprimé(s) avec succès`);
+      onSuccess(t.users.bulkUserDeletedSuccess(selectedUserIds.length));
     } catch (err) {
-      onError(extractApiErrorMessage(err, `Erreur lors de la suppression`));
+      onError(extractApiErrorMessage(err, t.users.userDeleteError));
     } finally {
       setSelectedUserIds([]);
       setShowBulkDeleteModal(false);
@@ -118,14 +119,14 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
 
   const bulkDeleteModalActions = [
     {
-      text: 'Annuler',
+      text: t.common.cancel,
       active: false,
       onClick: () => setShowBulkDeleteModal(false),
       icon: <CloseIcon/>,
       color: '#6B6B6B'
     },
     {
-      text: `Supprimer (${selectedUserIds.length})`,
+      text: `${t.common.delete} (${selectedUserIds.length})`,
       active: true,
       onClick: bulkDeleteHandler,
       icon: <DeleteIcon/>,
@@ -135,24 +136,24 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
 
   const genderFilterOptions = React.useMemo(
     () => [
-      {value: 'Homme', label: 'Homme'},
-      {value: 'Femme', label: 'Femme'},
+      {value: 'Homme', label: t.users.male},
+      {value: 'Femme', label: t.users.female},
     ],
-    [],
+    [t],
   );
 
   const TrueFalseFilterOptions = React.useMemo(
     () => [
-      {value: 'true', label: 'Oui'},
-      {value: 'false', label: 'Non'},
+      {value: 'true', label: t.common.yes},
+      {value: 'false', label: t.common.no},
     ],
-    [],
+    [t],
   );
 
   const columns: GridColDef[] = [
     {
       field: 'avatar',
-      headerName: 'Avatar',
+      headerName: t.users.avatar,
       flex: 0.5,
       minWidth: 70,
       renderCell: (params: GridRenderCellParams<UserClass>) => {
@@ -194,7 +195,7 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
     },
     {
       field: 'first_name',
-      headerName: 'Nom',
+      headerName: t.users.firstName,
       flex: 1,
       minWidth: 100,
       renderCell: (params: GridRenderCellParams<UserClass>) => (
@@ -207,7 +208,7 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
     },
     {
       field: 'last_name',
-      headerName: 'Prénom',
+      headerName: t.users.lastName,
       flex: 1,
       minWidth: 100,
       renderCell: (params: GridRenderCellParams<UserClass>) => (
@@ -220,7 +221,7 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
     },
     {
       field: 'email',
-      headerName: 'Email',
+      headerName: t.users.email,
       flex: 1.5,
       minWidth: 150,
       renderCell: (params: GridRenderCellParams<UserClass>) => (
@@ -233,10 +234,10 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
     },
     {
       field: 'gender',
-      headerName: 'Sexe',
+      headerName: t.users.gender,
       flex: 0.7,
       minWidth: 80,
-      filterOperators: createDropdownFilterOperators(genderFilterOptions, 'Les deux'),
+      filterOperators: createDropdownFilterOperators(genderFilterOptions, t.common.both, false, t.filters.is),
       renderCell: (params: GridRenderCellParams<UserClass>) => (
         <DarkTooltip title={params.value}>
           <Typography variant="body2" noWrap>
@@ -247,14 +248,14 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
     },
     {
       field: 'is_staff',
-      headerName: 'Admin',
+      headerName: t.users.admin,
       flex: 0.6,
       minWidth: 70,
-      filterOperators: createBooleanFilterOperators(TrueFalseFilterOptions, 'Les deux'),
+      filterOperators: createBooleanFilterOperators(TrueFalseFilterOptions, t.common.both, t.filters.is),
       renderCell: (params: GridRenderCellParams<UserClass>) => {
         const isAdmin = Boolean(params.value);
         return (
-          <DarkTooltip title={isAdmin ? 'Oui' : 'Non'}>
+          <DarkTooltip title={isAdmin ? t.common.yes : t.common.no}>
             {isAdmin ? (
               <CheckCircleIcon color="success" fontSize="small"/>
             ) : (
@@ -266,14 +267,14 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
     },
     {
       field: 'is_active',
-      headerName: 'Active',
+      headerName: t.users.active,
       flex: 0.6,
       minWidth: 70,
-      filterOperators: createBooleanFilterOperators(TrueFalseFilterOptions, 'Les deux'),
+      filterOperators: createBooleanFilterOperators(TrueFalseFilterOptions, t.common.both, t.filters.is),
       renderCell: (params: GridRenderCellParams<UserClass>) => {
         const isActive = Boolean(params.value);
         return (
-          <DarkTooltip title={isActive ? 'Oui' : 'Non'}>
+          <DarkTooltip title={isActive ? t.common.yes : t.common.no}>
             {isActive ? (
               <CheckCircleIcon color="success" fontSize="small"/>
             ) : (
@@ -285,7 +286,7 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
     },
     {
       field: 'date_joined',
-      headerName: "Date d'inscription",
+      headerName: t.users.registrationDate,
       flex: 1.2,
       minWidth: 150,
       filterOperators: createDateRangeFilterOperator(),
@@ -302,7 +303,7 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
     },
     {
       field: 'last_login',
-      headerName: 'Dernière connexion',
+      headerName: t.users.lastLogin,
       flex: 1.2,
       minWidth: 150,
       filterOperators: createDateRangeFilterOperator(),
@@ -319,7 +320,7 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
     },
     {
       field: 'actions',
-      headerName: 'Actions',
+      headerName: t.common.actions,
       flex: 1.5,
       minWidth: 150,
       sortable: false,
@@ -327,19 +328,19 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
       renderCell: (params) => {
         const actions = [
           {
-            label: 'Voir',
+            label: t.common.view,
             icon: <VisibilityIcon/>,
             onClick: () => router.push(USERS_VIEW(params.row.id)),
             color: 'info' as const,
           },
           {
-            label: 'Modifier',
+            label: t.common.edit,
             icon: <EditIcon/>,
             onClick: () => router.push(USERS_EDIT(params.row.id)),
             color: 'primary' as const,
           },
           {
-            label: 'Supprimer',
+            label: t.common.delete,
             icon: <DeleteIcon/>,
             onClick: () => showDeleteModalCall(params.row.id),
             color: 'error' as const,
@@ -359,7 +360,7 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
       mt="48px"
       sx={{overflowX: 'auto', overflowY: 'hidden'}}
     >
-      <NavigationBar title="Liste des utilisateurs">
+      <NavigationBar title={t.navigation.usersList}>
         <Protected>
           <>
             <Box
@@ -384,7 +385,7 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
                 }}
                 startIcon={<AddIcon fontSize="small"/>}
               >
-                Nouveau utilisateur
+                {t.users.newUser}
               </Button>
               {selectedUserIds.length > 0 && (
                 <Button
@@ -399,7 +400,7 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
                     fontSize: {xs: '0.85rem', sm: '0.9rem', md: '1rem'},
                   }}
                 >
-                  Supprimer ({selectedUserIds.length})
+                  {`${t.common.delete} (${selectedUserIds.length})`}
                 </Button>
               )}
             </Box>
@@ -422,8 +423,8 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
             />
             {showDeleteModal && (
               <ActionModals
-                title="Supprimer ce utilisateur ?"
-                body="Êtes‑vous sûr de vouloir supprimer ce utilisateur?"
+                title={t.users.deleteUser}
+                body={t.users.deleteUserConfirm}
                 actions={deleteModalActions}
                 titleIcon={<DeleteIcon/>}
                 titleIconColor="#D32F2F"
@@ -431,8 +432,8 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
             )}
             {showBulkDeleteModal && (
               <ActionModals
-                title={`Supprimer ${selectedUserIds.length} utilisateur(s) ?`}
-                body={`Êtes-vous sûr de vouloir supprimer les ${selectedUserIds.length} utilisateur(s) sélectionné(s) ?`}
+                title={t.users.deleteUsers(selectedUserIds.length)}
+                body={t.users.bulkDeleteUserBody(selectedUserIds.length)}
                 actions={bulkDeleteModalActions}
                 titleIcon={<DeleteIcon/>}
                 titleIconColor="#D32F2F"

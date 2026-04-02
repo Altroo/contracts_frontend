@@ -3,10 +3,14 @@ import {auth} from '@/auth';
 import {AUTH_LOGIN, CONTRACTS_LIST} from '@/utils/routes';
 import ContractViewClient from '@/components/pages/contracts/contract-view';
 import type {Metadata} from 'next';
+import {getServerTranslations} from '@/utils/serverTranslations';
 
-export const metadata: Metadata = {
-  title: 'Contrat',
-  description: 'Détails du contrat',
+export const generateMetadata = async (): Promise<Metadata> => {
+  const t = await getServerTranslations();
+  return {
+    title: t.metadata.contractDetailsTitle,
+    description: t.metadata.contractDetailsDescription,
+  };
 };
 
 interface Props {

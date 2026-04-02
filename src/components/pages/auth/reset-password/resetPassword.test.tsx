@@ -62,6 +62,11 @@ jest.mock('@/utils/apiHelpers', () => ({
   cookiesPoster: jest.fn().mockResolvedValue({}),
 }));
 
+jest.mock('@/utils/hooks', () => ({
+   
+  useLanguage: () => ({ language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr }),
+}));
+
 describe('ResetPasswordClient', () => {
   beforeEach(() => {
     searchParamsMock = new URLSearchParams();

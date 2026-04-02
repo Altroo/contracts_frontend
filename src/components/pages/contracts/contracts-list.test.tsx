@@ -27,6 +27,8 @@ const mockOnSuccess = jest.fn();
 const mockOnError = jest.fn();
 jest.mock('@/utils/hooks', () => ({
   useToast: () => ({onSuccess: mockOnSuccess, onError: mockOnError}),
+   
+  useLanguage: () => ({ language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr }),
 }));
 
 // Mock RTK Query hooks
@@ -232,15 +234,16 @@ jest.mock('@/utils/rawData', () => ({
     };
     return map[statut] ?? 'default';
   },
-  contractStatutItemsList: ['Brouillon', 'Envoyé', 'Signé', 'En cours', 'Terminé', 'Annulé', 'Expiré'],
   companyItemsList: [
     {code: 'casa_di_lusso', value: 'Casa di Lusso'},
     {code: 'blueline_works', value: 'Blueline Works'},
   ],
-  contractCategoryItemsList: [
-    {code: 'standard', value: 'Standard'},
-    {code: 'sous_traitance', value: 'Sous-Traitance'},
-  ],
+  getTranslatedRawData: () => ({
+    contractCategoryItemsList: [
+      {code: 'standard', value: 'Standard'},
+      {code: 'sous_traitance', value: 'Sous-Traitance'},
+    ],
+  }),
 }));
 
 jest.mock('@/styles/dashboard/dashboard.module.sass', () => ({

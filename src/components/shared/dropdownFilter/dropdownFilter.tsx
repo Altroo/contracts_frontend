@@ -1,6 +1,7 @@
 import React from 'react';
 import {Chip, MenuItem, Select, SelectChangeEvent} from '@mui/material';
 import {GridFilterInputValueProps, GridFilterItem, GridFilterOperator} from '@mui/x-data-grid';
+import {useLanguage} from '@/utils/hooks';
 
 export interface DropdownFilterOption {
   value: string;
@@ -15,7 +16,9 @@ interface DropdownFilterProps extends GridFilterInputValueProps {
 }
 
 const DropdownFilter: React.FC<DropdownFilterProps> = (props) => {
-  const {item, applyValue, options, placeholder = 'Tous', showChips = false} = props;
+  const {t} = useLanguage();
+  const {item, applyValue, options, placeholder, showChips = false} = props;
+  const displayPlaceholder = placeholder ?? t.common.all;
 
   const handleFilterChange = (event: SelectChangeEvent) => {
     applyValue({...item, value: event.target.value});
@@ -24,7 +27,7 @@ const DropdownFilter: React.FC<DropdownFilterProps> = (props) => {
   return (
     <Select value={item.value || ''} onChange={handleFilterChange} displayEmpty size="small">
       <MenuItem value="">
-        <em>{placeholder}</em>
+        <em>{displayPlaceholder}</em>
       </MenuItem>
       {options.map((option) => (
         <MenuItem key={option.value} value={option.value}>
@@ -43,9 +46,10 @@ export const createDropdownFilterOperators = <T extends Record<string, unknown>>
   options: DropdownFilterOption[],
   placeholder?: string,
   showChips?: boolean,
+  filterLabel?: string,
 ): GridFilterOperator<T, string, string>[] => [
   {
-    label: 'est',
+    label: filterLabel ?? 'est',
     value: 'is',
     getApplyFilterFn: (filterItem: GridFilterItem) => {
       if (!filterItem.value) {
@@ -64,9 +68,10 @@ export const createDropdownFilterOperators = <T extends Record<string, unknown>>
 export const createBooleanFilterOperators = <T extends Record<string, unknown>>(
   options: DropdownFilterOption[],
   placeholder?: string,
+  filterLabel?: string,
 ): GridFilterOperator<T, boolean, string>[] => [
   {
-    label: 'est',
+    label: filterLabel ?? 'est',
     value: 'is',
     getApplyFilterFn: (filterItem: GridFilterItem) => {
       if (!filterItem.value) {

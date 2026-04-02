@@ -1,12 +1,16 @@
 import {redirect} from 'next/navigation';
-import {type Metadata} from 'next';
+import type {Metadata} from 'next';
 import {auth} from '@/auth';
 import {AUTH_LOGIN} from '@/utils/routes';
 import ContractFormClient from '@/components/pages/contracts/contract-form';
+import {getServerTranslations} from '@/utils/serverTranslations';
 
-export const metadata: Metadata = {
-  title: 'Nouveau contrat',
-  description: 'Créer un nouveau contrat',
+export const generateMetadata = async (): Promise<Metadata> => {
+  const t = await getServerTranslations();
+  return {
+    title: t.metadata.newContractTitle,
+    description: t.metadata.newContractDescription,
+  };
 };
 
 const ContractAddPage = async () => {

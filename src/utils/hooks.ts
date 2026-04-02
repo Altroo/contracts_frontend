@@ -6,6 +6,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import type {AppDispatch, RootState} from '@/store/store';
 import {getProfilState} from '@/store/selectors';
 import {ToastContext, type ToastContextType} from '@/contexts/toastContext';
+import {LanguageContext, type LanguageContextType} from '@/contexts/languageContext';
 
 export const useAppDispatch: () => AppDispatch = useDispatch;
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
@@ -36,4 +37,8 @@ export const useToast = (): ToastContextType => {
   const ctx = useContext(ToastContext);
   if (!ctx) throw new Error('useToast must be used within ToastProvider');
   return ctx;
+};
+
+export const useLanguage = (): LanguageContextType => {
+  return useContext(LanguageContext);
 };

@@ -4,6 +4,8 @@ import type {ErrorInfo, ReactNode} from 'react';
 import React, {Component} from 'react';
 import {Box, Button, Paper, Typography} from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import type {Language} from '@/types/languageTypes';
+import {translations} from '@/translations';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -44,21 +46,29 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     this.setState({hasError: false, error: null});
   };
 
+  private getTranslations() {
+    const stored = typeof window !== 'undefined' ? localStorage.getItem('app-language') : null;
+    const lang: Language = stored === 'en' ? 'en' : 'fr';
+    return translations[lang];
+  }
+
   render(): ReactNode {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
+      const t = this.getTranslations();
+
       return (
         <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px', p: 3}}>
           <Paper elevation={3} sx={{p: 4, maxWidth: 500, textAlign: 'center'}}>
             <ErrorOutlineIcon sx={{fontSize: 64, color: 'error.main', mb: 2}}/>
             <Typography variant="h5" gutterBottom>
-              Une erreur est survenue
+              {t.errors.errorOccurred}
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{mb: 3}}>
-              Nous nous excusons pour ce désagrément. Veuillez réessayer ou actualiser la page.
+              {t.errors.errorApology}
             </Typography>
             {process.env.NODE_ENV !== 'production' && this.state.error && (
               <Typography
@@ -78,8 +88,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               </Typography>
             )}
             <Box sx={{display: 'flex', gap: 2, justifyContent: 'center'}}>
-              <Button variant="contained" onClick={this.handleReset}>Réessayer</Button>
-              <Button variant="outlined" onClick={() => window.location.reload()}>Actualiser la page</Button>
+              <Button variant="contained" onClick={this.handleReset}>{t.common.retry}</Button>
+              <Button variant="outlined" onClick={() => window.location.reload()}>{t.common.refresh}</Button>
             </Box>
           </Paper>
         </Box>

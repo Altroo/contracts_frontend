@@ -40,14 +40,14 @@ jest.mock(
 );
 
 // Now require the module under test AFTER mocks are registered
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+ 
 const nextServer = require('next/server') as {
   NextResponse: { next: jest.Mock; redirect: jest.Mock };
 };
 const NextResponse = nextServer.NextResponse;
 
 let middlewareHandler: (req: ReqLike) => unknown;
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+ 
 const mod = require('./proxy');
 // eslint-disable-next-line prefer-const
 middlewareHandler = mod.default as (req: ReqLike) => unknown;

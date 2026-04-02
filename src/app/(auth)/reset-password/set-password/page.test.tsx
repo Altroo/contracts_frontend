@@ -29,7 +29,7 @@ jest.mock('next/headers', () => ({
 jest.mock('@/components/pages/auth/reset-password/setPassword', () => ({
   __esModule: true,
   default: () => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const React = require('react');
     return React.createElement('div', null, 'SET_PASSWORD_CLIENT_MARKER');
   },
@@ -60,7 +60,7 @@ describe('SetPasswordPage server component', () => {
     let Page: () => Promise<unknown>;
     jest.isolateModules(() => {
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
       const mod = require('./page');
       Page = mod.default as () => Promise<unknown>;
     });
@@ -76,7 +76,7 @@ describe('SetPasswordPage server component', () => {
     let Page: () => Promise<unknown>;
     jest.isolateModules(() => {
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
       const mod = require('./page');
       Page = mod.default as () => Promise<unknown>;
     });
@@ -95,7 +95,7 @@ describe('SetPasswordPage server component', () => {
     let Page: () => Promise<unknown>;
     jest.isolateModules(() => {
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
       const mod = require('./page');
       Page = mod.default as () => Promise<unknown>;
     });

@@ -34,6 +34,8 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/utils/hooks', () => ({
   __esModule: true,
   useToast: () => ({onSuccess: jest.fn(), onError: jest.fn()}),
+   
+  useLanguage: () => ({ language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr }),
 }));
 
 jest.mock('@/contexts/InitContext', () => ({
@@ -122,7 +124,9 @@ jest.mock('@/utils/helpers', () => ({
 }));
 
 jest.mock('@/utils/rawData', () => ({
-  genderItemsList: [{value: 'H', label: 'Homme'}, {value: 'F', label: 'Femme'}],
+  getTranslatedRawData: () => ({
+    genderItemsList: [{code: 'H', value: 'Homme'}, {code: 'F', value: 'Femme'}],
+  }),
 }));
 
 jest.mock('@/utils/formValidationSchemas', () => ({

@@ -4,6 +4,10 @@ import '@testing-library/jest-dom';
 import {ToastContext, type ToastContextType} from '@/contexts/toastContext';
 import SessionExpiredListener from './sessionExpiredListener';
 
+jest.mock('@/utils/hooks', () => ({
+  useLanguage: () => ({language: 'fr', setLanguage: jest.fn(), t: require('@/translations').translations.fr}),
+}));
+
 afterEach(() => {
   cleanup();
   jest.clearAllMocks();
@@ -32,7 +36,7 @@ describe('SessionExpiredListener', () => {
     });
 
     expect(toast.onError).toHaveBeenCalledTimes(1);
-    expect(toast.onError).toHaveBeenCalledWith('Votre session a expiré, veuillez vous reconnecter.');
+    expect(toast.onError).toHaveBeenCalledWith('Votre session a expiré. Veuillez vous reconnecter.');
   });
 
   it('does not call toast.onSuccess on session-expired', () => {

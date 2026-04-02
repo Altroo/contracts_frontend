@@ -24,6 +24,8 @@ export type ContractTypeBienType =
   | 'appartement'
   | 'villa'
   | 'duplex'
+  | 'residence'
+  | 'hotel'
   | 'riad_maison_traditionnelle'
   | 'bureau_local_commercial'
   | 'commerce_local'
@@ -37,7 +39,7 @@ export type ContractClientQualiteType =
   | 'investisseur_immobilier'
   | 'administration_institution';
 
-export type ContractGarantieType = '6 mois' | '1 an' | '2 ans' | '3 ans' | 'sans_garantie';
+export type ContractGarantieType = '1 mois' | '3 mois' | '6 mois' | '1 an' | '2 ans' | '3 ans' | 'sans_garantie';
 
 export type ContractTribunalType = 'Tanger' | 'Casablanca' | 'Rabat' | 'Marrakech' | 'Fès' | 'Agadir';
 

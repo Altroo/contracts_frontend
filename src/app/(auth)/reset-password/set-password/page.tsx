@@ -4,10 +4,14 @@ import {redirect} from 'next/navigation';
 import {auth} from '@/auth';
 import {AUTH_RESET_PASSWORD, DASHBOARD} from '@/utils/routes';
 import SetPasswordClient from '@/components/pages/auth/reset-password/setPassword';
+import {getServerTranslations} from '@/utils/serverTranslations';
 
-export const metadata: Metadata = {
-  title: 'Nouveau mot de passe',
-  description: 'Créer un nouveau mot de passe pour votre compte',
+export const generateMetadata = async (): Promise<Metadata> => {
+  const t = await getServerTranslations();
+  return {
+    title: t.metadata.setNewPasswordTitle,
+    description: t.metadata.setNewPasswordDescription,
+  };
 };
 
 const SetPasswordPage = async () => {
