@@ -107,10 +107,10 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
     {text: t.common.delete, active: true, onClick: deleteHandler, icon: <DeleteIcon/>, color: '#D32F2F'},
   ];
 
-  const showDeleteModalCall = (id: number) => {
+  const showDeleteModalCall = useCallback((id: number) => {
     setSelectedContractId(id);
     setShowDeleteModal(true);
-  };
+  }, []);
 
   const handleSelectionChange = (ids: number[]) => {
     setSelectedContractIds(ids);
@@ -223,7 +223,7 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
     [t, contractCategoryItemsList],
   );
 
-  const columns: GridColDef[] = [
+  const columns = React.useMemo<GridColDef[]>(() => [
     {
       field: 'numero_contrat',
       headerName: t.contracts.reference,
@@ -312,10 +312,11 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
       filterOperators: createDropdownFilterOperators(statutFilterOptions, t.common.allStatuses, true, t.filters.is),
       renderCell: (params: GridRenderCellParams<ContractClass>) => {
         const statut = params.value as string;
+        const statusLabel = statutFilterOptions.find((o) => o.value === statut)?.label ?? statut;
         return (
-          <DarkTooltip title={statut || '-'}>
+          <DarkTooltip title={statusLabel || '-'}>
             <Chip
-              label={statut || '-'}
+              label={statusLabel || '-'}
               color={getContractStatusColor(statut)}
               variant="outlined"
             />
@@ -405,7 +406,7 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
         );
       },
     },
-  ];
+  ], [t, contractCategoryItemsList, statutFilterOptions, router, showPrintMenuCall, showDeleteModalCall]);
 
   return (
     <Stack
