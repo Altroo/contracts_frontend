@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useMemo, useState} from 'react';
+import React, {useRef, useMemo, useState} from 'react';
 import {styled, ThemeProvider} from '@mui/material/styles';
 import MuiAppBar, {type AppBarProps as MuiAppBarProps} from '@mui/material/AppBar';
 import {
@@ -17,6 +17,10 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  ListItemIcon as MenuListItemIcon,
+  ListItemText as MenuListItemText,
+  Menu,
+  MenuItem,
   Skeleton,
   Stack,
   Toolbar,
@@ -29,8 +33,10 @@ import {
   Domain as DomainIcon,
   ExpandMore as ExpandMoreIcon,
   Gavel as GavelIcon,
+  Language as LanguageIcon,
   Logout as LogoutIcon,
   Menu as MenuIcon,
+  MoreVert as MoreVertIcon,
   People as PeopleIcon,
   Settings as SettingsIcon,
 } from '@mui/icons-material';
@@ -149,8 +155,10 @@ const NavigationBar = (props: Props) => {
   const [open, setOpen] = useState(!isMobile);
   const {data: session, status} = useSession();
   const {avatar_cropped, first_name, last_name, gender, is_staff} = useAppSelector(getProfilState);
-  const {t} = useLanguage();
+  const {t, language, setLanguage} = useLanguage();
   const navigationMenu = useMemo(() => getNavigationMenu(is_staff, t), [is_staff, t]);
+  const moreVertRef = useRef<HTMLButtonElement>(null);
+  const [mobileMenuAnchor, setMobileMenuAnchor] = useState<HTMLElement | null>(null);
 
   const loading = status === 'loading';
 
@@ -249,10 +257,10 @@ const NavigationBar = (props: Props) => {
                 </Typography>
               </Stack>
               <Stack direction="row" spacing={1} alignItems="center">
-                <LanguageSwitcher/>
                 {!loading && session && (
                   <>
                     <Desktop>
+                      <LanguageSwitcher/>
                       {is_staff && (
                         <Button variant="text" color="inherit" href={BACKEND_SITE_ADMIN} target="_blank" rel="noopener"
                                 endIcon={<DomainIcon/>}>
@@ -264,14 +272,36 @@ const NavigationBar = (props: Props) => {
                       </Button>
                     </Desktop>
                     <TabletAndMobile>
-                      {is_staff && (
-                        <IconButton color="inherit" href={BACKEND_SITE_ADMIN} target="_blank" rel="noopener">
-                          <DomainIcon/>
-                        </IconButton>
-                      )}
-                      <IconButton color="inherit" onClick={logOutHandler}>
-                        <LogoutIcon/>
+                      <IconButton
+                        ref={moreVertRef}
+                        color="inherit"
+                        aria-label={t.accessibility.moreActions}
+                        onClick={(e) => setMobileMenuAnchor(e.currentTarget)}
+                      >
+                        <MoreVertIcon/>
                       </IconButton>
+                      <Menu
+                        anchorEl={mobileMenuAnchor}
+                        open={Boolean(mobileMenuAnchor)}
+                        onClose={() => setMobileMenuAnchor(null)}
+                        anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
+                        transformOrigin={{vertical: 'top', horizontal: 'right'}}
+                      >
+                        <MenuItem onClick={() => { setLanguage(language === 'fr' ? 'en' : 'fr'); setMobileMenuAnchor(null); }}>
+                          <MenuListItemIcon><LanguageIcon fontSize="small"/></MenuListItemIcon>
+                          <MenuListItemText>{language === 'fr' ? 'English' : 'Français'}</MenuListItemText>
+                        </MenuItem>
+                        {is_staff && (
+                          <MenuItem component="a" href={BACKEND_SITE_ADMIN} target="_blank" rel="noopener" onClick={() => setMobileMenuAnchor(null)}>
+                            <MenuListItemIcon><DomainIcon fontSize="small"/></MenuListItemIcon>
+                            <MenuListItemText>{t.navigation.administration}</MenuListItemText>
+                          </MenuItem>
+                        )}
+                        <MenuItem onClick={() => { setMobileMenuAnchor(null); void logOutHandler(); }}>
+                          <MenuListItemIcon><LogoutIcon fontSize="small"/></MenuListItemIcon>
+                          <MenuListItemText>{t.navigation.logout}</MenuListItemText>
+                        </MenuItem>
+                      </Menu>
                     </TabletAndMobile>
                   </>
                 )}
