@@ -107,6 +107,13 @@ jest.mock('@/providers/themeProvider', () => ({
   },
 }));
 
+jest.mock('next/headers', () => ({
+  __esModule: true,
+  cookies: jest.fn().mockResolvedValue({
+    get: jest.fn().mockReturnValue(undefined),
+  }),
+}));
+
 beforeEach(() => {
   jest.resetModules();
   jest.clearAllMocks();
