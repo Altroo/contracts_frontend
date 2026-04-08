@@ -181,7 +181,6 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
     garantieTypeItemsList,
     garantieUniteItemsList,
     modePaiementTexteItemsList,
-    penaliteRetardUniteItemsList,
     prestationNomItemsList,
     prestationUniteItemsList,
     stClausesActivesList,
