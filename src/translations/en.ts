@@ -126,7 +126,7 @@ export const en: TranslationDictionary = {
     latePenalty: 'Late penalty',
     latePenaltyUnit: 'Penalty by',
     paymentMethod: 'Payment method',
-    ribCoordinates: 'RIB / Bank details',
+    ribCoordinates: 'RIB',
     warranty: 'Warranty',
     competentCourt: 'Competent court',
     confidentiality: 'Confidentiality',
