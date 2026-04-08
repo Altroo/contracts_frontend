@@ -2,16 +2,17 @@
 
 import React, { useEffect, useState } from 'react';
 import Styles from '@/styles/dashboard/settings/settings.module.sass';
+import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import {
   Box,
   FormControlLabel,
   Stack,
   Switch,
-  TextField,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
 import { setFormikAutoErrors } from '@/utils/helpers';
+import { textInputTheme } from '@/utils/themes';
 import { useFormik } from 'formik';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import {
@@ -23,6 +24,8 @@ import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import { useToast, useLanguage } from '@/utils/hooks';
 import { Edit as EditIcon } from '@mui/icons-material';
 import type { NotificationPreferenceFormValues } from '@/types/contractNotificationTypes';
+
+const inputTheme = textInputTheme();
 
 const FormikContent: React.FC = () => {
   const { onSuccess, onError } = useToast();
@@ -116,23 +119,27 @@ const FormikContent: React.FC = () => {
                 }
                 label={t.settings.notifyStatusChange}
               />
-              <TextField
+              <CustomTextInput
+                id="unsigned_alert_days"
                 label={t.settings.unsignedAlertDays}
                 type="number"
                 size="small"
-                value={formik.values.unsigned_alert_days}
+                value={String(formik.values.unsigned_alert_days)}
                 onChange={(e) => formik.setFieldValue('unsigned_alert_days', Number(e.target.value))}
-                inputProps={{ min: 1, max: 365 }}
+                slotProps={{ htmlInput: { min: 1, max: 365 } }}
                 fullWidth
+                theme={inputTheme}
               />
-              <TextField
+              <CustomTextInput
+                id="work_start_alert_days"
                 label={t.settings.workStartAlertDays}
                 type="number"
                 size="small"
-                value={formik.values.work_start_alert_days}
+                value={String(formik.values.work_start_alert_days)}
                 onChange={(e) => formik.setFieldValue('work_start_alert_days', Number(e.target.value))}
-                inputProps={{ min: 1, max: 30 }}
+                slotProps={{ htmlInput: { min: 1, max: 30 } }}
                 fullWidth
+                theme={inputTheme}
               />
             </Stack>
           </Box>
