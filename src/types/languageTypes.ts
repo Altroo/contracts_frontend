@@ -79,6 +79,11 @@ export type TranslationDictionary = {
     welcomeMale: string;
     welcomeFemale: string;
     welcomeNeutral: string;
+    notifications: string;
+    notificationPreferences: string;
+    markAllRead: string;
+    noNotifications: string;
+    loadMore: string;
   };
   contracts: {
     reference: string;
@@ -418,6 +423,16 @@ export type TranslationDictionary = {
     updateError: string;
     passwordChangeSuccess: string;
     passwordChangeError: string;
+    notificationPreferences: string;
+    notificationUpdateSuccess: string;
+    notificationUpdateError: string;
+    notifyUnsignedContract: string;
+    notifyWorkStart: string;
+    notifyReserveDeadline: string;
+    notifyStatusChange: string;
+    unsignedAlertDays: string;
+    workStartAlertDays: string;
+    save: string;
   };
   auth: {
     login: string;
@@ -697,6 +712,8 @@ export type TranslationDictionary = {
     editProfileDescription: string;
     changePasswordTitle: string;
     changePasswordDescription: string;
+    notificationsTitle: string;
+    notificationsDescription: string;
     homeTitle: string;
     homeDescription: string;
     appTitle: string;

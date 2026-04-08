@@ -1,12 +1,13 @@
 'use client';
 
-import React, {useRef, useMemo, useState} from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {styled, ThemeProvider} from '@mui/material/styles';
 import MuiAppBar, {type AppBarProps as MuiAppBarProps} from '@mui/material/AppBar';
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Badge,
   Box,
   Button,
   Divider,
@@ -21,6 +22,7 @@ import {
   ListItemText as MenuListItemText,
   Menu,
   MenuItem,
+  Popover,
   Skeleton,
   Stack,
   Toolbar,
@@ -31,16 +33,18 @@ import {
 } from '@mui/material';
 import {
   Domain as DomainIcon,
+  DoneAll as DoneAllIcon,
   ExpandMore as ExpandMoreIcon,
   Gavel as GavelIcon,
   Logout as LogoutIcon,
   Menu as MenuIcon,
   MoreVert as MoreVertIcon,
+  Notifications as NotificationsIcon,
   People as PeopleIcon,
   Settings as SettingsIcon,
 } from '@mui/icons-material';
-import {useAppSelector, useLanguage} from '@/utils/hooks';
-import {getProfilState} from '@/store/selectors';
+import {useAppDispatch, useAppSelector, useLanguage} from '@/utils/hooks';
+import {getProfilState, getUnreadNotificationCount} from '@/store/selectors';
 import LanguageSwitcher from '@/components/shared/languageSwitcher/languageSwitcher';
 import {cookiesDeleter} from '@/utils/apiHelpers';
 import {
@@ -49,6 +53,7 @@ import {
   CONTRACTS_ADD,
   CONTRACTS_LIST,
   DASHBOARD_EDIT_PROFILE,
+  DASHBOARD_NOTIFICATIONS,
   DASHBOARD_PASSWORD,
   SITE_ROOT,
   USERS_ADD,
@@ -61,6 +66,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {Desktop, TabletAndMobile} from '@/utils/clientHelpers';
 import type {TranslationDictionary} from '@/types/languageTypes';
+import { setUnreadCount } from '@/store/slices/notificationSlice';
+import {
+  useGetNotificationsQuery,
+  useLazyGetNotificationsQuery,
+  useGetUnreadNotificationCountQuery,
+  useMarkNotificationsReadMutation,
+} from '@/store/services/notification';
+import type { NotificationType } from '@/types/contractNotificationTypes';
 
 const getNavigationMenu = (isStaff: boolean, t: TranslationDictionary) => {
   return {
@@ -88,6 +101,7 @@ const getNavigationMenu = (isStaff: boolean, t: TranslationDictionary) => {
       items: [
         {title: t.navigation.myProfile, label: t.navigation.myProfile, path: DASHBOARD_EDIT_PROFILE},
         {title: t.navigation.changePassword, label: t.navigation.changePassword, path: DASHBOARD_PASSWORD},
+        {title: t.navigation.notifications, label: t.navigation.notifications, path: DASHBOARD_NOTIFICATIONS},
       ],
     },
   };
@@ -158,8 +172,72 @@ const NavigationBar = (props: Props) => {
   const navigationMenu = useMemo(() => getNavigationMenu(is_staff, t), [is_staff, t]);
   const moreVertRef = useRef<HTMLButtonElement>(null);
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState<HTMLElement | null>(null);
+  const dispatch = useAppDispatch();
+  const unreadCount = useAppSelector(getUnreadNotificationCount);
+  const { data: unreadCountData } = useGetUnreadNotificationCountQuery(undefined, { skip: status !== 'authenticated' });
+  const { data: firstPage } = useGetNotificationsQuery({ page: 1 }, { skip: status !== 'authenticated' });
+  const [fetchNotifications] = useLazyGetNotificationsQuery();
+  const [markAllRead] = useMarkNotificationsReadMutation();
+  const [notifAnchor, setNotifAnchor] = useState<HTMLElement | null>(null);
+  const [allNotifications, setAllNotifications] = useState<NotificationType[]>([]);
+  const [notifPage, setNotifPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  const loading = status === 'loading';
+  useEffect(() => {
+    if (firstPage) {
+      setAllNotifications(firstPage.results);
+      setHasMore(firstPage.next !== null);
+      setNotifPage(1);
+    }
+  }, [firstPage]);
+
+  useEffect(() => {
+    if (unreadCountData?.count !== undefined) {
+      dispatch(setUnreadCount(unreadCountData.count));
+    }
+  }, [unreadCountData, dispatch]);
+
+  const handleNotifOpen = (e: React.MouseEvent<HTMLElement>) => {
+    setNotifAnchor(e.currentTarget);
+  };
+
+  const handleNotifClose = () => {
+    setNotifAnchor(null);
+  };
+
+  useEffect(() => {
+    if (
+      status === 'authenticated' &&
+      typeof window !== 'undefined' &&
+      'Notification' in window &&
+      Notification.permission === 'default'
+    ) {
+      void Notification.requestPermission();
+    }
+  }, [status]);
+
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllRead({}).unwrap();
+      dispatch(setUnreadCount(0));
+    } catch {
+      // silent
+    }
+  };
+
+  const handleLoadMore = useCallback(async () => {
+    const nextPage = notifPage + 1;
+    setLoadingMore(true);
+    try {
+      const result = await fetchNotifications({ page: nextPage }).unwrap();
+      setAllNotifications((prev) => [...prev, ...result.results]);
+      setHasMore(result.next !== null);
+      setNotifPage(nextPage);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [fetchNotifications, notifPage]);
 
   const logOutHandler = async () => {
     await cookiesDeleter('/api/cookies', {
@@ -234,6 +312,8 @@ const NavigationBar = (props: Props) => {
     setUserExpanded(isExpanded ? panel : false);
   };
 
+  const loading = status === 'loading';
+
   return (
     <ThemeProvider theme={navigationBarTheme()}>
       <Box sx={{display: 'flex'}}>
@@ -259,6 +339,15 @@ const NavigationBar = (props: Props) => {
                 {!loading && session && (
                   <>
                     <Desktop>
+                      <IconButton
+                        color="inherit"
+                        onClick={handleNotifOpen}
+                        aria-label={t.navigation.notifications}
+                      >
+                        <Badge badgeContent={unreadCount > 0 ? unreadCount : undefined} color="error" max={99}>
+                          <NotificationsIcon />
+                        </Badge>
+                      </IconButton>
                       <LanguageSwitcher/>
                       {is_staff && (
                         <Button variant="text" color="inherit" href={BACKEND_SITE_ADMIN} target="_blank" rel="noopener"
@@ -271,6 +360,15 @@ const NavigationBar = (props: Props) => {
                       </Button>
                     </Desktop>
                     <TabletAndMobile>
+                      <IconButton
+                        color="inherit"
+                        onClick={handleNotifOpen}
+                        aria-label={t.navigation.notifications}
+                      >
+                        <Badge badgeContent={unreadCount > 0 ? unreadCount : undefined} color="error" max={99}>
+                          <NotificationsIcon />
+                        </Badge>
+                      </IconButton>
                       <IconButton
                         ref={moreVertRef}
                         color="inherit"
@@ -428,6 +526,74 @@ const NavigationBar = (props: Props) => {
         </Drawer>
         <Main open={open}>{props.children}</Main>
       </Box>
+      <Popover
+        open={Boolean(notifAnchor)}
+        anchorEl={notifAnchor}
+        onClose={handleNotifClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        slotProps={{ paper: { sx: { width: 360, maxHeight: 420 } } }}
+      >
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ px: 2, py: 1.5 }}>
+          <Typography variant="subtitle1" fontWeight={700}>
+            {t.navigation.notifications}
+          </Typography>
+          {unreadCount > 0 && (
+            <Tooltip title={t.navigation.markAllRead}>
+              <IconButton size="small" onClick={() => void handleMarkAllRead()}>
+                <DoneAllIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Stack>
+        <Divider />
+        <Box sx={{ maxHeight: 340, overflow: 'auto' }}>
+          {allNotifications.length > 0 ? (
+            <>
+              {allNotifications.map((notification) => (
+                <Box
+                  key={notification.id}
+                  sx={{
+                    px: 2,
+                    py: 1.5,
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 1.5,
+                    backgroundColor: notification.is_read ? 'transparent' : 'action.hover',
+                    borderBottom: '1px solid',
+                    borderColor: 'divider',
+                  }}
+                >
+                  <Box sx={{ minWidth: 0, flex: 1 }}>
+                    <Typography variant="body2" fontWeight={notification.is_read ? 400 : 600} noWrap>
+                      {notification.title}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.4 }}>
+                      {notification.message}
+                    </Typography>
+                    <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 0.5 }}>
+                      {new Date(notification.date_created).toLocaleDateString()}
+                    </Typography>
+                  </Box>
+                </Box>
+              ))}
+              {hasMore && (
+                <Box sx={{ p: 1.5, textAlign: 'center' }}>
+                  <Button size="small" onClick={() => void handleLoadMore()} disabled={loadingMore}>
+                    {loadingMore ? t.common.loading : t.navigation.loadMore}
+                  </Button>
+                </Box>
+              )}
+            </>
+          ) : (
+            <Box sx={{ p: 3, textAlign: 'center' }}>
+              <Typography variant="body2" color="text.secondary">
+                {t.navigation.noNotifications}
+              </Typography>
+            </Box>
+          )}
+        </Box>
+      </Popover>
     </ThemeProvider>
   );
 };
