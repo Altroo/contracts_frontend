@@ -124,6 +124,7 @@ export type TranslationDictionary = {
     currency: string;
     tva: string;
     latePenalty: string;
+    latePenaltyUnit: string;
     paymentMethod: string;
     ribCoordinates: string;
     warranty: string;
@@ -301,6 +302,8 @@ export type TranslationDictionary = {
     worksAddress: string;
     worksDescription: string;
     delayPenaltyDays: string;
+    latePenaltyMadPerDay: string;
+    latePenaltyPercentPerDay: string;
     reserveLiftingDelay: string;
     legalForm: string;
     capital: string;
@@ -589,6 +592,10 @@ export type TranslationDictionary = {
       mixte: string;
       mobile: string;
       virementOuCheque: string;
+    };
+    penaltyUnits: {
+      mad_per_day: string;
+      percent_per_day: string;
     };
     prestationNames: {
       pose_carrelage: string;

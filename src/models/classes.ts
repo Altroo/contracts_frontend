@@ -90,6 +90,7 @@ export class ContractClass {
     public rib: string | null,
     public delai_retard: number,
     public penalite_retard: number,
+    public penalite_retard_unite: string,
     public frais_redemarrage: number | null,
     // Clauses
     public garantie: ContractGarantieType | string,

@@ -141,6 +141,11 @@ export const getTranslatedRawData = (t: TranslationDictionary) => ({
     {code: 'Virement ou Chèque', value: t.rawData.paymentMethods.virementOuCheque},
   ],
 
+  penaliteRetardUniteItemsList: [
+    {code: 'mad_per_day', value: t.rawData.penaltyUnits.mad_per_day},
+    {code: 'percent_per_day', value: t.rawData.penaltyUnits.percent_per_day},
+  ],
+
   prestationNomItemsList: [
     {code: 'pose_carrelage', value: t.rawData.prestationNames.pose_carrelage},
     {code: 'pose_marbre', value: t.rawData.prestationNames.pose_marbre},

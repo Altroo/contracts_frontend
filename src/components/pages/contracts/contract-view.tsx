@@ -181,6 +181,7 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
     garantieTypeItemsList,
     garantieUniteItemsList,
     modePaiementTexteItemsList,
+    penaliteRetardUniteItemsList,
     prestationNomItemsList,
     prestationUniteItemsList,
     stClausesActivesList,
@@ -265,6 +266,10 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
 
   const resolveLabel = (list: Array<{ code: string; value: string }>, code: string | null | undefined) =>
     list.find((i) => i.code === code)?.value ?? code ?? '-';
+
+  const latePenaltyValue = contract?.penalite_retard != null
+    ? `${contract.penalite_retard} ${resolveLabel(penaliteRetardUniteItemsList, contract?.penalite_retard_unite)}`
+    : undefined;
 
   return (
     <Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
@@ -578,7 +583,7 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                       />
                       <Divider/>
                       <InfoRow icon={<MoneyIcon/>} label={t.contracts.latePenalty}
-                               value={contract?.penalite_retard != null ? `${contract.penalite_retard} MAD/j` : undefined}/>
+                               value={latePenaltyValue}/>
                       {!isBlueline && (
                         <>
                           <Divider/>

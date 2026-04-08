@@ -374,6 +374,16 @@ describe('Zod Schema Validation', () => {
         expect(result.error.issues.some((issue) => issue.path.join('.') === 'tranches.0.pourcentage' && issue.message === 'Ce champ est obligatoire.')).toBe(true);
       }
     });
+    it('preserves spaces in CDL tranche labels', () => {
+      const result = contractSchema.safeParse({
+        ...validContract,
+        tranches: [{label: 'Début Des Travaux', pourcentage: 100}],
+      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.tranches?.[0]?.label).toBe('Début Des Travaux');
+      }
+    });
     it('fails when required field is undefined (preprocess converts to empty)', () => {
       const result = contractSchema.safeParse({
         company: 'casa_di_lusso',

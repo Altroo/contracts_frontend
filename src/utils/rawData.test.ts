@@ -11,6 +11,7 @@ const {
   contractCategoryItemsList,
   contractStatutItemsList,
   genderItemsList,
+  penaliteRetardUniteItemsList,
   stClausesActivesList,
   stDelaiUnitItemsList,
   stFormeJuridiqueItemsList,
@@ -99,6 +100,15 @@ describe('items lists', () => {
   describe('deviseItemsList', () => {
     it('has 3 currencies', () => {
       expect(deviseItemsList).toEqual(['MAD', 'EUR', 'USD']);
+    });
+  });
+
+  describe('penaliteRetardUniteItemsList', () => {
+    it('has the expected penalty-unit options', () => {
+      expect(penaliteRetardUniteItemsList).toEqual([
+        {code: 'mad_per_day', value: 'MAD par jour'},
+        {code: 'percent_per_day', value: 'Pourcentage par jour'},
+      ]);
     });
   });
 

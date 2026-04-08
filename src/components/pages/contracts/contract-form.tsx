@@ -119,6 +119,13 @@ const hasValidTrancheTotal = (tranches?: Array<{
   pourcentage: number
 }>) => Math.abs(getTrancheTotal(tranches) - 100) < 0.001;
 
+const stopGridEditorKeyPropagation = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  event.stopPropagation();
+};
+
+const normalizePenaltyUnit = (value: string | null | undefined): 'mad_per_day' | 'percent_per_day' =>
+  value === 'percent_per_day' ? 'percent_per_day' : 'mad_per_day';
+
 type FormikContentProps = {
   token: string | undefined;
   id?: number;
@@ -141,6 +148,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
     garantieTypeItemsList,
     garantieUniteItemsList,
     modePaiementTexteItemsList,
+    penaliteRetardUniteItemsList,
     prestationNomItemsList,
     prestationUniteItemsList,
     stClausesActivesList,
@@ -244,6 +252,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       devise: rawData?.devise ?? 'MAD',
       tva: rawData?.tva != null ? String(rawData.tva) : '20',
       penalite_retard: rawData?.penalite_retard != null ? String(rawData.penalite_retard) : '100',
+      penalite_retard_unite: normalizePenaltyUnit(rawData?.penalite_retard_unite),
       garantie: rawData?.garantie ?? '1 an',
       tribunal: rawData?.tribunal ?? 'Tanger',
       responsable_projet: rawData?.responsable_projet ?? '',
@@ -362,6 +371,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
         surface: fields.surface !== '' && fields.surface != null ? parseFloat(fields.surface) : undefined,
         tva: fields.tva !== '' && fields.tva != null ? parseFloat(fields.tva) : 0,
         penalite_retard: fields.penalite_retard !== '' && fields.penalite_retard != null ? parseFloat(fields.penalite_retard) : 0,
+        penalite_retard_unite: fields.penalite_retard_unite,
         mode_paiement_texte: fields.mode_paiement_texte || null,
         rib: fields.rib || null,
         /* CDL numeric conversions */
@@ -1099,6 +1109,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                 label=""
                 value={tr.label}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateTranche(realIdx, 'label', e.target.value)}
+                slotProps={{htmlInput: {onKeyDown: stopGridEditorKeyPropagation}}}
                 size="small"
                 theme={gridCellInputTheme}
                 error={hasError}
@@ -1197,6 +1208,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                 label=""
                 value={tr.label}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateStTranche(realIdx, 'label', e.target.value)}
+                slotProps={{htmlInput: {onKeyDown: stopGridEditorKeyPropagation}}}
                 size="small"
                 theme={gridCellInputTheme}
                 error={hasError}
@@ -1820,7 +1832,19 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       size="small"
                       theme={inputTheme}
                       startIcon={<AttachMoneyIcon fontSize="small"/>}
-                      endIcon="MAD/j"
+                      endIcon={formik.values.penalite_retard_unite === 'percent_per_day' ? '%/j' : 'MAD/j'}
+                    />
+                    <CustomDropDownSelect
+                      id="penalite_retard_unite"
+                      label={t.contracts.latePenaltyUnit}
+                      items={penaliteRetardUniteItemsList.map((item) => item.value)}
+                      value={penaliteRetardUniteItemsList.find((item) => item.code === formik.values.penalite_retard_unite)?.value ?? formik.values.penalite_retard_unite}
+                      onChange={(e: SelectChangeEvent) => {
+                        const selected = penaliteRetardUniteItemsList.find((item) => item.value === e.target.value);
+                        formik.setFieldValue('penalite_retard_unite', selected?.code ?? e.target.value);
+                      }}
+                      size="small"
+                      theme={customDropdownTheme()}
                     />
                   </Stack>
                   <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>

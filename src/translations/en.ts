@@ -124,6 +124,7 @@ export const en: TranslationDictionary = {
     currency: 'Currency',
     tva: 'VAT',
     latePenalty: 'Late penalty (MAD/day)',
+    latePenaltyUnit: 'Penalty by',
     paymentMethod: 'Payment method',
     ribCoordinates: 'RIB / Bank details',
     warranty: 'Warranty',
@@ -296,6 +297,8 @@ export const en: TranslationDictionary = {
     worksAddress: 'Works address',
     worksDescription: 'Works description',
     delayPenaltyDays: 'Late penalty delay (days)',
+    latePenaltyMadPerDay: 'MAD per day',
+    latePenaltyPercentPerDay: '% per day',
     reserveLiftingDelay: 'Reserve lifting delay (days)',
     legalForm: 'Legal form',
     capital: 'Capital',
@@ -583,6 +586,10 @@ export const en: TranslationDictionary = {
       mixte: 'Mixed Payment',
       mobile: 'Mobile Money',
       virementOuCheque: 'Transfer or Check',
+    },
+    penaltyUnits: {
+      mad_per_day: 'MAD per day',
+      percent_per_day: 'Percentage per day',
     },
     prestationNames: {
       pose_carrelage: 'Tile installation',

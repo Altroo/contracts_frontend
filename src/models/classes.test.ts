@@ -129,6 +129,7 @@ describe('ContractClass', () => {
       'FR76 1234 5678',           // rib
       30,                         // delai_retard
       0.5,                        // penalite_retard
+      'mad_per_day',              // penalite_retard_unite
       1000,                       // frais_redemarrage
 
       // Clauses
@@ -246,6 +247,7 @@ describe('ContractClass', () => {
     expect(contract.tva).toBe(20);
     expect(contract.montant_tva).toBe(10000);
     expect(contract.montant_ttc).toBe(60000);
+    expect(contract.penalite_retard_unite).toBe('mad_per_day');
   });
 
   it('stores project fields', () => {

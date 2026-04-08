@@ -177,6 +177,10 @@ jest.mock('@/utils/rawData', () => ({
       {code: 'Virement Bancaire', value: 'Virement Bancaire'},
       {code: 'Espèces', value: 'Espèces'},
     ],
+    penaliteRetardUniteItemsList: [
+      {code: 'mad_per_day', value: 'MAD par jour'},
+      {code: 'percent_per_day', value: 'Pourcentage par jour'},
+    ],
     typeBienItemsList: [
       {code: 'appartement', value: 'Appartement'},
       {code: 'villa', value: 'Villa'},

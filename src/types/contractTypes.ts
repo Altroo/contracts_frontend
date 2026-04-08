@@ -55,6 +55,8 @@ export type ContractModePaiementTexteType =
 
 export type ContractDeviseType = 'MAD' | 'EUR' | 'USD';
 
+export type ContractPenaliteRetardUniteType = 'mad_per_day' | 'percent_per_day';
+
 export type ContractTrancheType = {
   label: string;
   pourcentage: number;
@@ -176,6 +178,7 @@ export type ContractFormValuesType = {
   devise: string;
   tva: string;
   penalite_retard: string;
+  penalite_retard_unite: ContractPenaliteRetardUniteType;
   garantie: string;
   tribunal: string;
   responsable_projet: string;
