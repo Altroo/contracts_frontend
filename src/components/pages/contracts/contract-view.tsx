@@ -268,7 +268,7 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
     list.find((i) => i.code === code)?.value ?? code ?? '-';
 
   const latePenaltyValue = contract?.penalite_retard != null
-    ? `${contract.penalite_retard} ${resolveLabel(penaliteRetardUniteItemsList, contract?.penalite_retard_unite)}`
+    ? `${contract.penalite_retard} ${contract?.penalite_retard_unite === 'percent_per_day' ? '%/j' : 'MAD/j'}`
     : undefined;
 
   return (

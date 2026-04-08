@@ -123,7 +123,7 @@ export const fr: TranslationDictionary = {
     workDescription: 'Description des travaux',
     currency: 'Devise',
     tva: 'TVA',
-    latePenalty: 'Pénalité de retard (MAD/j)',
+    latePenalty: 'Pénalité de retard',
     latePenaltyUnit: 'Pénalité par',
     paymentMethod: 'Mode de paiement',
     ribCoordinates: 'RIB / Coordonnées bancaires',
