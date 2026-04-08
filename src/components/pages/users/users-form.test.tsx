@@ -1,5 +1,5 @@
 import React from 'react';
-import {cleanup, render, screen} from '@testing-library/react';
+import {cleanup, fireEvent, render, screen, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {Provider} from 'react-redux';
 import {configureStore} from '@reduxjs/toolkit';
@@ -82,9 +82,23 @@ jest.mock('@/components/formikElements/customTextInput/customTextInput', () => (
 
 jest.mock('@/components/formikElements/customDropDownSelect/customDropDownSelect', () => ({
   __esModule: true,
-  default: ({id, label}: { id: string; label: string }) => (
-    <div data-testid={`dropdown-${id}`}>
+  default: ({id, label, onChange, value}: {
+    id: string;
+    label: string;
+    onChange?: (e: {target: {value: string}}) => void;
+    value?: string;
+  }) => (
+    <div data-testid={`select-${id}`}>
       <label>{label}</label>
+      <select
+        data-testid={`dropdown-${id}`}
+        value={value ?? ''}
+        onChange={(e) => onChange?.({target: {value: e.target.value}})}
+      >
+        <option value="">Select</option>
+        <option value="Homme">Homme</option>
+        <option value="Femme">Femme</option>
+      </select>
     </div>
   ),
 }));
@@ -96,8 +110,12 @@ jest.mock('@/components/formikElements/customSquareImageUploading/customSquareIm
 
 jest.mock('@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton', () => ({
   __esModule: true,
-  default: ({buttonText, type}: { buttonText: string; type?: string }) => (
-    <button data-testid="submit-button" type={type as 'submit' | 'button'}>
+  default: ({buttonText, type, onClick}: {
+    buttonText: string;
+    type?: string;
+    onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  }) => (
+    <button data-testid="submit-button" type={type as 'submit' | 'button'} onClick={onClick}>
       {buttonText}
     </button>
   ),
@@ -371,6 +389,34 @@ describe('UsersFormClient', () => {
       });
       renderWithProviders(<UsersFormClient session={mockSession} id={66}/>);
       expect(screen.getByTestId('submit-button')).toHaveTextContent('Mettre à jour');
+    });
+
+    it('submits normalized gender labels in edit mode', async () => {
+      const unwrap = jest.fn().mockResolvedValue({});
+      mockEditUserMutation.mockReturnValue({unwrap});
+      mockUseGetUserQuery.mockReturnValue({
+        data: {
+          id: 55,
+          email: 'user@test.com',
+          first_name: 'John',
+          last_name: 'Doe',
+          gender: 'H',
+          is_active: true,
+          is_staff: false,
+        },
+        isLoading: false,
+        error: undefined,
+      });
+
+      renderWithProviders(<UsersFormClient session={mockSession} id={55}/>);
+      fireEvent.click(screen.getByTestId('submit-button'));
+
+      await waitFor(() => {
+        expect(mockEditUserMutation).toHaveBeenCalledWith(expect.objectContaining({
+          id: 55,
+          data: expect.objectContaining({gender: 'Homme'}),
+        }));
+      });
     });
 
     it('handles add mutation loading state', () => {

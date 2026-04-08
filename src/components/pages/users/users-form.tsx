@@ -86,6 +86,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
   const {onSuccess, onError} = useToast();
   const {t} = useLanguage();
   const {genderItemsList} = getTranslatedRawData(t);
+  const normalizeGenderValue = (gender?: string | null): string => {
+    return genderItemsList.find((item) => item.code === gender)?.value ?? gender ?? '';
+  };
   const isEditMode = id !== undefined;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -114,7 +117,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       first_name: rawData?.first_name ?? '',
       last_name: rawData?.last_name ?? '',
       email: rawData?.email ?? '',
-      gender: rawData?.gender ?? '',
+      gender: normalizeGenderValue(rawData?.gender),
       is_active: rawData?.is_active ?? true,
       is_staff: rawData?.is_staff ?? false,
       can_view: rawData?.can_view ?? false,
@@ -320,11 +323,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                     id="gender"
                     label={`${t.users.gender} *`}
                     items={genderItemsList}
-                    value={genderItemsList.find((g) => g.code === formik.values.gender)?.value ?? formik.values.gender}
-                    onChange={(e) => {
-                      const selected = genderItemsList.find((g) => g.value === e.target.value);
-                      formik.setFieldValue('gender', selected?.code ?? e.target.value);
-                    }}
+                    value={formik.values.gender}
+                    onChange={(e) => formik.setFieldValue('gender', e.target.value)}
                     theme={customDropdownTheme()}
                     startIcon={<GroupsIcon fontSize="small"/>}
                     onBlur={formik.handleBlur('gender')}

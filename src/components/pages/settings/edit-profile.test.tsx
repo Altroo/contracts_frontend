@@ -1,5 +1,5 @@
 import React from 'react';
-import {cleanup, fireEvent, render, screen} from '@testing-library/react';
+import {cleanup, fireEvent, render, screen, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {Provider} from 'react-redux';
 import {configureStore} from '@reduxjs/toolkit';
@@ -269,11 +269,37 @@ describe('EditProfileClient', () => {
   });
 
   it('handles submit button click', async () => {
-    mockEditProfil.mockResolvedValue({data: {first_name: 'Test', last_name: 'User', gender: 'Homme'}});
+    mockEditProfil.mockReturnValue({unwrap: jest.fn().mockResolvedValue({data: {first_name: 'Test', last_name: 'User', gender: 'Homme'}})});
     renderWithProviders(<EditProfileClient session={mockSession}/>);
     const submitBtn = screen.getByTestId('submit-button');
     fireEvent.click(submitBtn);
-    expect(screen.getByTestId('submit-button')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockEditProfil).toHaveBeenCalled();
+    });
+  });
+
+  it('submits normalized gender labels when profile data uses a code', async () => {
+    const unwrap = jest.fn().mockResolvedValue({first_name: 'Test', last_name: 'User', gender: 'Homme'});
+    mockEditProfil.mockReturnValue({unwrap});
+    mockUseGetProfilQuery.mockReturnValue({
+      data: {
+        first_name: 'Test',
+        last_name: 'User',
+        gender: 'H',
+        avatar: '',
+        avatar_cropped: '',
+      },
+      isLoading: false,
+    });
+
+    renderWithProviders(<EditProfileClient session={mockSession}/>);
+    fireEvent.click(screen.getByTestId('submit-button'));
+
+    await waitFor(() => {
+      expect(mockEditProfil).toHaveBeenCalledWith({
+        data: expect.objectContaining({gender: 'Homme'}),
+      });
+    });
   });
 
   it('renders with profile data including avatar', () => {

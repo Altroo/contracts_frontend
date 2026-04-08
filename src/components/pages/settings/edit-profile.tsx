@@ -34,6 +34,9 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
   const {onSuccess, onError} = useToast();
   const {t} = useLanguage();
   const {genderItemsList} = getTranslatedRawData(t);
+  const normalizeGenderValue = (gender?: string | null): string => {
+    return genderItemsList.find((item) => item.code === gender)?.value ?? gender ?? '';
+  };
   const {data: profilData, isLoading: isProfilLoading} = useGetProfilQuery(undefined, {skip: !token});
   const [editProfil, {isLoading: isEditLoading}] = useEditProfilMutation();
   const dispatch = useAppDispatch();
@@ -43,7 +46,7 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
     initialValues: {
       first_name: profilData?.first_name ?? '',
       last_name: profilData?.last_name ?? '',
-      gender: profilData?.gender ?? '',
+      gender: normalizeGenderValue(profilData?.gender),
       avatar: profilData?.avatar ?? '',
       avatar_cropped: profilData?.avatar_cropped ?? '',
       globalError: '',
@@ -137,11 +140,8 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
             label={t.users.gender}
             items={genderItemsList}
             theme={customDropdownTheme()}
-            onChange={(e) => {
-              const selected = genderItemsList.find((g) => g.value === e.target.value);
-              formik.setFieldValue('gender', selected?.code ?? e.target.value);
-            }}
-            value={genderItemsList.find((g) => g.code === formik.values.gender)?.value ?? formik.values.gender}
+            onChange={(e) => formik.setFieldValue('gender', e.target.value)}
+            value={formik.values.gender}
             startIcon={<GroupsIcon fontSize="small"/>}
             cssClass={Styles.maxInputWidth}
           />
