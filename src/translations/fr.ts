@@ -126,7 +126,7 @@ export const fr: TranslationDictionary = {
     latePenalty: 'Pénalité de retard',
     latePenaltyUnit: 'Pénalité par',
     paymentMethod: 'Mode de paiement',
-    ribCoordinates: 'RIB / Coordonnées bancaires',
+    ribCoordinates: 'RIB',
     warranty: 'Garantie',
     competentCourt: 'Tribunal compétent',
     confidentiality: 'Confidentialité',
