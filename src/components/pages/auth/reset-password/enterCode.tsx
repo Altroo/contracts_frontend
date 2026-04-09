@@ -73,10 +73,7 @@ const EnterCodePageContent = ({email}: EnterCodePageContentProps) => {
         const i = fields.indexOf(field);
         const prev = fields[i - 1];
         if (prev) {
-          // focus previous
-          setTimeout(() => {
-            inputRefs[prev].current?.focus();
-          }, 0);
+          inputRefs[prev].current?.focus();
         }
       }
     }
@@ -145,11 +142,12 @@ const EnterCodePageContent = ({email}: EnterCodePageContentProps) => {
           <Stack direction="column" spacing={8}>
             <Stack
               direction="row"
-              justifyContent="space-between"
-              alignItems="center"
               spacing={1}
               className={Styles.mobileCodeRootWrapper}
-            >
+              sx={{
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}>
               {fields.map((field) => (
                 <CustomOutlinedText
                   autoFocus={field === 'one'}
@@ -176,7 +174,13 @@ const EnterCodePageContent = ({email}: EnterCodePageContentProps) => {
               ))}
             </Stack>
             {formik.errors.globalError && <span className={Styles.errorMessage}>{formik.errors.globalError}</span>}
-            <Stack direction="column" justifyContent="center" alignItems="center" spacing={2}>
+            <Stack
+              direction="column"
+              spacing={2}
+              sx={{
+                justifyContent: "center",
+                alignItems: "center"
+              }}>
               <PrimaryLoadingButton
                 buttonText={t.auth.confirmCode}
                 active={!isPasswordResetLoading}

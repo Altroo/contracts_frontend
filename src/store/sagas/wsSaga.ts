@@ -7,9 +7,9 @@ import type {Action} from 'redux';
 import type {EventChannel, SagaIterator} from 'redux-saga';
 import * as Types from '@/store/actions';
 import {setWSMaintenance} from '@/store/slices/wsSlice';
-import { incrementUnreadCount, setLatestNotification } from '@/store/slices/notificationSlice';
-import { notificationApi } from '@/store/services/notification';
-import type { NotificationType } from '@/types/contractNotificationTypes';
+import {incrementUnreadCount, setLatestNotification} from '@/store/slices/notificationSlice';
+import {notificationApi} from '@/store/services/notification';
+import type {NotificationType} from '@/types/contractNotificationTypes';
 import {initMaintenanceSaga} from '@/store/sagas/_initSaga';
 
 type WSChannelAction = Action & {

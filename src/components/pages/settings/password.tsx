@@ -57,12 +57,24 @@ const FormikContent: React.FC = () => {
   });
 
   return (
-    <Stack direction="column" alignItems="center" spacing={2} className={`${Styles.flexRootStack}`} mt="32px">
+    <Stack
+      direction="column"
+      spacing={2}
+      className={`${Styles.flexRootStack}`}
+      sx={{
+        alignItems: "center",
+        mt: "32px"
+      }}>
       {(isChangePasswordLoading || isPending) && <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B"/>}
       <h2 className={Styles.pageTitle}>{t.settings.changePassword}</h2>
-
       <form className={Styles.form} onSubmit={(e) => e.preventDefault()}>
-        <Stack direction="column" justifyContent="center" alignItems="center" spacing={2}>
+        <Stack
+          direction="column"
+          spacing={2}
+          sx={{
+            justifyContent: "center",
+            alignItems: "center"
+          }}>
           {profil && profil.default_password_set && (
             <Alert severity="warning" sx={{maxWidth: '365px', width: '100%'}}>
               {t.settings.defaultPasswordWarning}

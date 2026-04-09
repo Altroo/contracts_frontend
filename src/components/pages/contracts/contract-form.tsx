@@ -78,7 +78,7 @@ import {
 } from '@/utils/rawData';
 import {CONTRACTS_LIST, CONTRACTS_VIEW} from '@/utils/routes';
 import {useRouter} from 'next/navigation';
-import {useToast, useLanguage} from '@/utils/hooks';
+import {useLanguage, useToast} from '@/utils/hooks';
 import {
   useAddContractMutation,
   useEditContractMutation,
@@ -1049,7 +1049,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
         if (!p) return null;
         return (
           <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
-            <Typography variant="body2" fontFamily="Poppins">
+            <Typography variant="body2" sx={{
+              fontFamily: "Poppins"
+            }}>
               {(p.quantite * p.prix_unitaire).toLocaleString('fr-MA')} {formik.values.devise}
             </Typography>
           </Box>
@@ -1317,7 +1319,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
   return (
     <Stack spacing={3} sx={{p: {xs: 2, md: 3}}}>
-      <Stack direction={isMobile ? 'column' : 'row'} pt={2} justifyContent="space-between" spacing={2}>
+      <Stack
+        direction={isMobile ? 'column' : 'row'}
+        spacing={2}
+        sx={{
+          pt: 2,
+          justifyContent: "space-between"
+        }}>
         <Button
           variant="outlined"
           startIcon={<ArrowBackIcon/>}
@@ -1334,7 +1342,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       </Stack>
       {hasValidationErrors && (
         <Alert severity="error" icon={<WarningIcon/>} sx={{mb: 2}}>
-          <Typography variant="subtitle2" fontWeight={600}>
+          <Typography variant="subtitle2" sx={{
+            fontWeight: 600
+          }}>
             {t.common.validationErrorsDetected}
           </Typography>
           <ul style={{margin: '8px 0', paddingLeft: '20px'}}>
@@ -1359,9 +1369,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {/* ── Company Selector ── */}
             <Card elevation={2} sx={{borderRadius: 2}}>
               <CardContent sx={{p: 3}}>
-                <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  sx={{
+                    alignItems: "center",
+                    mb: 2
+                  }}>
                   <BusinessIcon color="primary"/>
-                  <Typography variant="h6" fontWeight={700}>{t.contracts.company}</Typography>
+                  <Typography variant="h6" sx={{
+                    fontWeight: 700
+                  }}>{t.contracts.company}</Typography>
                 </Stack>
                 <Divider sx={{mb: 3}}/>
                 <ToggleButtonGroup
@@ -1397,7 +1415,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                 </ToggleButtonGroup>
                 {formik.values.company === 'casa_di_lusso' && (
                   <Box sx={{mt: 2}}>
-                    <Typography variant="subtitle2" fontWeight={600} sx={{mb: 1}}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{
+                        fontWeight: 600,
+                        mb: 1
+                      }}>
                       {t.contracts.contractCategoryLabel}
                     </Typography>
                     <ToggleButtonGroup
@@ -1438,9 +1461,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {/* ── Identification ── */}
             <Card elevation={2} sx={{borderRadius: 2}}>
               <CardContent sx={{p: 3}}>
-                <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  sx={{
+                    alignItems: "center",
+                    mb: 2
+                  }}>
                   <AssignmentIcon color="primary"/>
-                  <Typography variant="h6" fontWeight={700}>{t.contracts.identification}</Typography>
+                  <Typography variant="h6" sx={{
+                    fontWeight: 700
+                  }}>{t.contracts.identification}</Typography>
                 </Stack>
                 <Divider sx={{mb: 3}}/>
                 <Stack spacing={2.5}>
@@ -1469,12 +1500,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                         textField: {
                           size: 'small',
                           fullWidth: true,
-                          InputProps: {
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <CalendarTodayIcon fontSize="small" color="action"/>
-                              </InputAdornment>
-                            ),
+                          slotProps: {
+                            input: {
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <CalendarTodayIcon fontSize="small" color="action"/>
+                                </InputAdornment>
+                              ),
+                            },
                           },
                         },
                       }}
@@ -1532,9 +1565,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {/* ── Client ── */}
             <Card elevation={2} sx={{borderRadius: 2}}>
               <CardContent sx={{p: 3}}>
-                <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  sx={{
+                    alignItems: "center",
+                    mb: 2
+                  }}>
                   <PersonIcon color="primary"/>
-                  <Typography variant="h6" fontWeight={700}>{t.contracts.client}</Typography>
+                  <Typography variant="h6" sx={{
+                    fontWeight: 700
+                  }}>{t.contracts.client}</Typography>
                 </Stack>
                 <Divider sx={{mb: 3}}/>
                 <Stack spacing={2.5}>
@@ -1624,9 +1665,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {/* ── Travaux ── */}
             <Card elevation={2} sx={{borderRadius: 2}}>
               <CardContent sx={{p: 3}}>
-                <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  sx={{
+                    alignItems: "center",
+                    mb: 2
+                  }}>
                   <BuildIcon color="primary"/>
-                  <Typography variant="h6" fontWeight={700}>{t.contracts.works}</Typography>
+                  <Typography variant="h6" sx={{
+                    fontWeight: 700
+                  }}>{t.contracts.works}</Typography>
                 </Stack>
                 <Divider sx={{mb: 3}}/>
                 <Stack spacing={2.5}>
@@ -1682,18 +1731,22 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                         textField: {
                           size: 'small',
                           fullWidth: true,
-                          InputProps: {
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <CalendarTodayIcon fontSize="small" color="action"/>
-                              </InputAdornment>
-                            ),
+                          slotProps: {
+                            input: {
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <CalendarTodayIcon fontSize="small" color="action"/>
+                                </InputAdornment>
+                              ),
+                            },
                           },
                         },
                       }}
                     />
                   </LocalizationProvider>
-                  <Stack direction="row" spacing={1} alignItems="flex-start">
+                  <Stack direction="row" spacing={1} sx={{
+                    alignItems: "flex-start"
+                  }}>
                     <Box sx={{flex: '1 1 120px', minWidth: 100}}>
                       <CustomTextInput
                         id="duree_estimee"
@@ -1760,9 +1813,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {/* ── Financier ── */}
             <Card elevation={2} sx={{borderRadius: 2}}>
               <CardContent sx={{p: 3}}>
-                <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  sx={{
+                    alignItems: "center",
+                    mb: 2
+                  }}>
                   <AttachMoneyIcon color="primary"/>
-                  <Typography variant="h6" fontWeight={700}>{t.contracts.financial}</Typography>
+                  <Typography variant="h6" sx={{
+                    fontWeight: 700
+                  }}>{t.contracts.financial}</Typography>
                 </Stack>
                 <Divider sx={{mb: 3}}/>
                 <Stack spacing={2.5}>
@@ -1885,9 +1946,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {/* ── Clauses ── */}
             <Card elevation={2} sx={{borderRadius: 2}}>
               <CardContent sx={{p: 3}}>
-                <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  sx={{
+                    alignItems: "center",
+                    mb: 2
+                  }}>
                   <GavelIcon color="primary"/>
-                  <Typography variant="h6" fontWeight={700}>{t.contracts.clausesSection}</Typography>
+                  <Typography variant="h6" sx={{
+                    fontWeight: 700
+                  }}>{t.contracts.clausesSection}</Typography>
                 </Stack>
                 <Divider sx={{mb: 3}}/>
                 <Stack spacing={2.5}>
@@ -1942,9 +2011,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {isCDL && (
               <Card elevation={2} sx={{borderRadius: 2}}>
                 <CardContent sx={{p: 3}}>
-                  <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      alignItems: "center",
+                      mb: 2
+                    }}>
                     <ChecklistIcon color="primary"/>
-                    <Typography variant="h6" fontWeight={700}>{t.contracts.servicesCDL}</Typography>
+                    <Typography variant="h6" sx={{
+                      fontWeight: 700
+                    }}>{t.contracts.servicesCDL}</Typography>
                   </Stack>
                   <Divider sx={{mb: 3}}/>
                   <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 1}}>
@@ -1967,9 +2044,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {isCDL && (
               <Card elevation={2} sx={{borderRadius: 2}}>
                 <CardContent sx={{p: 3}}>
-                  <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      alignItems: "center",
+                      mb: 2
+                    }}>
                     <ArchitectureIcon color="primary"/>
-                    <Typography variant="h6" fontWeight={700}>{t.contracts.projectCDL}</Typography>
+                    <Typography variant="h6" sx={{
+                      fontWeight: 700
+                    }}>{t.contracts.projectCDL}</Typography>
                   </Stack>
                   <Divider sx={{mb: 3}}/>
                   <Stack spacing={2.5}>
@@ -2008,10 +2093,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {isCDL && (
               <Card elevation={2} sx={{borderRadius: 2}}>
                 <CardContent sx={{p: 3}}>
-                  <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" sx={{mb: 2}}>
-                    <Stack direction="row" spacing={2} alignItems="center">
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      mb: 2
+                    }}>
+                    <Stack direction="row" spacing={2} sx={{
+                      alignItems: "center"
+                    }}>
                       <PlaylistAddCheckIcon color="primary"/>
-                      <Typography variant="h6" fontWeight={700}>{t.contracts.scheduleCDL}</Typography>
+                      <Typography variant="h6" sx={{
+                        fontWeight: 700
+                      }}>{t.contracts.scheduleCDL}</Typography>
                     </Stack>
                     <Button
                       variant="contained"
@@ -2046,7 +2142,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                   <Box sx={{mt: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1}}>
                     <Typography
                       variant="body2"
-                      fontWeight={600}
                       color={
                         (formik.values.tranches ?? []).reduce((s, t) => s + (t.pourcentage || 0), 0) === 100
                           ? 'success.main'
@@ -2054,9 +2149,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                             ? 'error.main'
                             : 'text.secondary'
                       }
+                      sx={{
+                        fontWeight: 600
+                      }}
                     >
                       Total : {(formik.values.tranches ?? []).reduce((s, t) => s + (t.pourcentage || 0), 0)
-                        .toLocaleString('fr-MA', {minimumFractionDigits: 0, maximumFractionDigits: 2})} % / 100 %
+                      .toLocaleString('fr-MA', {minimumFractionDigits: 0, maximumFractionDigits: 2})} % / 100 %
                     </Typography>
                   </Box>
                   <Divider sx={{my: 3}}/>
@@ -2114,9 +2212,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {isCDL && (
               <Card elevation={2} sx={{borderRadius: 2}}>
                 <CardContent sx={{p: 3}}>
-                  <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      alignItems: "center",
+                      mb: 2
+                    }}>
                     <GavelIcon color="primary"/>
-                    <Typography variant="h6" fontWeight={700}>{t.contracts.activeClausesCDL}</Typography>
+                    <Typography variant="h6" sx={{
+                      fontWeight: 700
+                    }}>{t.contracts.activeClausesCDL}</Typography>
                   </Stack>
                   <Divider sx={{mb: 3}}/>
                   <Box sx={{display: 'grid', gridTemplateColumns: {xs: '1fr', sm: '1fr 1fr'}, gap: 1}}>
@@ -2142,9 +2248,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {isCDL && (
               <Card elevation={2} sx={{borderRadius: 2}}>
                 <CardContent sx={{p: 3}}>
-                  <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      alignItems: "center",
+                      mb: 2
+                    }}>
                     <AttachmentIcon color="primary"/>
-                    <Typography variant="h6" fontWeight={700}>{t.contracts.additionalDetails}</Typography>
+                    <Typography variant="h6" sx={{
+                      fontWeight: 700
+                    }}>{t.contracts.additionalDetails}</Typography>
                   </Stack>
                   <Divider sx={{mb: 3}}/>
                   <Stack spacing={2.5}>
@@ -2199,9 +2313,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {isST && (
               <Card elevation={2} sx={{borderRadius: 2}}>
                 <CardContent sx={{p: 3}}>
-                  <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      alignItems: "center",
+                      mb: 2
+                    }}>
                     <PersonIcon color="primary"/>
-                    <Typography variant="h6" fontWeight={700}>{t.contracts.subcontractorSection}</Typography>
+                    <Typography variant="h6" sx={{
+                      fontWeight: 700
+                    }}>{t.contracts.subcontractorSection}</Typography>
                   </Stack>
                   <Divider sx={{mb: 3}}/>
                   <Stack spacing={2.5}>
@@ -2454,14 +2576,26 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {isST && (
               <Card elevation={2} sx={{borderRadius: 2}}>
                 <CardContent sx={{p: 3}}>
-                  <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      alignItems: "center",
+                      mb: 2
+                    }}>
                     <CategoryIcon color="primary"/>
-                    <Typography variant="h6" fontWeight={700}>{t.contracts.lotAndType}</Typography>
+                    <Typography variant="h6" sx={{
+                      fontWeight: 700
+                    }}>{t.contracts.lotAndType}</Typography>
                   </Stack>
                   <Divider sx={{mb: 3}}/>
                   <Stack spacing={2.5}>
                     <Box>
-                      <Typography variant="body2" sx={{mb: 1, fontWeight: 600, color: (formik.touched.st_lot_type && formik.errors.st_lot_type) ? 'error.main' : 'text.primary'}}>
+                      <Typography variant="body2" sx={{
+                        mb: 1,
+                        fontWeight: 600,
+                        color: (formik.touched.st_lot_type && formik.errors.st_lot_type) ? 'error.main' : 'text.primary'
+                      }}>
                         {`${t.contracts.stLotType}${isRequired('st_lot_type') ? ' *' : ''}`}
                         {formik.touched.st_lot_type && formik.errors.st_lot_type && (
                           <Typography component="span" color="error" variant="caption" sx={{ml: 1}}>
@@ -2500,7 +2634,11 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       startIcon={<NotesIcon fontSize="small"/>}
                     />
                     <Box>
-                      <Typography variant="body2" sx={{mb: 1, fontWeight: 600, color: (formik.touched.st_type_prix && formik.errors.st_type_prix) ? 'error.main' : 'text.primary'}}>
+                      <Typography variant="body2" sx={{
+                        mb: 1,
+                        fontWeight: 600,
+                        color: (formik.touched.st_type_prix && formik.errors.st_type_prix) ? 'error.main' : 'text.primary'
+                      }}>
                         {`${t.contracts.stPriceType}${isRequired('st_type_prix') ? ' *' : ''}`}
                         {formik.touched.st_type_prix && formik.errors.st_type_prix && (
                           <Typography component="span" color="error" variant="caption" sx={{ml: 1}}>
@@ -2533,9 +2671,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {isST && (
               <Card elevation={2} sx={{borderRadius: 2}}>
                 <CardContent sx={{p: 3}}>
-                  <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      alignItems: "center",
+                      mb: 2
+                    }}>
                     <AttachMoneyIcon color="primary"/>
-                    <Typography variant="h6" fontWeight={700}>{t.contracts.financialST}</Typography>
+                    <Typography variant="h6" sx={{
+                      fontWeight: 700
+                    }}>{t.contracts.financialST}</Typography>
                   </Stack>
                   <Divider sx={{mb: 3}}/>
                   <Stack spacing={2.5}>
@@ -2634,10 +2780,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {isST && (
               <Card elevation={2} sx={{borderRadius: 2}}>
                 <CardContent sx={{p: 3}}>
-                  <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" sx={{mb: 2}}>
-                    <Stack direction="row" spacing={2} alignItems="center">
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      mb: 2
+                    }}>
+                    <Stack direction="row" spacing={2} sx={{
+                      alignItems: "center"
+                    }}>
                       <PlaylistAddCheckIcon color="primary"/>
-                      <Typography variant="h6" fontWeight={700}>{t.contracts.scheduleST}</Typography>
+                      <Typography variant="h6" sx={{
+                        fontWeight: 700
+                      }}>{t.contracts.scheduleST}</Typography>
                     </Stack>
                     <Button
                       variant="contained"
@@ -2672,7 +2829,6 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                   <Box sx={{mt: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1}}>
                     <Typography
                       variant="body2"
-                      fontWeight={600}
                       color={
                         (formik.values.st_tranches ?? []).reduce((s, t) => s + (t.pourcentage || 0), 0) === 100
                           ? 'success.main'
@@ -2680,9 +2836,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                             ? 'error.main'
                             : 'text.secondary'
                       }
+                      sx={{
+                        fontWeight: 600
+                      }}
                     >
                       Total : {(formik.values.st_tranches ?? []).reduce((s, t) => s + (t.pourcentage || 0), 0)
-                        .toLocaleString('fr-MA', {minimumFractionDigits: 0, maximumFractionDigits: 2})} % / 100 %
+                      .toLocaleString('fr-MA', {minimumFractionDigits: 0, maximumFractionDigits: 2})} % / 100 %
                     </Typography>
                   </Box>
                 </CardContent>
@@ -2691,9 +2850,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {isST && (
               <Card elevation={2} sx={{borderRadius: 2}}>
                 <CardContent sx={{p: 3}}>
-                  <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      alignItems: "center",
+                      mb: 2
+                    }}>
                     <TimerIcon color="primary"/>
-                    <Typography variant="h6" fontWeight={700}>{t.contracts.stDelaysWarranties}</Typography>
+                    <Typography variant="h6" sx={{
+                      fontWeight: 700
+                    }}>{t.contracts.stDelaysWarranties}</Typography>
                   </Stack>
                   <Divider sx={{mb: 3}}/>
                   <Stack spacing={2.5}>
@@ -2789,9 +2956,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {isST && (
               <Card elevation={2} sx={{borderRadius: 2}}>
                 <CardContent sx={{p: 3}}>
-                  <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      alignItems: "center",
+                      mb: 2
+                    }}>
                     <GavelIcon color="primary"/>
-                    <Typography variant="h6" fontWeight={700}>{t.contracts.activeClausesST}</Typography>
+                    <Typography variant="h6" sx={{
+                      fontWeight: 700
+                    }}>{t.contracts.activeClausesST}</Typography>
                   </Stack>
                   <Divider sx={{mb: 3}}/>
                   <Box sx={{display: 'grid', gridTemplateColumns: {xs: '1fr', sm: '1fr 1fr'}, gap: 1}}>
@@ -2817,9 +2992,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {isST && (
               <Card elevation={2} sx={{borderRadius: 2}}>
                 <CardContent sx={{p: 3}}>
-                  <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      alignItems: "center",
+                      mb: 2
+                    }}>
                     <NotesIcon color="primary"/>
-                    <Typography variant="h6" fontWeight={700}>{t.contracts.stObservations}</Typography>
+                    <Typography variant="h6" sx={{
+                      fontWeight: 700
+                    }}>{t.contracts.stObservations}</Typography>
                   </Stack>
                   <Divider sx={{mb: 3}}/>
                   <CustomTextInput
@@ -2844,10 +3027,21 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {isBlueline && (
               <Card elevation={2} sx={{borderRadius: 2}}>
                 <CardContent sx={{p: 3}}>
-                  <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" sx={{mb: 2}}>
-                    <Stack direction="row" spacing={2} alignItems="center">
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      mb: 2
+                    }}>
+                    <Stack direction="row" spacing={2} sx={{
+                      alignItems: "center"
+                    }}>
                       <ShoppingCartIcon color="primary"/>
-                      <Typography variant="h6" fontWeight={700}>{t.contracts.prestations}</Typography>
+                      <Typography variant="h6" sx={{
+                        fontWeight: 700
+                      }}>{t.contracts.prestations}</Typography>
                     </Stack>
                     <Button
                       variant="contained"
@@ -2892,9 +3086,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {isBlueline && (
               <Card elevation={2} sx={{borderRadius: 2}}>
                 <CardContent sx={{p: 3}}>
-                  <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      alignItems: "center",
+                      mb: 2
+                    }}>
                     <PlumbingIcon color="primary"/>
-                    <Typography variant="h6" fontWeight={700}>{t.contracts.suppliesAndWater}</Typography>
+                    <Typography variant="h6" sx={{
+                      fontWeight: 700
+                    }}>{t.contracts.suppliesAndWater}</Typography>
                   </Stack>
                   <Divider sx={{mb: 3}}/>
                   <Stack spacing={2.5}>
@@ -2951,9 +3153,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {isBlueline && (
               <Card elevation={2} sx={{borderRadius: 2}}>
                 <CardContent sx={{p: 3}}>
-                  <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      alignItems: "center",
+                      mb: 2
+                    }}>
                     <ShieldIcon color="primary"/>
-                    <Typography variant="h6" fontWeight={700}>{t.contracts.warrantySection}</Typography>
+                    <Typography variant="h6" sx={{
+                      fontWeight: 700
+                    }}>{t.contracts.warrantySection}</Typography>
                   </Stack>
                   <Divider sx={{mb: 3}}/>
                   <Stack spacing={2.5}>
@@ -3026,9 +3236,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {isBlueline && (
               <Card elevation={2} sx={{borderRadius: 2}}>
                 <CardContent sx={{p: 3}}>
-                  <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      alignItems: "center",
+                      mb: 2
+                    }}>
                     <PercentIcon color="primary"/>
-                    <Typography variant="h6" fontWeight={700}>{t.contracts.scheduleTermination}</Typography>
+                    <Typography variant="h6" sx={{
+                      fontWeight: 700
+                    }}>{t.contracts.scheduleTermination}</Typography>
                   </Stack>
                   <Divider sx={{mb: 3}}/>
                   <Stack spacing={2.5}>
@@ -3077,7 +3295,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       </Box>
                     </Stack>
                     {(formik.values.acompte || formik.values.tranche2) && (
-                      <Typography variant="body2" color="text.secondary" fontFamily="Poppins">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "text.secondary",
+                          fontFamily: "Poppins"
+                        }}>
                         {t.contracts.balance}
                         : {100 - (parseFloat(formik.values.acompte) || 0) - (parseFloat(formik.values.tranche2) || 0)}%
                       </Typography>
@@ -3120,9 +3343,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {isBlueline && (
               <Card elevation={2} sx={{borderRadius: 2}}>
                 <CardContent sx={{p: 3}}>
-                  <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                      alignItems: "center",
+                      mb: 2
+                    }}>
                     <PersonIcon color="primary"/>
-                    <Typography variant="h6" fontWeight={700}>{t.contracts.clientBlueline}</Typography>
+                    <Typography variant="h6" sx={{
+                      fontWeight: 700
+                    }}>{t.contracts.clientBlueline}</Typography>
                   </Stack>
                   <Divider sx={{mb: 3}}/>
                   <Stack spacing={2.5}>

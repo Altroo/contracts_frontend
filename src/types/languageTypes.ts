@@ -501,6 +501,12 @@ export type TranslationDictionary = {
     unknownError: string;
     unexpectedError: string;
   };
+  notFound: {
+    title: string;
+    message: string;
+    backBtn: string;
+    homeBtn: string;
+  };
   pdf: {
     generatePdf: string;
     chooseLanguage: string;

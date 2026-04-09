@@ -69,17 +69,13 @@ import {
 import {CONTRACT_DOC, CONTRACT_PDF, CONTRACTS_EDIT, CONTRACTS_LIST} from '@/utils/routes';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import {extractApiErrorMessage, formatDate, formatDateShort} from '@/utils/helpers';
-import {useToast, useLanguage} from '@/utils/hooks';
+import {useLanguage, useToast} from '@/utils/hooks';
 import {fetchFileBlob} from '@/utils/apiHelpers';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import {Protected} from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
-import {
-  companyItemsList,
-  getContractStatusColor,
-  getTranslatedRawData,
-} from '@/utils/rawData';
+import {companyItemsList, getContractStatusColor, getTranslatedRawData,} from '@/utils/rawData';
 import type {ContractStatutType} from '@/types/contractTypes';
 
 interface InfoRowProps {
@@ -101,13 +97,12 @@ const InfoRow: React.FC<InfoRowProps> = ({icon, label, value}) => {
   return (
     <Stack
       direction="row"
-      alignItems="flex-start"
       spacing={2}
       sx={{
+        alignItems: "flex-start",
         py: 1.5,
-        flexWrap: 'wrap',
-      }}
-    >
+        flexWrap: 'wrap'
+      }}>
       <Box
         sx={{
           color: 'primary.main',
@@ -118,24 +113,21 @@ const InfoRow: React.FC<InfoRowProps> = ({icon, label, value}) => {
       >
         {icon}
       </Box>
-
       <Stack
         direction="row"
-        alignItems="center"
         spacing={isMobile ? 0 : 2}
         sx={{
+          alignItems: "center",
           flex: 1,
-          flexWrap: 'wrap',
-        }}
-      >
+          flexWrap: 'wrap'
+        }}>
         <Typography
-          fontWeight={600}
-          color="text.secondary"
           sx={{
+            fontWeight: 600,
+            color: "text.secondary",
             minWidth: {xs: '100%', sm: 200},
-            wordBreak: 'break-word',
-          }}
-        >
+            wordBreak: 'break-word'
+          }}>
           {label}
         </Typography>
 
@@ -181,6 +173,7 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
     garantieTypeItemsList,
     garantieUniteItemsList,
     modePaiementTexteItemsList,
+    penaliteRetardUniteItemsList,
     prestationNomItemsList,
     prestationUniteItemsList,
     stClausesActivesList,
@@ -267,16 +260,23 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
     list.find((i) => i.code === code)?.value ?? code ?? '-';
 
   const latePenaltyValue = contract?.penalite_retard != null
-    ? `${contract.penalite_retard} ${contract?.penalite_retard_unite === 'percent_per_day' ? '%/j' : 'MAD/j'}`
+    ? `${contract.penalite_retard} ${resolveLabel(penaliteRetardUniteItemsList, contract?.penalite_retard_unite)}`
     : undefined;
 
   return (
-    <Stack direction="column" spacing={2} className={Styles.flexRootStack} mt="32px">
+    <Stack direction="column" spacing={2} className={Styles.flexRootStack} sx={{
+      mt: "32px"
+    }}>
       <NavigationBar title={t.contracts.contractDetails}>
         <Protected permission="can_view">
           <Stack spacing={3} sx={{p: {xs: 2, md: 3}, mt: 2}}>
-            <Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between"
-                   alignItems={isMobile ? 'stretch' : 'center'} spacing={2}>
+            <Stack
+              direction={isMobile ? 'column' : 'row'}
+              spacing={2}
+              sx={{
+                justifyContent: "space-between",
+                alignItems: isMobile ? 'stretch' : 'center'
+              }}>
               <Button
                 variant="outlined"
                 size="large"
@@ -287,7 +287,12 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                 {t.navigation.contractsList}
               </Button>
               {!isLoading && !error && (
-                <Stack direction="row" gap={1} flexWrap="wrap">
+                <Stack
+                  direction="row"
+                  sx={{
+                    gap: 1,
+                    flexWrap: "wrap"
+                  }}>
                   <Button
                     variant="outlined"
                     color="error"
@@ -351,19 +356,30 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     <Stack
                       direction={isMobile ? 'column' : 'row'}
                       spacing={3}
-                      alignItems={isMobile ? 'center' : 'flex-start'}
+                      sx={{
+                        alignItems: isMobile ? 'center' : 'flex-start'
+                      }}
                     >
                       <Stack spacing={2} sx={{flex: 1, width: '100%'}}>
-                        <Stack spacing={1} alignItems={isMobile ? 'center' : 'flex-start'}>
+                        <Stack spacing={1} sx={{
+                          alignItems: isMobile ? 'center' : 'flex-start'
+                        }}>
                           <Typography
                             variant="h4"
-                            textAlign={isMobile ? 'center' : 'inherit'}
-                            fontSize={isMobile ? '20px' : '25px'}
-                            fontWeight={700}
-                          >
+                            sx={{
+                              textAlign: isMobile ? 'center' : 'inherit',
+                              fontSize: isMobile ? '20px' : '25px',
+                              fontWeight: 700
+                            }}>
                             {contract?.numero_contrat ?? t.contracts.contract}
                           </Typography>
-                          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            sx={{
+                              alignItems: "center",
+                              flexWrap: "wrap"
+                            }}>
                             <Chip icon={<BadgeIcon/>} label={`ID: ${contract?.id}`} size="small" variant="outlined"/>
                             <Chip
                               label={contract?.statut}
@@ -380,14 +396,24 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                 {/* Status Change */}
                 <Card elevation={2} sx={{borderRadius: 2}}>
                   <CardContent sx={{p: 3}}>
-                    <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                    <Stack
+                      direction="row"
+                      spacing={2}
+                      sx={{
+                        alignItems: "center",
+                        mb: 2
+                      }}>
                       <AssignmentIcon color="primary"/>
-                      <Typography variant="h6" fontWeight={700}>
+                      <Typography variant="h6" sx={{
+                        fontWeight: 700
+                      }}>
                         {t.contracts.changeStatus}
                       </Typography>
                     </Stack>
                     <Divider sx={{mb: 2}}/>
-                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                    <Stack direction="row" spacing={1} useFlexGap sx={{
+                      flexWrap: "wrap"
+                    }}>
                       {contractStatutItemsList.map((item) => (
                         <Chip
                           key={item.code}
@@ -414,9 +440,17 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                       py: {xs: 2, md: 3},
                     }}
                   >
-                    <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                    <Stack
+                      direction="row"
+                      spacing={2}
+                      sx={{
+                        alignItems: "center",
+                        mb: 2
+                      }}>
                       <DescriptionIcon color="primary"/>
-                      <Typography variant="h6" fontWeight={700}>
+                      <Typography variant="h6" sx={{
+                        fontWeight: 700
+                      }}>
                         {t.contracts.generalInfo}
                       </Typography>
                     </Stack>
@@ -424,7 +458,8 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     <Divider sx={{mb: {xs: 1.5, md: 2}}}/>
 
                     <Stack spacing={0}>
-                      <InfoRow icon={<DescriptionIcon/>} label={t.contracts.contractNumber} value={contract?.numero_contrat}/>
+                      <InfoRow icon={<DescriptionIcon/>} label={t.contracts.contractNumber}
+                               value={contract?.numero_contrat}/>
                       <Divider/> <InfoRow
                       icon={<BusinessIcon/>}
                       label={t.contracts.company}
@@ -479,9 +514,17 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                         py: {xs: 2, md: 3},
                       }}
                     >
-                      <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                      <Stack
+                        direction="row"
+                        spacing={2}
+                        sx={{
+                          alignItems: "center",
+                          mb: 2
+                        }}>
                         <PersonIcon color="primary"/>
-                        <Typography variant="h6" fontWeight={700}>
+                        <Typography variant="h6" sx={{
+                          fontWeight: 700
+                        }}>
                           {isST ? t.contracts.masterOfWorks : t.contracts.client}
                         </Typography>
                       </Stack>
@@ -514,9 +557,17 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                       py: {xs: 2, md: 3},
                     }}
                   >
-                    <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                    <Stack
+                      direction="row"
+                      spacing={2}
+                      sx={{
+                        alignItems: "center",
+                        mb: 2
+                      }}>
                       <BuildIcon color="primary"/>
-                      <Typography variant="h6" fontWeight={700}>
+                      <Typography variant="h6" sx={{
+                        fontWeight: 700
+                      }}>
                         {t.contracts.works}
                       </Typography>
                     </Stack>
@@ -535,9 +586,11 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                       <InfoRow icon={<CalendarTodayIcon/>} label={t.contracts.startDate}
                                value={contract?.date_debut && formatDateShort(contract.date_debut)}/>
                       <Divider/>
-                      <InfoRow icon={<ConstructionIcon/>} label={t.contracts.workDescription} value={contract?.description_travaux}/>
+                      <InfoRow icon={<ConstructionIcon/>} label={t.contracts.workDescription}
+                               value={contract?.description_travaux}/>
                       <Divider/>
-                      <InfoRow icon={<TimerIcon/>} label={t.contracts.estimatedDuration} value={contract?.duree_estimee}/>
+                      <InfoRow icon={<TimerIcon/>} label={t.contracts.estimatedDuration}
+                               value={contract?.duree_estimee}/>
                     </Stack>
                   </CardContent>
                 </Card>
@@ -550,9 +603,17 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                       py: {xs: 2, md: 3},
                     }}
                   >
-                    <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                    <Stack
+                      direction="row"
+                      spacing={2}
+                      sx={{
+                        alignItems: "center",
+                        mb: 2
+                      }}>
                       <MoneyIcon color="primary"/>
-                      <Typography variant="h6" fontWeight={700}>
+                      <Typography variant="h6" sx={{
+                        fontWeight: 700
+                      }}>
                         {t.contracts.financial}
                       </Typography>
                     </Stack>
@@ -607,9 +668,17 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                       py: {xs: 2, md: 3},
                     }}
                   >
-                    <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                    <Stack
+                      direction="row"
+                      spacing={2}
+                      sx={{
+                        alignItems: "center",
+                        mb: 2
+                      }}>
                       <GavelIcon color="primary"/>
-                      <Typography variant="h6" fontWeight={700}>
+                      <Typography variant="h6" sx={{
+                        fontWeight: 700
+                      }}>
                         {t.contracts.clausesSection}
                       </Typography>
                     </Stack>
@@ -624,7 +693,8 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                           <InfoRow icon={<PersonIcon/>} label={t.contracts.projectManager}
                                    value={contract?.responsable_projet}/>
                           <Divider/>
-                          <InfoRow icon={<ShieldIcon/>} label={t.contracts.confidentiality} value={contract?.confidentialite}/>
+                          <InfoRow icon={<ShieldIcon/>} label={t.contracts.confidentiality}
+                                   value={contract?.confidentialite}/>
                         </>
                       )}
                     </Stack>
@@ -638,9 +708,17 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     {contract?.services && contract.services.length > 0 && (
                       <Card elevation={2} sx={{borderRadius: 2}}>
                         <CardContent sx={{px: {xs: 2, md: 3}, py: {xs: 2, md: 3}}}>
-                          <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                          <Stack
+                            direction="row"
+                            spacing={2}
+                            sx={{
+                              alignItems: "center",
+                              mb: 2
+                            }}>
                             <ChecklistIcon color="primary"/>
-                            <Typography variant="h6" fontWeight={700}>{t.contracts.servicesCDL}</Typography>
+                            <Typography variant="h6" sx={{
+                              fontWeight: 700
+                            }}>{t.contracts.servicesCDL}</Typography>
                           </Stack>
                           <Divider sx={{mb: {xs: 1.5, md: 2}}}/>
                           <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 1}}>
@@ -656,15 +734,25 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     {(contract?.architecte || contract?.conditions_acces) && (
                       <Card elevation={2} sx={{borderRadius: 2}}>
                         <CardContent sx={{px: {xs: 2, md: 3}, py: {xs: 2, md: 3}}}>
-                          <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                          <Stack
+                            direction="row"
+                            spacing={2}
+                            sx={{
+                              alignItems: "center",
+                              mb: 2
+                            }}>
                             <ArchitectureIcon color="primary"/>
-                            <Typography variant="h6" fontWeight={700}>{t.contracts.projectCDL}</Typography>
+                            <Typography variant="h6" sx={{
+                              fontWeight: 700
+                            }}>{t.contracts.projectCDL}</Typography>
                           </Stack>
                           <Divider sx={{mb: {xs: 1.5, md: 2}}}/>
                           <Stack spacing={0}>
-                            <InfoRow icon={<ArchitectureIcon/>} label={t.contracts.architect} value={contract?.architecte}/>
+                            <InfoRow icon={<ArchitectureIcon/>} label={t.contracts.architect}
+                                     value={contract?.architecte}/>
                             <Divider/>
-                            <InfoRow icon={<HomeIcon/>} label={t.contracts.accessConditions} value={contract?.conditions_acces}/>
+                            <InfoRow icon={<HomeIcon/>} label={t.contracts.accessConditions}
+                                     value={contract?.conditions_acces}/>
                           </Stack>
                         </CardContent>
                       </Card>
@@ -674,9 +762,17 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     {contract?.tranches && contract.tranches.length > 0 && (
                       <Card elevation={2} sx={{borderRadius: 2}}>
                         <CardContent sx={{px: {xs: 2, md: 3}, py: {xs: 2, md: 3}}}>
-                          <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                          <Stack
+                            direction="row"
+                            spacing={2}
+                            sx={{
+                              alignItems: "center",
+                              mb: 2
+                            }}>
                             <PlaylistAddCheckIcon color="primary"/>
-                            <Typography variant="h6" fontWeight={700}>{t.contracts.scheduleCDL}</Typography>
+                            <Typography variant="h6" sx={{
+                              fontWeight: 700
+                            }}>{t.contracts.scheduleCDL}</Typography>
                           </Stack>
                           <Divider sx={{mb: {xs: 1.5, md: 2}}}/>
                           <TableContainer component={Paper} variant="outlined">
@@ -684,7 +780,8 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                               <TableHead>
                                 <TableRow>
                                   <TableCell sx={{fontWeight: 700}}>{t.contracts.trancheLabel}</TableCell>
-                                  <TableCell sx={{fontWeight: 700}} align="right">{t.contracts.tranchePercentage}</TableCell>
+                                  <TableCell sx={{fontWeight: 700}}
+                                             align="right">{t.contracts.tranchePercentage}</TableCell>
                                 </TableRow>
                               </TableHead>
                               <TableBody>
@@ -705,16 +802,25 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     {(contract?.delai_retard != null || contract?.frais_redemarrage != null || contract?.delai_reserves != null) && (
                       <Card elevation={2} sx={{borderRadius: 2}}>
                         <CardContent sx={{px: {xs: 2, md: 3}, py: {xs: 2, md: 3}}}>
-                          <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                          <Stack
+                            direction="row"
+                            spacing={2}
+                            sx={{
+                              alignItems: "center",
+                              mb: 2
+                            }}>
                             <TimerIcon color="primary"/>
-                            <Typography variant="h6" fontWeight={700}>{t.contracts.penaltiesDelaysCDL}</Typography>
+                            <Typography variant="h6" sx={{
+                              fontWeight: 700
+                            }}>{t.contracts.penaltiesDelaysCDL}</Typography>
                           </Stack>
                           <Divider sx={{mb: {xs: 1.5, md: 2}}}/>
                           <Stack spacing={0}>
                             <InfoRow icon={<TimerIcon/>} label={t.contracts.delayDays}
                                      value={contract?.delai_retard != null ? String(contract.delai_retard) : undefined}/>
                             <Divider/>
-                            <InfoRow icon={<MoneyIcon/>} label={`${t.contracts.restartFees} (${contract?.devise ?? 'MAD'})`}
+                            <InfoRow icon={<MoneyIcon/>}
+                                     label={`${t.contracts.restartFees} (${contract?.devise ?? 'MAD'})`}
                                      value={contract?.frais_redemarrage != null ? Number(contract.frais_redemarrage).toLocaleString('fr-MA') : undefined}/>
                             <Divider/>
                             <InfoRow icon={<TimerIcon/>} label={t.contracts.delaysReserves}
@@ -728,9 +834,17 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     {contract?.clauses_actives && contract.clauses_actives.length > 0 && (
                       <Card elevation={2} sx={{borderRadius: 2}}>
                         <CardContent sx={{px: {xs: 2, md: 3}, py: {xs: 2, md: 3}}}>
-                          <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                          <Stack
+                            direction="row"
+                            spacing={2}
+                            sx={{
+                              alignItems: "center",
+                              mb: 2
+                            }}>
                             <GavelIcon color="primary"/>
-                            <Typography variant="h6" fontWeight={700}>{t.contracts.activeClausesCDL}</Typography>
+                            <Typography variant="h6" sx={{
+                              fontWeight: 700
+                            }}>{t.contracts.activeClausesCDL}</Typography>
                           </Stack>
                           <Divider sx={{mb: {xs: 1.5, md: 2}}}/>
                           <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 1}}>
@@ -746,13 +860,22 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     {(contract?.clause_spec || contract?.exclusions || contract?.annexes) && (
                       <Card elevation={2} sx={{borderRadius: 2}}>
                         <CardContent sx={{px: {xs: 2, md: 3}, py: {xs: 2, md: 3}}}>
-                          <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                          <Stack
+                            direction="row"
+                            spacing={2}
+                            sx={{
+                              alignItems: "center",
+                              mb: 2
+                            }}>
                             <AttachmentIcon color="primary"/>
-                            <Typography variant="h6" fontWeight={700}>{t.contracts.additionalDetails}</Typography>
+                            <Typography variant="h6" sx={{
+                              fontWeight: 700
+                            }}>{t.contracts.additionalDetails}</Typography>
                           </Stack>
                           <Divider sx={{mb: {xs: 1.5, md: 2}}}/>
                           <Stack spacing={0}>
-                            <InfoRow icon={<GavelIcon/>} label={t.contracts.specificClause} value={contract?.clause_spec}/>
+                            <InfoRow icon={<GavelIcon/>} label={t.contracts.specificClause}
+                                     value={contract?.clause_spec}/>
                             <Divider/>
                             <InfoRow icon={<GavelIcon/>} label={t.contracts.exclusions} value={contract?.exclusions}/>
                             <Divider/>
@@ -770,9 +893,17 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     {/* Sous-Traitant Identity */}
                     <Card elevation={2} sx={{borderRadius: 2}}>
                       <CardContent sx={{px: {xs: 2, md: 3}, py: {xs: 2, md: 3}}}>
-                        <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                        <Stack
+                          direction="row"
+                          spacing={2}
+                          sx={{
+                            alignItems: "center",
+                            mb: 2
+                          }}>
                           <PersonIcon color="primary"/>
-                          <Typography variant="h6" fontWeight={700}>{t.contracts.subcontractorSection}</Typography>
+                          <Typography variant="h6" sx={{
+                            fontWeight: 700
+                          }}>{t.contracts.subcontractorSection}</Typography>
                         </Stack>
                         <Divider sx={{mb: {xs: 1.5, md: 2}}}/>
                         <Stack spacing={0}>
@@ -783,7 +914,8 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                               <Divider/>
                             </>
                           )}
-                          <InfoRow icon={<BusinessIcon/>} label={t.contracts.stSubcontractorName} value={contract?.st_name}/>
+                          <InfoRow icon={<BusinessIcon/>} label={t.contracts.stSubcontractorName}
+                                   value={contract?.st_name}/>
                           <Divider/>
                           <InfoRow icon={<DescriptionIcon/>} label={t.contracts.stLegalForm}
                                    value={resolveLabel(stFormeJuridiqueItemsList, contract?.st_forme)}/>
@@ -820,9 +952,17 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     {/* Lot & Type */}
                     <Card elevation={2} sx={{borderRadius: 2}}>
                       <CardContent sx={{px: {xs: 2, md: 3}, py: {xs: 2, md: 3}}}>
-                        <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                        <Stack
+                          direction="row"
+                          spacing={2}
+                          sx={{
+                            alignItems: "center",
+                            mb: 2
+                          }}>
                           <CategoryIcon color="primary"/>
-                          <Typography variant="h6" fontWeight={700}>{t.contracts.lotAndType}</Typography>
+                          <Typography variant="h6" sx={{
+                            fontWeight: 700
+                          }}>{t.contracts.lotAndType}</Typography>
                         </Stack>
                         <Divider sx={{mb: {xs: 1.5, md: 2}}}/>
                         <Stack spacing={0}>
@@ -841,9 +981,17 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     {/* Financier ST */}
                     <Card elevation={2} sx={{borderRadius: 2}}>
                       <CardContent sx={{px: {xs: 2, md: 3}, py: {xs: 2, md: 3}}}>
-                        <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                        <Stack
+                          direction="row"
+                          spacing={2}
+                          sx={{
+                            alignItems: "center",
+                            mb: 2
+                          }}>
                           <MoneyIcon color="primary"/>
-                          <Typography variant="h6" fontWeight={700}>{t.contracts.financialST}</Typography>
+                          <Typography variant="h6" sx={{
+                            fontWeight: 700
+                          }}>{t.contracts.financialST}</Typography>
                         </Stack>
                         <Divider sx={{mb: {xs: 1.5, md: 2}}}/>
                         <Stack spacing={0}>
@@ -869,9 +1017,17 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     {contract?.st_tranches && contract.st_tranches.length > 0 && (
                       <Card elevation={2} sx={{borderRadius: 2}}>
                         <CardContent sx={{px: {xs: 2, md: 3}, py: {xs: 2, md: 3}}}>
-                          <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                          <Stack
+                            direction="row"
+                            spacing={2}
+                            sx={{
+                              alignItems: "center",
+                              mb: 2
+                            }}>
                             <PlaylistAddCheckIcon color="primary"/>
-                            <Typography variant="h6" fontWeight={700}>{t.contracts.scheduleST}</Typography>
+                            <Typography variant="h6" sx={{
+                              fontWeight: 700
+                            }}>{t.contracts.scheduleST}</Typography>
                           </Stack>
                           <Divider sx={{mb: {xs: 1.5, md: 2}}}/>
                           <TableContainer component={Paper} variant="outlined">
@@ -879,7 +1035,8 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                               <TableHead>
                                 <TableRow>
                                   <TableCell sx={{fontWeight: 700}}>{t.contracts.trancheLabel}</TableCell>
-                                  <TableCell sx={{fontWeight: 700}} align="right">{t.contracts.tranchePercentage}</TableCell>
+                                  <TableCell sx={{fontWeight: 700}}
+                                             align="right">{t.contracts.tranchePercentage}</TableCell>
                                 </TableRow>
                               </TableHead>
                               <TableBody>
@@ -899,9 +1056,17 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     {/* Délais & Garantie ST */}
                     <Card elevation={2} sx={{borderRadius: 2}}>
                       <CardContent sx={{px: {xs: 2, md: 3}, py: {xs: 2, md: 3}}}>
-                        <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                        <Stack
+                          direction="row"
+                          spacing={2}
+                          sx={{
+                            alignItems: "center",
+                            mb: 2
+                          }}>
                           <TimerIcon color="primary"/>
-                          <Typography variant="h6" fontWeight={700}>{t.contracts.stDelaysWarranties}</Typography>
+                          <Typography variant="h6" sx={{
+                            fontWeight: 700
+                          }}>{t.contracts.stDelaysWarranties}</Typography>
                         </Stack>
                         <Divider sx={{mb: {xs: 1.5, md: 2}}}/>
                         <Stack spacing={0}>
@@ -924,9 +1089,17 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     {contract?.st_clauses_actives && contract.st_clauses_actives.length > 0 && (
                       <Card elevation={2} sx={{borderRadius: 2}}>
                         <CardContent sx={{px: {xs: 2, md: 3}, py: {xs: 2, md: 3}}}>
-                          <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                          <Stack
+                            direction="row"
+                            spacing={2}
+                            sx={{
+                              alignItems: "center",
+                              mb: 2
+                            }}>
                             <GavelIcon color="primary"/>
-                            <Typography variant="h6" fontWeight={700}>{t.contracts.activeClausesST}</Typography>
+                            <Typography variant="h6" sx={{
+                              fontWeight: 700
+                            }}>{t.contracts.activeClausesST}</Typography>
                           </Stack>
                           <Divider sx={{mb: {xs: 1.5, md: 2}}}/>
                           <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 1}}>
@@ -946,9 +1119,17 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     {contract?.st_observations && (
                       <Card elevation={2} sx={{borderRadius: 2}}>
                         <CardContent sx={{px: {xs: 2, md: 3}, py: {xs: 2, md: 3}}}>
-                          <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                          <Stack
+                            direction="row"
+                            spacing={2}
+                            sx={{
+                              alignItems: "center",
+                              mb: 2
+                            }}>
                             <NotesIcon color="primary"/>
-                            <Typography variant="h6" fontWeight={700}>{t.contracts.stObservations}</Typography>
+                            <Typography variant="h6" sx={{
+                              fontWeight: 700
+                            }}>{t.contracts.stObservations}</Typography>
                           </Stack>
                           <Divider sx={{mb: {xs: 1.5, md: 2}}}/>
                           <Typography>{contract.st_observations}</Typography>
@@ -964,9 +1145,17 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     {/* Client (Blueline extra) */}
                     <Card elevation={2} sx={{borderRadius: 2}}>
                       <CardContent sx={{px: {xs: 2, md: 3}, py: {xs: 2, md: 3}}}>
-                        <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                        <Stack
+                          direction="row"
+                          spacing={2}
+                          sx={{
+                            alignItems: "center",
+                            mb: 2
+                          }}>
                           <PersonIcon color="primary"/>
-                          <Typography variant="h6" fontWeight={700}>
+                          <Typography variant="h6" sx={{
+                            fontWeight: 700
+                          }}>
                             {t.contracts.clientBlueline}
                           </Typography>
                         </Stack>
@@ -976,9 +1165,11 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                           <Divider/>
                           <InfoRow icon={<HomeIcon/>} label={t.contracts.clientPostalCode} value={contract?.client_cp}/>
                           <Divider/>
-                          <InfoRow icon={<CityIcon/>} label={t.contracts.constructionCity} value={contract?.chantier_ville}/>
+                          <InfoRow icon={<CityIcon/>} label={t.contracts.constructionCity}
+                                   value={contract?.chantier_ville}/>
                           <Divider/>
-                          <InfoRow icon={<ApartmentIcon/>} label={t.contracts.constructionFloor} value={contract?.chantier_etage}/>
+                          <InfoRow icon={<ApartmentIcon/>} label={t.contracts.constructionFloor}
+                                   value={contract?.chantier_etage}/>
                         </Stack>
                       </CardContent>
                     </Card>
@@ -987,9 +1178,17 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     {contract?.prestations && contract.prestations.length > 0 && (
                       <Card elevation={2} sx={{borderRadius: 2}}>
                         <CardContent sx={{px: {xs: 2, md: 3}, py: {xs: 2, md: 3}}}>
-                          <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                          <Stack
+                            direction="row"
+                            spacing={2}
+                            sx={{
+                              alignItems: "center",
+                              mb: 2
+                            }}>
                             <ListAltIcon color="primary"/>
-                            <Typography variant="h6" fontWeight={700}>
+                            <Typography variant="h6" sx={{
+                              fontWeight: 700
+                            }}>
                               {t.contracts.prestations}
                             </Typography>
                           </Stack>
@@ -1000,10 +1199,13 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                                 <TableRow>
                                   <TableCell sx={{fontWeight: 700}}>{t.contracts.prestationName}</TableCell>
                                   <TableCell sx={{fontWeight: 700}}>{t.contracts.prestationDescription}</TableCell>
-                                  <TableCell sx={{fontWeight: 700}} align="right">{t.contracts.prestationQuantity}</TableCell>
+                                  <TableCell sx={{fontWeight: 700}}
+                                             align="right">{t.contracts.prestationQuantity}</TableCell>
                                   <TableCell sx={{fontWeight: 700}}>{t.contracts.prestationUnit}</TableCell>
-                                  <TableCell sx={{fontWeight: 700}} align="right">{t.contracts.prestationUnitPrice}</TableCell>
-                                  <TableCell sx={{fontWeight: 700}} align="right">{t.contracts.prestationTotal}</TableCell>
+                                  <TableCell sx={{fontWeight: 700}}
+                                             align="right">{t.contracts.prestationUnitPrice}</TableCell>
+                                  <TableCell sx={{fontWeight: 700}}
+                                             align="right">{t.contracts.prestationTotal}</TableCell>
                                 </TableRow>
                               </TableHead>
                               <TableBody>
@@ -1029,10 +1231,18 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     {/* Fournitures & Eau/Électricité */}
                     <Card elevation={2} sx={{borderRadius: 2}}>
                       <CardContent sx={{px: {xs: 2, md: 3}, py: {xs: 2, md: 3}}}>
-                        <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                        <Stack
+                          direction="row"
+                          spacing={2}
+                          sx={{
+                            alignItems: "center",
+                            mb: 2
+                          }}>
                           <PlumbingIcon color="primary"/>
-                          <Typography variant="h6" fontWeight={700}>
-                              {t.contracts.suppliesAndWater}
+                          <Typography variant="h6" sx={{
+                            fontWeight: 700
+                          }}>
+                            {t.contracts.suppliesAndWater}
                           </Typography>
                         </Stack>
                         <Divider sx={{mb: {xs: 1.5, md: 2}}}/>
@@ -1052,10 +1262,18 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     {/* Garantie (Blueline) */}
                     <Card elevation={2} sx={{borderRadius: 2}}>
                       <CardContent sx={{px: {xs: 2, md: 3}, py: {xs: 2, md: 3}}}>
-                        <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                        <Stack
+                          direction="row"
+                          spacing={2}
+                          sx={{
+                            alignItems: "center",
+                            mb: 2
+                          }}>
                           <ShieldIcon color="primary"/>
-                          <Typography variant="h6" fontWeight={700}>
-                              {t.contracts.warrantySection}
+                          <Typography variant="h6" sx={{
+                            fontWeight: 700
+                          }}>
+                            {t.contracts.warrantySection}
                           </Typography>
                         </Stack>
                         <Divider sx={{mb: {xs: 1.5, md: 2}}}/>
@@ -1073,7 +1291,8 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                           <InfoRow icon={<ShieldIcon/>} label={t.contracts.warrantyType}
                                    value={resolveLabel(garantieTypeItemsList, contract?.garantie_type)}/>
                           <Divider/>
-                          <InfoRow icon={<DescriptionIcon/>} label={t.contracts.warrantyExclusions} value={contract?.exclusions_garantie}/>
+                          <InfoRow icon={<DescriptionIcon/>} label={t.contracts.warrantyExclusions}
+                                   value={contract?.exclusions_garantie}/>
                         </Stack>
                       </CardContent>
                     </Card>
@@ -1081,10 +1300,18 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                     {/* Échéancier & Résiliation */}
                     <Card elevation={2} sx={{borderRadius: 2}}>
                       <CardContent sx={{px: {xs: 2, md: 3}, py: {xs: 2, md: 3}}}>
-                        <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                        <Stack
+                          direction="row"
+                          spacing={2}
+                          sx={{
+                            alignItems: "center",
+                            mb: 2
+                          }}>
                           <PercentIcon color="primary"/>
-                          <Typography variant="h6" fontWeight={700}>
-                              {t.contracts.scheduleTermination}
+                          <Typography variant="h6" sx={{
+                            fontWeight: 700
+                          }}>
+                            {t.contracts.scheduleTermination}
                           </Typography>
                         </Stack>
                         <Divider sx={{mb: {xs: 1.5, md: 2}}}/>
@@ -1111,9 +1338,17 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                 {/* ── Meta / Audit info ── */}
                 <Card elevation={2} sx={{borderRadius: 2}}>
                   <CardContent sx={{p: 3}}>
-                    <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                    <Stack
+                      direction="row"
+                      spacing={2}
+                      sx={{
+                        alignItems: "center",
+                        mb: 2
+                      }}>
                       <DescriptionIcon color="primary"/>
-                      <Typography variant="h6" fontWeight={700}>
+                      <Typography variant="h6" sx={{
+                        fontWeight: 700
+                      }}>
                         {t.contracts.systemInfo}
                       </Typography>
                     </Stack>
@@ -1131,7 +1366,8 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                         value={formatDate(contract?.date_updated ?? null)}
                       />
                       <Divider/>
-                      <InfoRow icon={<PersonIcon/>} label={t.contracts.createdBy} value={contract?.created_by_user_name}/>
+                      <InfoRow icon={<PersonIcon/>} label={t.contracts.createdBy}
+                               value={contract?.created_by_user_name}/>
                     </Stack>
                   </CardContent>
                 </Card>

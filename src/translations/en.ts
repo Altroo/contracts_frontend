@@ -495,6 +495,12 @@ export const en: TranslationDictionary = {
     unknownError: 'Unknown error',
     unexpectedError: 'An unexpected error occurred.',
   },
+  notFound: {
+    title: 'Page not found',
+    message: 'Sorry, the page you are looking for does not exist or has been moved.',
+    backBtn: 'Back',
+    homeBtn: 'Home',
+  },
   pdf: {
     generatePdf: 'PDF Generation',
     chooseLanguage: 'Choose the language in which you want to generate the PDF document.',

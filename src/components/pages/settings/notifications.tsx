@@ -1,19 +1,12 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import Styles from '@/styles/dashboard/settings/settings.module.sass';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
-import {
-  Box,
-  FormControlLabel,
-  Stack,
-  Switch,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
-import { setFormikAutoErrors } from '@/utils/helpers';
-import { textInputTheme } from '@/utils/themes';
-import { useFormik } from 'formik';
+import {Box, FormControlLabel, Stack, Switch, useMediaQuery, useTheme,} from '@mui/material';
+import {setFormikAutoErrors} from '@/utils/helpers';
+import {textInputTheme} from '@/utils/themes';
+import {useFormik} from 'formik';
 import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadingButton/primaryLoadingButton';
 import {
   useGetNotificationPreferencesQuery,
@@ -21,17 +14,17 @@ import {
 } from '@/store/services/notification';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
-import { useToast, useLanguage } from '@/utils/hooks';
-import { Edit as EditIcon } from '@mui/icons-material';
-import type { NotificationPreferenceFormValues } from '@/types/contractNotificationTypes';
+import {useLanguage, useToast} from '@/utils/hooks';
+import {Edit as EditIcon} from '@mui/icons-material';
+import type {NotificationPreferenceFormValues} from '@/types/contractNotificationTypes';
 
 const inputTheme = textInputTheme();
 
 const FormikContent: React.FC = () => {
-  const { onSuccess, onError } = useToast();
-  const { t } = useLanguage();
-  const { data: preferences, isLoading: isPreferencesLoading } = useGetNotificationPreferencesQuery();
-  const [updatePreferences, { isLoading: isUpdateLoading }] = useUpdateNotificationPreferencesMutation();
+  const {onSuccess, onError} = useToast();
+  const {t} = useLanguage();
+  const {data: preferences, isLoading: isPreferencesLoading} = useGetNotificationPreferencesQuery();
+  const [updatePreferences, {isLoading: isUpdateLoading}] = useUpdateNotificationPreferencesMutation();
   const [isPending, setIsPending] = useState(false);
 
   const formik = useFormik<NotificationPreferenceFormValues>({
@@ -45,7 +38,7 @@ const FormikContent: React.FC = () => {
       globalError: '',
     },
     enableReinitialize: true,
-    onSubmit: async (values, { setFieldError }) => {
+    onSubmit: async (values, {setFieldError}) => {
       setIsPending(true);
       try {
         await updatePreferences({
@@ -59,7 +52,7 @@ const FormikContent: React.FC = () => {
         onSuccess(t.settings.notificationUpdateSuccess);
       } catch (e) {
         onError(t.settings.notificationUpdateError);
-        setFormikAutoErrors({ e, setFieldError });
+        setFormikAutoErrors({e, setFieldError});
       } finally {
         setIsPending(false);
       }
@@ -73,15 +66,27 @@ const FormikContent: React.FC = () => {
   }, []);
 
   return (
-    <Stack direction="column" alignItems="center" spacing={2} className={`${Styles.flexRootStack}`} mt="32px">
+    <Stack
+      direction="column"
+      spacing={2}
+      className={`${Styles.flexRootStack}`}
+      sx={{
+        alignItems: "center",
+        mt: "32px"
+      }}>
       {(isPreferencesLoading || isUpdateLoading || isPending) && (
-        <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />
+        <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B"/>
       )}
       <h2 className={Styles.pageTitle}>{t.settings.notificationPreferences}</h2>
-
       <form className={Styles.form} onSubmit={(e) => e.preventDefault()}>
-        <Stack direction="column" justifyContent="center" alignItems="center" spacing={3}>
-          <Box sx={{ maxWidth: 365, width: '100%' }}>
+        <Stack
+          direction="column"
+          spacing={3}
+          sx={{
+            justifyContent: "center",
+            alignItems: "center"
+          }}>
+          <Box sx={{maxWidth: 365, width: '100%'}}>
             <Stack spacing={2}>
               <FormControlLabel
                 control={
@@ -126,7 +131,7 @@ const FormikContent: React.FC = () => {
                 size="small"
                 value={String(formik.values.unsigned_alert_days)}
                 onChange={(e) => formik.setFieldValue('unsigned_alert_days', Number(e.target.value))}
-                slotProps={{ htmlInput: { min: 1, max: 365 } }}
+                slotProps={{htmlInput: {min: 1, max: 365}}}
                 fullWidth
                 theme={inputTheme}
               />
@@ -137,7 +142,7 @@ const FormikContent: React.FC = () => {
                 size="small"
                 value={String(formik.values.work_start_alert_days)}
                 onChange={(e) => formik.setFieldValue('work_start_alert_days', Number(e.target.value))}
-                slotProps={{ htmlInput: { min: 1, max: 30 } }}
+                slotProps={{htmlInput: {min: 1, max: 30}}}
                 fullWidth
                 theme={inputTheme}
               />
@@ -149,7 +154,7 @@ const FormikContent: React.FC = () => {
             onClick={formik.handleSubmit}
             cssClass={`${Styles.maxWidth} ${Styles.mobileButton} ${Styles.submitButton}`}
             type="submit"
-            startIcon={<EditIcon />}
+            startIcon={<EditIcon/>}
             loading={isPending}
           />
         </Stack>
@@ -161,10 +166,10 @@ const FormikContent: React.FC = () => {
 const NotificationsClient: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { t } = useLanguage();
+  const {t} = useLanguage();
 
   return (
-    <Stack direction="column" sx={{ position: 'relative' }}>
+    <Stack direction="column" sx={{position: 'relative'}}>
       <NavigationBar title={t.settings.notificationPreferences}>
         <main className={`${Styles.main} ${Styles.fixMobile}`}>
           <Box
@@ -175,8 +180,8 @@ const NotificationsClient: React.FC = () => {
               alignItems: 'flex-start',
             }}
           >
-            <Box sx={{ width: '100%' }}>
-              <FormikContent />
+            <Box sx={{width: '100%'}}>
+              <FormikContent/>
             </Box>
           </Box>
         </main>

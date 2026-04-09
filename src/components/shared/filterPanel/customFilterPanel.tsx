@@ -205,7 +205,9 @@ const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({columns, filterMod
           const InputComponent = currentOperator?.InputComponent ?? TextFilterInput;
 
           return (
-            <Stack key={item.id} direction="row" spacing={1} alignItems="center">
+            <Stack key={item.id} direction="row" spacing={1} sx={{
+              alignItems: "center"
+            }}>
               {/* Logic operator column - editable on 2nd row, read-only chip on 3rd+ */}
               <Box sx={{width: 80, flexShrink: 0}}>
                 {index === 0 ? null : index === 1 ? (
@@ -240,7 +242,6 @@ const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({columns, filterMod
                   </Box>
                 )}
               </Box>
-
               {/* Column selector */}
               <FormControl size="small" sx={{minWidth: 150}}>
                 <Select value={item.field} onChange={(e) => handleColumnChange(item.id, e.target.value)}>
@@ -251,7 +252,6 @@ const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({columns, filterMod
                   ))}
                 </Select>
               </FormControl>
-
               {/* Operator selector */}
               <FormControl size="small" sx={{minWidth: 120}}>
                 <Select value={item.operator} onChange={(e) => handleOperatorChange(item.id, e.target.value)}>
@@ -262,7 +262,6 @@ const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({columns, filterMod
                   ))}
                 </Select>
               </FormControl>
-
               {/* Value input */}
               <Box sx={{minWidth: 200, flex: 1}}>
                 <InputComponent
@@ -270,7 +269,6 @@ const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({columns, filterMod
                   applyValue={(updatedItem) => handleItemChange(item.id, {value: updatedItem.value as CustomFilterValue})}
                 />
               </Box>
-
               {/* Remove button */}
               <IconButton size="small" onClick={() => handleRemoveFilter(item.id)} color="error">
                 <CloseIcon fontSize="small"/>
@@ -280,7 +278,9 @@ const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({columns, filterMod
         })}
 
         {/* Add filter button row */}
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack direction="row" spacing={1} sx={{
+          alignItems: "center"
+        }}>
           <Box sx={{width: 80, flexShrink: 0}}/>
 
           <Button
@@ -299,7 +299,12 @@ const CustomFilterPanel: React.FC<CustomFilterPanelProps> = ({columns, filterMod
               <Button onClick={handleClearAll} size="small" variant="text" color="error">
                 {t.filters.removeAllFilters}
               </Button>
-              <Typography variant="caption" color="text.secondary" sx={{ml: 'auto'}}>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: "text.secondary",
+                  ml: 'auto'
+                }}>
                 {t.common.activeFiltersCount(filterModel.items.filter(filterHasValue).length)}
               </Typography>
             </>

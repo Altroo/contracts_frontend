@@ -28,7 +28,7 @@ import {
   Edit as EditIcon,
   Email as EmailIcon,
   Groups as GroupsIcon,
-  PersonOutline as PersonOutlineIcon,
+  PersonOutlined as PersonOutlineIcon,
   Security as SecurityIcon,
   Warning as WarningIcon,
 } from '@mui/icons-material';
@@ -47,7 +47,7 @@ import {USERS_LIST, USERS_VIEW} from '@/utils/routes';
 import {useRouter} from 'next/navigation';
 import CustomSquareImageUploading
   from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
-import {useToast, useLanguage} from '@/utils/hooks';
+import {useLanguage, useToast} from '@/utils/hooks';
 import {
   useAddUserMutation,
   useCheckEmailMutation,
@@ -204,7 +204,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
 
   return (
     <Stack spacing={3} sx={{p: {xs: 2, md: 3}}}>
-      <Stack direction={isMobile ? 'column' : 'row'} pt={2} justifyContent="space-between" spacing={2}>
+      <Stack
+        direction={isMobile ? 'column' : 'row'}
+        spacing={2}
+        sx={{
+          pt: 2,
+          justifyContent: "space-between"
+        }}>
         <Button
           variant="outlined"
           startIcon={<ArrowBackIcon/>}
@@ -221,7 +227,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       </Stack>
       {hasValidationErrors && (
         <Alert severity="error" icon={<WarningIcon/>} sx={{mb: 2}}>
-          <Typography variant="subtitle2" fontWeight={600}>
+          <Typography variant="subtitle2" sx={{
+            fontWeight: 600
+          }}>
             {t.users.validationErrorsDetected}
           </Typography>
           <ul style={{margin: '8px 0', paddingLeft: '20px'}}>
@@ -246,9 +254,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {/* Profile Picture Card */}
             <Card elevation={2} sx={{borderRadius: 2}}>
               <CardContent sx={{p: 3}}>
-                <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  sx={{
+                    alignItems: "center",
+                    mb: 2
+                  }}>
                   <AccountCircleIcon color="primary"/>
-                  <Typography variant="h6" fontWeight={700}>
+                  <Typography variant="h6" sx={{
+                    fontWeight: 700
+                  }}>
                     {t.users.profilePhoto}
                   </Typography>
                 </Stack>
@@ -267,9 +283,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {/* Personal Information Card */}
             <Card elevation={2} sx={{borderRadius: 2}}>
               <CardContent sx={{p: 3}}>
-                <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  sx={{
+                    alignItems: "center",
+                    mb: 2
+                  }}>
                   <PersonOutlineIcon color="primary"/>
-                  <Typography variant="h6" fontWeight={700}>
+                  <Typography variant="h6" sx={{
+                    fontWeight: 700
+                  }}>
                     {t.users.personalInfo}
                   </Typography>
                 </Stack>
@@ -338,9 +362,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {/* Account Settings Card */}
             <Card elevation={2} sx={{borderRadius: 2}}>
               <CardContent sx={{p: 3}}>
-                <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  sx={{
+                    alignItems: "center",
+                    mb: 2
+                  }}>
                   <AdminPanelSettingsIcon color="primary"/>
-                  <Typography variant="h6" fontWeight={700}>
+                  <Typography variant="h6" sx={{
+                    fontWeight: 700
+                  }}>
                     {t.users.accountSettings}
                   </Typography>
                 </Stack>
@@ -356,7 +388,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       />
                     }
                     label={
-                      <Stack direction="row" spacing={1} alignItems="center">
+                      <Stack direction="row" spacing={1} sx={{
+                        alignItems: "center"
+                      }}>
                         <CheckCircleIcon fontSize="small" color={formik.values.is_active ? 'success' : 'disabled'}/>
                         <Typography>{t.users.activeAccount}</Typography>
                       </Stack>
@@ -372,7 +406,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       />
                     }
                     label={
-                      <Stack direction="row" spacing={1} alignItems="center">
+                      <Stack direction="row" spacing={1} sx={{
+                        alignItems: "center"
+                      }}>
                         <AdminPanelSettingsIcon
                           fontSize="small"
                           color={formik.values.is_staff ? 'primary' : 'disabled'}
@@ -388,9 +424,17 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
             {/* Permissions Card */}
             <Card elevation={2} sx={{borderRadius: 2}}>
               <CardContent sx={{p: 3}}>
-                <Stack direction="row" spacing={2} alignItems="center" sx={{mb: 2}}>
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  sx={{
+                    alignItems: "center",
+                    mb: 2
+                  }}>
                   <SecurityIcon color="primary"/>
-                  <Typography variant="h6" fontWeight={700}>
+                  <Typography variant="h6" sx={{
+                    fontWeight: 700
+                  }}>
                     {t.users.permissions}
                   </Typography>
                 </Stack>

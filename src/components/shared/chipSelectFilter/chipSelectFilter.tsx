@@ -57,9 +57,13 @@ const ChipSelectFilter: React.FC<ChipSelectFilterProps> = (
       <Box sx={{width: '100%'}}>
         <Typography
           variant="caption"
-          color="text.secondary"
-          sx={{mb: 0.5, display: 'block', fontFamily: 'Poppins', fontSize: '12px'}}
-        >
+          sx={{
+            color: "text.secondary",
+            mb: 0.5,
+            display: 'block',
+            fontFamily: 'Poppins',
+            fontSize: '12px'
+          }}>
           {label}
         </Typography>
         <Autocomplete

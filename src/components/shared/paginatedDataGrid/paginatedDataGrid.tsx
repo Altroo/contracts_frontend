@@ -360,7 +360,14 @@ const PaginatedDataGrid = <T, >(
 
   return (
     <ThemeProvider theme={getDefaultTheme()}>
-      <Stack direction="column" spacing={2} mt="32px" sx={{overflowX: 'auto', overflowY: 'hidden'}}>
+      <Stack
+        direction="column"
+        spacing={2}
+        sx={{
+          mt: "32px",
+          overflowX: 'auto',
+          overflowY: 'hidden'
+        }}>
         <Box sx={{width: '100%', position: 'relative'}}>
           {isLoading && <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B"/>}
           <Box

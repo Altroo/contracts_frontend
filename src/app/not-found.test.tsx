@@ -37,7 +37,7 @@ describe('NotFound (404 page)', () => {
 
   it('renders the description text', () => {
     render(<NotFound/>);
-    expect(screen.getByText(/la page que vous cherchez/i)).toBeInTheDocument();
+    expect(screen.getByText(/la page que vous recherchez/i)).toBeInTheDocument();
   });
 
   it('renders Retour button', () => {
@@ -45,9 +45,9 @@ describe('NotFound (404 page)', () => {
     expect(screen.getByText('Retour')).toBeInTheDocument();
   });
 
-  it('renders "Tableau de bord" button', () => {
+  it('renders Accueil button', () => {
     render(<NotFound/>);
-    expect(screen.getByText('Tableau de bord')).toBeInTheDocument();
+    expect(screen.getByText('Accueil')).toBeInTheDocument();
   });
 
   it('calls router.back() when Retour is clicked', () => {
@@ -56,9 +56,9 @@ describe('NotFound (404 page)', () => {
     expect(mockBack).toHaveBeenCalledTimes(1);
   });
 
-  it('calls router.push(DASHBOARD) when Tableau de bord is clicked', () => {
+  it('calls router.push(DASHBOARD) when Accueil is clicked', () => {
     render(<NotFound/>);
-    fireEvent.click(screen.getByText('Tableau de bord'));
+    fireEvent.click(screen.getByText('Accueil'));
     expect(mockPush).toHaveBeenCalledWith('/dashboard');
   });
 });

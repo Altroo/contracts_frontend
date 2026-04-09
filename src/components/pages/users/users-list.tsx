@@ -4,13 +4,13 @@ import React, {useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {Avatar, Box, Button, Stack, Typography} from '@mui/material';
 import {
-	Add as AddIcon,
-	Cancel as CancelIcon,
-	CheckCircle as CheckCircleIcon,
-	Close as CloseIcon,
-	Delete as DeleteIcon,
-	Edit as EditIcon,
-	Visibility as VisibilityIcon,
+  Add as AddIcon,
+  Cancel as CancelIcon,
+  CheckCircle as CheckCircleIcon,
+  Close as CloseIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Visibility as VisibilityIcon,
 } from '@mui/icons-material';
 import {GridColDef, GridFilterModel, GridLogicOperator, GridRenderCellParams} from '@mui/x-data-grid';
 import {useInitAccessToken} from '@/contexts/InitContext';
@@ -25,12 +25,12 @@ import ActionModals from '@/components/htmlElements/modals/actionModal/actionMod
 import type {UserClass} from '@/models/classes';
 import {extractApiErrorMessage, formatDate} from '@/utils/helpers';
 import {Protected} from '@/components/layouts/protected/protected';
-import {useToast, useLanguage} from '@/utils/hooks';
+import {useLanguage, useToast} from '@/utils/hooks';
 import Image from 'next/image';
 import MobileActionsMenu from '@/components/shared/mobileActionsMenu/mobileActionsMenu';
 import {
-	createBooleanFilterOperators,
-	createDropdownFilterOperators,
+  createBooleanFilterOperators,
+  createDropdownFilterOperators,
 } from '@/components/shared/dropdownFilter/dropdownFilter';
 import {createDateRangeFilterOperator} from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 
@@ -91,7 +91,13 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
   };
 
   const deleteModalActions = [
-    {text: t.common.cancel, active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon/>, color: '#6B6B6B'},
+    {
+      text: t.common.cancel,
+      active: false,
+      onClick: () => setShowDeleteModal(false),
+      icon: <CloseIcon/>,
+      color: '#6B6B6B'
+    },
     {text: t.common.delete, active: true, onClick: deleteHandler, icon: <DeleteIcon/>, color: '#D32F2F'},
   ];
 
@@ -357,9 +363,11 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
       direction="column"
       spacing={2}
       className={Styles.flexRootStack}
-      mt="48px"
-      sx={{overflowX: 'auto', overflowY: 'hidden'}}
-    >
+      sx={{
+        mt: "48px",
+        overflowX: 'auto',
+        overflowY: 'hidden'
+      }}>
       <NavigationBar title={t.navigation.usersList}>
         <Protected>
           <>

@@ -29,7 +29,7 @@ import ActionModals from '@/components/htmlElements/modals/actionModal/actionMod
 import type {ContractClass} from '@/models/classes';
 import {extractApiErrorMessage, formatDate} from '@/utils/helpers';
 import {companyItemsList, getContractStatusColor, getTranslatedRawData} from '@/utils/rawData';
-import {useToast, useLanguage} from '@/utils/hooks';
+import {useLanguage, useToast} from '@/utils/hooks';
 import {fetchFileBlob} from '@/utils/apiHelpers';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
@@ -103,7 +103,13 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
   };
 
   const deleteModalActions = [
-    {text: t.common.cancel, active: false, onClick: () => setShowDeleteModal(false), icon: <CloseIcon/>, color: '#6B6B6B'},
+    {
+      text: t.common.cancel,
+      active: false,
+      onClick: () => setShowDeleteModal(false),
+      icon: <CloseIcon/>,
+      color: '#6B6B6B'
+    },
     {text: t.common.delete, active: true, onClick: deleteHandler, icon: <DeleteIcon/>, color: '#D32F2F'},
   ];
 
@@ -413,9 +419,11 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
       direction="column"
       spacing={2}
       className={Styles.flexRootStack}
-      mt="48px"
-      sx={{overflowX: 'auto', overflowY: 'hidden'}}
-    >
+      sx={{
+        mt: "48px",
+        overflowX: 'auto',
+        overflowY: 'hidden'
+      }}>
       <NavigationBar title={t.navigation.contractsList}>
         <Protected permission="can_view">
           <>

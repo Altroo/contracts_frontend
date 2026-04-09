@@ -21,7 +21,7 @@ import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import {accountEditProfilAction} from '@/store/actions/accountActions';
 import CustomSquareImageUploading
   from '@/components/formikElements/customSquareImageUploading/customSquareImageUploading';
-import { Edit as EditIcon, Email as EmailIcon, Groups as GroupsIcon, Person as PersonIcon } from '@mui/icons-material';
+import {Edit as EditIcon, Email as EmailIcon, Groups as GroupsIcon, Person as PersonIcon} from '@mui/icons-material';
 
 const inputTheme = textInputTheme();
 
@@ -74,13 +74,26 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
   });
 
   return (
-    <Stack direction="column" alignItems="center" spacing={2} className={`${Styles.flexRootStack}`} mt="32px">
+    <Stack
+      direction="column"
+      spacing={2}
+      className={`${Styles.flexRootStack}`}
+      sx={{
+        alignItems: "center",
+        mt: "32px"
+      }}>
       {(isEditLoading || isPending || isProfilLoading) && (
         <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B"/>
       )}
       <h2 className={Styles.pageTitle}>{t.settings.profile}</h2>
       <form className={Styles.form} onSubmit={(e) => e.preventDefault()}>
-        <Stack direction="column" spacing={2} justifyContent="center" alignItems="center">
+        <Stack
+          direction="column"
+          spacing={2}
+          sx={{
+            justifyContent: "center",
+            alignItems: "center"
+          }}>
           <CustomSquareImageUploading
             cssClasse={Styles.centerAvatar}
             image={formik.values.avatar}
@@ -92,7 +105,8 @@ const FormikContent: React.FC<formikContentType> = (props: formikContentType) =>
             id="email"
             type="email"
             value={profilData?.email ?? ''}
-            onChange={() => {}}
+            onChange={() => {
+            }}
             fullWidth={true}
             size="small"
             label={t.users.email}

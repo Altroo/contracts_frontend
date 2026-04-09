@@ -48,7 +48,9 @@ const ActionModals: React.FC<Props> = (
   return (
     <Dialog open onClose={handleClose}>
       <DialogTitle>
-        <Stack direction="row" alignItems="center" spacing={1}>
+        <Stack direction="row" spacing={1} sx={{
+          alignItems: "center"
+        }}>
           {titleIcon && (
             <Avatar
               variant="rounded"
@@ -65,12 +67,10 @@ const ActionModals: React.FC<Props> = (
           <Typography variant="h6">{title}</Typography>
         </Stack>
       </DialogTitle>
-
       <DialogContent dividers>
         {body && <Typography variant="body2">{body}</Typography>}
         {children}
       </DialogContent>
-
       <DialogActions className={actionsStyle?.join(' ') ?? undefined} sx={{padding: 2}}>
         {actions.map((action, index) => {
           const bg = action.active ? (action.color ?? '#0D070B') : '#FFFFFF';

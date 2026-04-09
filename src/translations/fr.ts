@@ -495,6 +495,12 @@ export const fr: TranslationDictionary = {
     unknownError: 'Erreur inconnue',
     unexpectedError: "Une erreur inattendue s'est produite.",
   },
+  notFound: {
+    title: 'Page introuvable',
+    message: 'Désolé, la page que vous recherchez n\'existe pas ou a été déplacée.',
+    backBtn: 'Retour',
+    homeBtn: 'Accueil',
+  },
   pdf: {
     generatePdf: 'Génération du PDF',
     chooseLanguage: 'Choisissez la langue dans laquelle vous souhaitez générer le document PDF.',
