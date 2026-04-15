@@ -3462,7 +3462,7 @@ const ContractFormClient: React.FC<Props> = ({session, id}: Props) => {
     <Stack direction="column" sx={{position: 'relative'}}>
       <NavigationBar title={isEditMode ? t.contracts.editContractTitle : t.contracts.addContract}>
         <main className={`${Styles.main} ${Styles.fixMobile}`}>
-          <Protected>
+          <Protected permission={id !== undefined ? 'can_edit' : 'can_create'}>
             <Box sx={{width: '100%'}}>
               <FormikContent token={token} id={id}/>
             </Box>

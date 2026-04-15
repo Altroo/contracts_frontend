@@ -104,7 +104,9 @@ jest.mock('@/utils/themes', () => ({
 
 // Mock Protected
 jest.mock('@/components/layouts/protected/protected', () => ({
-  Protected: ({children}: { children: React.ReactNode }) => <div data-testid="protected">{children}</div>,
+  Protected: ({children, permission}: { children: React.ReactNode; permission?: string }) => (
+    <div data-testid="protected" data-permission={permission ?? ''}>{children}</div>
+  ),
 }));
 
 // Mock NavigationBar
@@ -276,6 +278,11 @@ describe('ContractFormClient', () => {
   });
 
   describe('Add Mode (no id)', () => {
+    it('uses can_create permission for the form wrapper', () => {
+      renderWithProviders(<ContractFormClient session={mockSession}/>);
+      expect(screen.getByTestId('protected')).toHaveAttribute('data-permission', 'can_create');
+    });
+
     it('renders back button with list text', () => {
       renderWithProviders(<ContractFormClient session={mockSession}/>);
       expect(screen.getByText('Liste des contrats')).toBeInTheDocument();
@@ -306,6 +313,17 @@ describe('ContractFormClient', () => {
   });
 
   describe('Edit Mode (with id)', () => {
+    it('uses can_edit permission for the form wrapper', () => {
+      mockUseGetContractQuery.mockReturnValue({
+        data: {id: 1, numero_contrat: 'CTR-001', client_nom: 'Jean', montant_ht: '50000'},
+        isLoading: false,
+        error: undefined,
+      });
+
+      renderWithProviders(<ContractFormClient session={mockSession} id={1}/>);
+      expect(screen.getByTestId('protected')).toHaveAttribute('data-permission', 'can_edit');
+    });
+
     it('renders back button with return text', () => {
       mockUseGetContractQuery.mockReturnValue({
         data: {
