@@ -1878,54 +1878,78 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       startIcon={<AttachMoneyIcon fontSize="small"/>}
                     />
                   </Stack>
-                  <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>
-                    <CustomTextInput
-                      id="tva"
-                      type="number"
-                      label={t.contracts.tva}
-                      value={formik.values.tva}
-                      onChange={formik.handleChange('tva')}
-                      onBlur={formik.handleBlur('tva')}
-                      error={(hasAttemptedSubmit || formik.touched.tva) && Boolean(formik.errors.tva)}
-                      helperText={
-                        (hasAttemptedSubmit || formik.touched.tva) && formik.errors.tva
-                          ? (formik.errors.tva as string)
-                          : t.contracts.between0and100
-                      }
-                      fullWidth
-                      size="small"
-                      theme={inputTheme}
-                      startIcon={<PercentIcon fontSize="small"/>}
-                      endIcon="%"
-                    />
+                  <Stack direction={{xs: 'column', lg: 'row'}} spacing={2} sx={{alignItems: 'stretch'}}>
+                    <Box sx={{flex: 1, minWidth: {lg: 260}}}>
+                      <CustomTextInput
+                        id="tva"
+                        type="number"
+                        label={t.contracts.tva}
+                        value={formik.values.tva}
+                        onChange={formik.handleChange('tva')}
+                        onBlur={formik.handleBlur('tva')}
+                        error={(hasAttemptedSubmit || formik.touched.tva) && Boolean(formik.errors.tva)}
+                        helperText={
+                          (hasAttemptedSubmit || formik.touched.tva) && formik.errors.tva
+                            ? (formik.errors.tva as string)
+                            : t.contracts.between0and100
+                        }
+                        fullWidth
+                        size="small"
+                        theme={inputTheme}
+                        startIcon={<PercentIcon fontSize="small"/>}
+                        endIcon="%"
+                      />
+                    </Box>
                     <Box
                       sx={{
-                        flex: 1,
+                        flex: 1.4,
                         minWidth: 0,
                         border: 1,
                         borderColor: formik.values.has_penalty ? 'divider' : 'success.light',
                         borderRadius: 2,
                         px: 2,
-                        py: 1,
+                        py: 1.25,
                         display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
+                        alignItems: 'center',
                       }}
                     >
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={formik.values.has_penalty}
-                            onChange={handlePenaltyToggle}
-                          />
-                        }
-                        label={t.contracts.applyLatePenalty}
-                        sx={{mr: 0}}
-                      />
-                      <Typography variant="caption" color="text.secondary">
-                        {formik.values.has_penalty ? t.contracts.latePenaltyHelp : t.contracts.noLatePenaltyHelp}
-                      </Typography>
+                      <Stack
+                        direction={{xs: 'column', sm: 'row'}}
+                        spacing={1.5}
+                        sx={{
+                          alignItems: {xs: 'flex-start', sm: 'center'},
+                          justifyContent: 'space-between',
+                          width: '100%',
+                        }}
+                      >
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={formik.values.has_penalty}
+                              onChange={handlePenaltyToggle}
+                            />
+                          }
+                          label={t.contracts.applyLatePenalty}
+                          sx={{
+                            m: 0,
+                            flexShrink: 0,
+                            '& .MuiFormControlLabel-label': {
+                              fontWeight: 600,
+                              lineHeight: 1.25,
+                            },
+                          }}
+                        />
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{flex: 1, minWidth: 0, lineHeight: 1.4}}
+                        >
+                          {formik.values.has_penalty ? t.contracts.latePenaltyHelp : t.contracts.noLatePenaltyHelp}
+                        </Typography>
+                      </Stack>
                     </Box>
+                  </Stack>
+                  <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>
                     <CustomTextInput
                       id="penalite_retard"
                       type="number"
