@@ -269,6 +269,13 @@ describe('Zod Schema Validation', () => {
     it('validates complete contract', () => {
       expect(() => contractSchema.parse(validContract)).not.toThrow();
     });
+    it('accepts a contract without late penalty', () => {
+      expect(() => contractSchema.parse({
+        ...validContract,
+        has_penalty: false,
+        penalite_retard: '0',
+      })).not.toThrow();
+    });
     it('fails with missing numero_contrat', () => {
       expect(() => contractSchema.parse({...validContract, numero_contrat: ''})).toThrow();
     });

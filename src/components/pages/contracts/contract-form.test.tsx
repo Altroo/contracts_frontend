@@ -1,5 +1,5 @@
 import React from 'react';
-import {cleanup, render, screen} from '@testing-library/react';
+import {cleanup, fireEvent, render, screen, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {Provider} from 'react-redux';
 import {configureStore} from '@reduxjs/toolkit';
@@ -60,9 +60,35 @@ jest.mock('@/store/services/contract', () => ({
 // Mock form subcomponents
 jest.mock('@/components/formikElements/customTextInput/customTextInput', () => ({
   __esModule: true,
-  default: ({id, label}: { id: string; label: string }) => (
+  default: ({
+    id,
+    label,
+    type = 'text',
+    value = '',
+    onChange,
+    onBlur,
+    disabled,
+  }: {
+    id: string;
+    label: string;
+    type?: React.HTMLInputTypeAttribute;
+    value?: string;
+    onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
+    disabled?: boolean;
+  }) => (
     <div data-testid={`input-${id}`}>
-      <label>{label}</label>
+      <label htmlFor={id}>{label}</label>
+      <input
+        id={id}
+        aria-label={label}
+        type={type}
+        value={value}
+        onChange={onChange}
+        onBlur={onBlur}
+        disabled={disabled}
+        readOnly={!onChange}
+      />
     </div>
   ),
 }));
@@ -300,6 +326,29 @@ describe('ContractFormClient', () => {
     it('renders submit button with create text', () => {
       renderWithProviders(<ContractFormClient session={mockSession}/>);
       expect(screen.getByTestId('submit-button')).toHaveTextContent('Créer le contrat');
+    });
+
+    it('submits zero late penalty when penalty is disabled', async () => {
+      const unwrap = jest.fn().mockResolvedValue({id: 77});
+      mockAddContractMutation.mockReturnValue({unwrap});
+
+      renderWithProviders(<ContractFormClient session={mockSession}/>);
+
+      fireEvent.change(screen.getByLabelText(/nom du client/i), {target: {value: 'Client Casa'}});
+      const penaltySwitchLabel = screen.getByText('Appliquer une pénalité de retard').closest('label');
+
+      expect(penaltySwitchLabel).not.toBeNull();
+      fireEvent.click(penaltySwitchLabel!);
+      await waitFor(() => expect(screen.getByText(/sans pénalité de retard/i)).toBeInTheDocument());
+      expect(screen.getByLabelText('Pénalité de retard')).toBeDisabled();
+
+      fireEvent.click(screen.getByTestId('submit-button'));
+
+      await waitFor(() => expect(mockAddContractMutation).toHaveBeenCalled());
+      const request = mockAddContractMutation.mock.calls[0][0] as { data: Record<string, unknown> };
+      const payload = request.data;
+      expect(payload.penalite_retard).toBe(0);
+      expect(payload).not.toHaveProperty('has_penalty');
     });
 
     it('renders section headers', () => {

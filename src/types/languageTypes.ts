@@ -124,6 +124,10 @@ export type TranslationDictionary = {
     currency: string;
     tva: string;
     latePenalty: string;
+    applyLatePenalty: string;
+    latePenaltyHelp: string;
+    noLatePenalty: string;
+    noLatePenaltyHelp: string;
     latePenaltyUnit: string;
     paymentMethod: string;
     ribCoordinates: string;

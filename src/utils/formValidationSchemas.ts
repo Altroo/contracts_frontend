@@ -222,6 +222,7 @@ export const contractSchema = z
     devise: optionalChoiceField(),
     tva: optionalTVANumberField(0, 100),
     penalite_retard: optionalNumberField(0),
+    has_penalty: z.boolean().optional(),
     penalite_retard_unite: z.enum(['mad_per_day', 'percent_per_day']).optional(),
     garantie: optionalTextField(1, 255),
     tribunal: optionalTextField(1, 255),

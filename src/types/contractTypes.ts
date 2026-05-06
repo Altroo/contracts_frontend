@@ -178,6 +178,7 @@ export type ContractFormValuesType = {
   devise: string;
   tva: string;
   penalite_retard: string;
+  has_penalty: boolean;
   penalite_retard_unite: ContractPenaliteRetardUniteType;
   garantie: string;
   tribunal: string;

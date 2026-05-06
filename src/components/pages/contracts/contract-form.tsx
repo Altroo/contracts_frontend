@@ -15,6 +15,7 @@ import {
   IconButton,
   InputAdornment,
   Stack,
+  Switch,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
@@ -197,6 +198,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
   const initialIsBlueline = initialCompany === 'blueline_works';
   const initialIsST = initialCompany === 'casa_di_lusso' && initialContractCategory === 'sous_traitance';
   const initialIsCDL = !initialIsBlueline && !initialIsST;
+  const initialHasPenalty = rawData?.penalite_retard == null
+    ? true
+    : Number(rawData.penalite_retard) > 0;
   const initialPrestations = rawData?.prestations?.length
     ? rawData.prestations
     : initialIsBlueline
@@ -252,6 +256,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       devise: rawData?.devise ?? 'MAD',
       tva: rawData?.tva != null ? String(rawData.tva) : '20',
       penalite_retard: rawData?.penalite_retard != null ? String(rawData.penalite_retard) : '100',
+      has_penalty: initialHasPenalty,
       penalite_retard_unite: normalizePenaltyUnit(rawData?.penalite_retard_unite),
       garantie: rawData?.garantie ?? '1 an',
       tribunal: rawData?.tribunal ?? 'Tanger',
@@ -359,9 +364,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       setHasAttemptedSubmit(true);
       setIsPending(true);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const {globalError, duree_estimee_unite, ...fields} = data;
+      const {globalError, duree_estimee_unite, has_penalty, ...fields} = data;
       const isBlueline = fields.company === 'blueline_works';
       const isST = fields.company === 'casa_di_lusso' && fields.contract_category === 'sous_traitance';
+      const penaltyAmount = has_penalty && fields.penalite_retard !== '' && fields.penalite_retard != null
+        ? parseFloat(fields.penalite_retard)
+        : 0;
       const payload: Record<string, unknown> = {
         ...fields,
         duree_estimee: fields.duree_estimee && duree_estimee_unite
@@ -370,7 +378,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
         montant_ht: fields.montant_ht !== '' && fields.montant_ht != null ? parseFloat(fields.montant_ht) : undefined,
         surface: fields.surface !== '' && fields.surface != null ? parseFloat(fields.surface) : undefined,
         tva: fields.tva !== '' && fields.tva != null ? parseFloat(fields.tva) : 0,
-        penalite_retard: fields.penalite_retard !== '' && fields.penalite_retard != null ? parseFloat(fields.penalite_retard) : 0,
+        penalite_retard: Number.isNaN(penaltyAmount) ? 0 : penaltyAmount,
         penalite_retard_unite: fields.penalite_retard_unite,
         mode_paiement_texte: fields.mode_paiement_texte || null,
         rib: fields.rib || null,
@@ -792,6 +800,20 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
   const isCdlRequired = (field: string) => isCDL && (casaDiLussoRequired as readonly string[]).includes(field);
   const isStRequired = (field: string) => isST && (stRequired as readonly string[]).includes(field);
   const isRequired = (field: string) => isBluelineRequired(field) || isCdlRequired(field) || isStRequired(field);
+
+  const handlePenaltyToggle = (_event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+    formik.setFieldValue('has_penalty', checked);
+    if (!checked) {
+      formik.setFieldValue('penalite_retard', '0');
+      void formik.setFieldTouched('penalite_retard', false, false);
+      return;
+    }
+
+    const currentPenalty = Number(formik.values.penalite_retard);
+    if (!formik.values.penalite_retard || Number.isNaN(currentPenalty) || currentPenalty <= 0) {
+      formik.setFieldValue('penalite_retard', '100');
+    }
+  };
 
   /* ── Stable ref so the effect below always sees the latest formik state ── */
   const formikRef = useRef(formik);
@@ -1876,6 +1898,34 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       startIcon={<PercentIcon fontSize="small"/>}
                       endIcon="%"
                     />
+                    <Box
+                      sx={{
+                        flex: 1,
+                        minWidth: 0,
+                        border: 1,
+                        borderColor: formik.values.has_penalty ? 'divider' : 'success.light',
+                        borderRadius: 2,
+                        px: 2,
+                        py: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={formik.values.has_penalty}
+                            onChange={handlePenaltyToggle}
+                          />
+                        }
+                        label={t.contracts.applyLatePenalty}
+                        sx={{mr: 0}}
+                      />
+                      <Typography variant="caption" color="text.secondary">
+                        {formik.values.has_penalty ? t.contracts.latePenaltyHelp : t.contracts.noLatePenaltyHelp}
+                      </Typography>
+                    </Box>
                     <CustomTextInput
                       id="penalite_retard"
                       type="number"
@@ -1894,6 +1944,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       theme={inputTheme}
                       startIcon={<AttachMoneyIcon fontSize="small"/>}
                       endIcon={formik.values.penalite_retard_unite === 'percent_per_day' ? '%/j' : 'MAD/j'}
+                      disabled={!formik.values.has_penalty}
                     />
                     <CustomDropDownSelect
                       id="penalite_retard_unite"
@@ -1906,6 +1957,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       }}
                       size="small"
                       theme={customDropdownTheme()}
+                      disabled={!formik.values.has_penalty}
                     />
                   </Stack>
                   <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>

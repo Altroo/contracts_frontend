@@ -97,6 +97,30 @@ describe('ContractViewClient', () => {
     expect(screen.getByText('Jean Dupont')).toBeInTheDocument();
   });
 
+  it('renders no penalty for zero late penalty contracts', () => {
+    const {useGetContractQuery} = jest.requireMock('@/store/services/contract');
+    (useGetContractQuery as jest.Mock).mockReturnValue({
+      data: {
+        id: 1,
+        numero_contrat: 'CTR-NO-PENALTY',
+        statut: 'Brouillon',
+        date_contrat: '2024-01-10',
+        client_nom: 'Client Casa',
+        montant_ht: 50000,
+        devise: 'MAD',
+        penalite_retard: '0.00',
+        penalite_retard_unite: 'mad_per_day',
+      },
+      isLoading: false,
+    });
+    render(
+      <Provider store={store}>
+        <ContractViewClient id={1}/>
+      </Provider>,
+    );
+    expect(screen.getByText('Aucune pénalité')).toBeInTheDocument();
+  });
+
   it('renders modify and delete buttons', () => {
     const {useGetContractQuery} = jest.requireMock('@/store/services/contract');
     (useGetContractQuery as jest.Mock).mockReturnValue({
