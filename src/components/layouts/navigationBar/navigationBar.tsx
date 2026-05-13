@@ -45,7 +45,7 @@ import {
 } from '@mui/icons-material';
 import {useAppDispatch, useAppSelector, useLanguage} from '@/utils/hooks';
 import {getProfilState, getUnreadNotificationCount} from '@/store/selectors';
-import LanguageSwitcher from '@/components/shared/languageSwitcher/languageSwitcher';
+import LanguageSwitcher, {LanguageFlag} from '@/components/shared/languageSwitcher/languageSwitcher';
 import {cookiesDeleter} from '@/utils/apiHelpers';
 import {
   AUTH_LOGIN,
@@ -397,10 +397,7 @@ const NavigationBar = (props: Props) => {
                           setLanguage(language === 'fr' ? 'en' : 'fr');
                           setMobileMenuAnchor(null);
                         }}>
-                          <MenuListItemIcon><span style={{
-                            fontSize: '1.2rem',
-                            lineHeight: 1
-                          }}>{language === 'fr' ? '🇬🇧' : '🇫🇷'}</span></MenuListItemIcon>
+                          <MenuListItemIcon><LanguageFlag language={language === 'fr' ? 'en' : 'fr'}/></MenuListItemIcon>
                           <MenuListItemText>{language === 'fr' ? 'English' : 'Français'}</MenuListItemText>
                         </MenuItem>
                         {is_staff && (
