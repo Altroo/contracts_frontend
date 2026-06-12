@@ -24,7 +24,6 @@ beforeEach(() => {
 
 describe('SSOStartPage', () => {
 	it('redirects to central authorize with app metadata', () => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
 		const Page = require('./page').default as () => void;
 
 		expect(() => Page()).toThrow('redirect:https://holding.example.test/sso/authorize');
@@ -36,7 +35,6 @@ describe('SSOStartPage', () => {
 
 	it('redirects to login when SSO config is missing', () => {
 		process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX = '';
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
 		const Page = require('./page').default as () => void;
 
 		expect(() => Page()).toThrow('redirect:/login?error=SSOConfiguration');

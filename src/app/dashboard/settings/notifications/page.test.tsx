@@ -19,7 +19,6 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/components/pages/settings/notifications', () => ({
 	__esModule: true,
 	default: () => {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
 		const React = require('react');
 		return React.createElement('div', null, 'NOTIFICATIONS_MARKER');
 	},
@@ -50,7 +49,6 @@ describe('NotificationsPage server component', () => {
 	it('redirects to login without a session', async () => {
 		mockAuth.mockResolvedValueOnce(null);
 
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
 		const Page = require('./page').default as () => Promise<unknown>;
 
 		await Page();
@@ -60,7 +58,6 @@ describe('NotificationsPage server component', () => {
 	it('renders notifications with a session', async () => {
 		mockAuth.mockResolvedValueOnce({ user: { pk: 1, email: 'admin@example.com' } });
 
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
 		const Page = require('./page').default as () => Promise<unknown>;
 
 		const result = await Page();

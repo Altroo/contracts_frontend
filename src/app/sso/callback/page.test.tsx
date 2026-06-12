@@ -34,7 +34,6 @@ beforeEach(() => {
 describe('SSOCallbackPage', () => {
 	it('exchanges code and redirects to dashboard', async () => {
 		mockSignIn.mockResolvedValueOnce({});
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
 		const Page = require('./page').default as React.ComponentType;
 
 		render(<Page />);
@@ -45,7 +44,6 @@ describe('SSOCallbackPage', () => {
 
 	it('redirects to login when code is missing', async () => {
 		mockSearchParams = new URLSearchParams();
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
 		const Page = require('./page').default as React.ComponentType;
 
 		render(<Page />);
