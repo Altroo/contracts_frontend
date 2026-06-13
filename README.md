@@ -42,6 +42,12 @@ bun run lint
 bun run build
 ```
 
-## Screenshot
+## Screenshots
+
+Sanitized product workspace:
+
+![Contracts product workspace](docs/screenshots/contracts-showcase.png)
+
+Authentication screen:
 
 ![Contracts login](docs/screenshots/contracts-login.png)
