@@ -275,7 +275,7 @@ export const contractSchema = z
     acompte: optionalNumberField(0, 100),
     tranche2: optionalNumberField(0, 100),
     clause_resiliation: optionalChoiceField(),
-    notes: optionalTextField(1, 5000),
+    notes: optionalTextField(1, 2000),
     /* ── Sous-Traitance (CDL) fields ── */
     st_projet: optionalNumberField(0),
     st_name: optionalTextField(1, 255),
@@ -316,7 +316,7 @@ export const contractSchema = z
     st_delai_reserves: optionalNumberField(0, 365),
     st_delai_med: optionalNumberField(0, 365),
     st_clauses_actives: z.array(z.string()).optional(),
-    st_observations: optionalTextField(1, 5000),
+    st_observations: optionalTextField(1, 2000),
     globalError: optionalTextField(1, 500),
   })
   .superRefine((data, ctx) => {

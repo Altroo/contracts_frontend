@@ -3083,7 +3083,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                   <Divider sx={{mb: 3}}/>
                   <CustomTextInput
                     id="st_observations"
-                    type="text"
+                    type="textarea"
                     label={t.contracts.observations}
                     multiline
                     rows={4}
@@ -3398,7 +3398,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                     />
                     <CustomTextInput
                       id="notes"
-                      type="text"
+                      type="textarea"
                       label={t.contracts.notes}
                       value={formik.values.notes}
                       onChange={formik.handleChange('notes')}
