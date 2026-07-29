@@ -136,6 +136,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
   const {token, id} = props;
   const {onSuccess, onError} = useToast();
   const {t} = useLanguage();
+  const translatedRawData = useMemo(() => getTranslatedRawData(t), [t]);
   const {
     clauseResiliationItemsList,
     clientQualiteItemsList,
@@ -159,7 +160,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
     stTypePrixItemsList,
     typeBienItemsList,
     typeContratItemsList: typeContratItems,
-  } = getTranslatedRawData(t);
+  } = translatedRawData;
   const isEditMode = id !== undefined;
   const theme = useTheme();
   const router = useRouter();

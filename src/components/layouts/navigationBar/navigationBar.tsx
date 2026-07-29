@@ -179,18 +179,27 @@ const NavigationBar = (props: Props) => {
   const [fetchNotifications] = useLazyGetNotificationsQuery();
   const [markAllRead] = useMarkNotificationsReadMutation();
   const [notifAnchor, setNotifAnchor] = useState<HTMLElement | null>(null);
-  const [allNotifications, setAllNotifications] = useState<NotificationType[]>([]);
-  const [notifPage, setNotifPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
+  const [notificationPagination, setNotificationPagination] = useState<{
+    firstPageResults: NotificationType[] | undefined;
+    additionalNotifications: NotificationType[];
+    page: number;
+    hasMore: boolean;
+  }>({
+    firstPageResults: undefined,
+    additionalNotifications: [],
+    page: 1,
+    hasMore: false,
+  });
   const [loadingMore, setLoadingMore] = useState(false);
-
-  useEffect(() => {
-    if (firstPage) {
-      setAllNotifications(firstPage.results);
-      setHasMore(firstPage.next !== null);
-      setNotifPage(1);
-    }
-  }, [firstPage]);
+  const hasCurrentPagination = notificationPagination.firstPageResults === firstPage?.results;
+  const additionalNotifications = hasCurrentPagination
+    ? notificationPagination.additionalNotifications
+    : [];
+  const allNotifications = [...(firstPage?.results ?? []), ...additionalNotifications];
+  const notifPage = hasCurrentPagination ? notificationPagination.page : 1;
+  const hasMore = hasCurrentPagination
+    ? notificationPagination.hasMore
+    : firstPage?.next !== null && firstPage?.next !== undefined;
 
   useEffect(() => {
     if (unreadCountData?.count !== undefined) {
@@ -230,13 +239,19 @@ const NavigationBar = (props: Props) => {
     setLoadingMore(true);
     try {
       const result = await fetchNotifications({page: nextPage}).unwrap();
-      setAllNotifications((prev) => [...prev, ...result.results]);
-      setHasMore(result.next !== null);
-      setNotifPage(nextPage);
+      setNotificationPagination((prev) => ({
+        firstPageResults: firstPage?.results,
+        additionalNotifications: [
+          ...(prev.firstPageResults === firstPage?.results ? prev.additionalNotifications : []),
+          ...result.results,
+        ],
+        page: nextPage,
+        hasMore: result.next !== null,
+      }));
     } finally {
       setLoadingMore(false);
     }
-  }, [fetchNotifications, notifPage]);
+  }, [fetchNotifications, firstPage?.results, notifPage]);
 
   const logOutHandler = async () => {
     await cookiesDeleter('/api/cookies', {
