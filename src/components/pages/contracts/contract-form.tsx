@@ -77,7 +77,7 @@ import {
   getTranslatedRawData,
   tribunalItemsList,
 } from '@/utils/rawData';
-import {CONTRACTS_LIST, CONTRACTS_VIEW} from '@/utils/routes';
+import {CONTRACTS_VIEW} from '@/utils/routes';
 import {useRouter} from 'next/navigation';
 import {useLanguage, useToast} from '@/utils/hooks';
 import {
@@ -108,6 +108,7 @@ import {useInitAccessToken} from '@/contexts/InitContext';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import {Protected} from '@/components/layouts/protected/protected';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
+import {useDataGridPagination} from '@/components/shared/paginatedDataGrid/useDataGridPagination';
 
 const inputTheme = textInputTheme();
 const gridCellInputTheme = gridInputTheme();
@@ -164,6 +165,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
   const isEditMode = id !== undefined;
   const theme = useTheme();
   const router = useRouter();
+  const [tranchePaginationModel, setTranchePaginationModel] = useDataGridPagination(5, 'tranches');
+  const [stTranchePaginationModel, setStTranchePaginationModel] = useDataGridPagination(5, 'st_tranches');
+  const [prestationPaginationModel, setPrestationPaginationModel] = useDataGridPagination(5, 'prestations');
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const {
@@ -1352,7 +1356,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
         <Button
           variant="outlined"
           startIcon={<ArrowBackIcon/>}
-          onClick={() => router.push(CONTRACTS_LIST)}
+          onClick={() => router.back()}
           sx={{
             whiteSpace: 'nowrap',
             px: {xs: 1.5, sm: 2, md: 3},
@@ -2200,13 +2204,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                     <DataGrid
                       rows={trancheRows}
                       columns={trancheColumns}
+                      paginationModel={tranchePaginationModel}
+                      onPaginationModelChange={setTranchePaginationModel}
                       localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
                       rowHeight={52}
                       disableColumnMenu
                       disableRowSelectionOnClick
                       hideFooter={(formik.values.tranches ?? []).length <= 5}
                       pageSizeOptions={[5, 10, 25]}
-                      initialState={{pagination: {paginationModel: {pageSize: 5}}}}
                       sx={{
                         border: 1,
                         borderColor: 'divider',
@@ -2887,13 +2892,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                     <DataGrid
                       rows={stTrancheRows}
                       columns={stTrancheColumns}
+                      paginationModel={stTranchePaginationModel}
+                      onPaginationModelChange={setStTranchePaginationModel}
                       localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
                       rowHeight={52}
                       disableColumnMenu
                       disableRowSelectionOnClick
                       hideFooter={(formik.values.st_tranches ?? []).length <= 5}
                       pageSizeOptions={[5, 10, 25]}
-                      initialState={{pagination: {paginationModel: {pageSize: 5}}}}
                       sx={{
                         border: 1,
                         borderColor: 'divider',
@@ -3139,13 +3145,14 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                     <DataGrid
                       rows={prestationRows}
                       columns={prestationColumns}
+                      paginationModel={prestationPaginationModel}
+                      onPaginationModelChange={setPrestationPaginationModel}
                       localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
                       rowHeight={52}
                       disableColumnMenu
                       disableRowSelectionOnClick
                       hideFooter={(formik.values.prestations ?? []).length <= 5}
                       pageSizeOptions={[5, 10, 25]}
-                      initialState={{pagination: {paginationModel: {pageSize: 5}}}}
                       sx={{
                         border: 1,
                         borderColor: 'divider',

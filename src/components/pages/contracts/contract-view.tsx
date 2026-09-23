@@ -284,7 +284,7 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
                 variant="outlined"
                 size="large"
                 startIcon={<ArrowBackIcon/>}
-                onClick={() => router.push(CONTRACTS_LIST)}
+                onClick={() => router.back()}
                 sx={{width: isMobile ? '100%' : 'auto'}}
               >
                 {t.navigation.contractsList}
