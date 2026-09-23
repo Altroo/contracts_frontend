@@ -1,6 +1,7 @@
 'use client';
 
-import React, {useCallback, useState} from 'react';
+import {runWithCleanup} from '@/utils/runWithCleanup';
+import { useState, type FC, type MouseEvent} from 'react';
 import {useRouter} from 'next/navigation';
 import {Box, Button, Chip, Divider, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography} from '@mui/material';
 import {
@@ -29,7 +30,7 @@ import {useDataGridPagination} from '@/components/shared/paginatedDataGrid/useDa
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import type {ContractClass} from '@/models/classes';
 import {extractApiErrorMessage, formatDate} from '@/utils/helpers';
-import {companyItemsList, getContractStatusColor, getTranslatedRawData} from '@/utils/rawData';
+import {companyItemsList, createContractStatutFilterOptions, getContractStatusColor, getTranslatedRawData} from '@/utils/rawData';
 import {useLanguage, useToast} from '@/utils/hooks';
 import {fetchFileBlob} from '@/utils/apiHelpers';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
@@ -43,7 +44,7 @@ import {createNumericFilterOperators} from '@/components/shared/numericFilter/nu
 import type {ChipFilterConfig} from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelectFilterBar';
 
-const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
+const ContractsListClient: FC<SessionProps> = ({session}: SessionProps) => {
   const router = useRouter();
   const {onSuccess, onError} = useToast();
   const {t} = useLanguage();
@@ -89,15 +90,20 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
   const [bulkDeleteContracts] = useBulkDeleteContractsMutation();
 
   const deleteHandler = async () => {
-    try {
-      await deleteRecord({id: selectedContractId!}).unwrap();
-      onSuccess(t.contracts.contractDeletedSuccess);
-      refetch();
-    } catch (err) {
-      onError(extractApiErrorMessage(err, t.errors.deletionError));
-    } finally {
-      setShowDeleteModal(false);
-    }
+    await runWithCleanup(
+      async () => {
+        try {
+          await deleteRecord({id: selectedContractId!}).unwrap();
+          onSuccess(t.contracts.contractDeletedSuccess);
+          refetch();
+        } catch (err) {
+          onError(extractApiErrorMessage(err, t.errors.deletionError));
+        }
+      },
+      () => {
+        setShowDeleteModal(false);
+      },
+    );
   };
 
   const deleteModalActions = [
@@ -111,26 +117,31 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
     {text: t.common.delete, active: true, onClick: deleteHandler, icon: <DeleteIcon/>, color: '#D32F2F'},
   ];
 
-  const showDeleteModalCall = useCallback((id: number) => {
+  const showDeleteModalCall = (id: number) => {
     setSelectedContractId(id);
     setShowDeleteModal(true);
-  }, []);
+  };
 
   const handleSelectionChange = (ids: number[]) => {
     setSelectedContractIds(ids);
   };
 
   const bulkDeleteHandler = async () => {
-    try {
-      await bulkDeleteContracts({ids: selectedContractIds}).unwrap();
-      onSuccess(t.contracts.bulkContractDeletedSuccess(selectedContractIds.length));
-    } catch (err) {
-      onError(extractApiErrorMessage(err, t.errors.deletionError));
-    } finally {
-      setSelectedContractIds([]);
-      setShowBulkDeleteModal(false);
-      refetch();
-    }
+    await runWithCleanup(
+      async () => {
+        try {
+          await bulkDeleteContracts({ids: selectedContractIds}).unwrap();
+          onSuccess(t.contracts.bulkContractDeletedSuccess(selectedContractIds.length));
+        } catch (err) {
+          onError(extractApiErrorMessage(err, t.errors.deletionError));
+        }
+      },
+      () => {
+        setSelectedContractIds([]);
+        setShowBulkDeleteModal(false);
+        refetch();
+      },
+    );
   };
 
   const bulkDeleteModalActions = [
@@ -150,67 +161,57 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
     },
   ];
 
-  const showPrintMenuCall = useCallback((e: React.MouseEvent<HTMLElement>, id: number) => {
+  const showPrintMenuCall = (e: MouseEvent<HTMLElement>, id: number) => {
     setPrintAnchorEl(e.currentTarget);
     setPrintMenuItemId(id);
-  }, []);
+  };
 
-  const handlePrintMenuClose = useCallback(() => {
+  const handlePrintMenuClose = () => {
     setPrintAnchorEl(null);
     setPrintMenuItemId(null);
-  }, []);
+  };
 
-  const handlePrintMenuItemClick = useCallback((format: 'pdf' | 'docx') => {
+  const handlePrintMenuItemClick = (format: 'pdf' | 'docx') => {
     setPrintAnchorEl(null);
     setPendingDocFormat(format);
     setShowLanguageModal(true);
-  }, []);
+  };
 
-  const handleLanguageSelect = useCallback(
-    async (language: 'fr' | 'en') => {
+  const handleLanguageSelect = async (language: 'fr' | 'en') => {
       setShowLanguageModal(false);
       if (!pendingDocFormat || printMenuItemId === null) return;
       setIsDocLoading(true);
-      try {
-        let url: string;
-        if (pendingDocFormat === 'pdf') url = CONTRACT_PDF(printMenuItemId, language);
-        else url = CONTRACT_DOC(printMenuItemId, language);
-        const blob = await fetchFileBlob(url, token!);
-        const blobUrl = window.URL.createObjectURL(blob);
-        window.open(blobUrl, '_blank');
-        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
-      } catch {
-        onError(t.errors.documentOpenError);
-      } finally {
-        setPendingDocFormat(null);
-        setPrintMenuItemId(null);
-        setIsDocLoading(false);
-      }
-    },
-    [pendingDocFormat, printMenuItemId, token, onError, t.errors.documentOpenError],
-  );
+      await runWithCleanup(
+        async () => {
+          try {
+            let url: string;
+            if (pendingDocFormat === 'pdf') url = CONTRACT_PDF(printMenuItemId, language);
+            else url = CONTRACT_DOC(printMenuItemId, language);
+            const blob = await fetchFileBlob(url, token!);
+            const blobUrl = window.URL.createObjectURL(blob);
+            window.open(blobUrl, '_blank');
+            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
+          } catch {
+            onError(t.errors.documentOpenError);
+          }
+        },
+        () => {
+          setPendingDocFormat(null);
+          setPrintMenuItemId(null);
+          setIsDocLoading(false);
+        },
+      );
+    };
 
-  const handleLanguageModalClose = useCallback(() => {
+  const handleLanguageModalClose = () => {
     setShowLanguageModal(false);
     setPendingDocFormat(null);
     setPrintMenuItemId(null);
-  }, []);
+  };
 
-  const statutFilterOptions = React.useMemo(
-    () => [
-      {value: 'Brouillon', label: t.contracts.statusDraft, color: 'default' as const},
-      {value: 'Envoyé', label: t.contracts.statusSent, color: 'info' as const},
-      {value: 'Signé', label: t.contracts.statusSigned, color: 'primary' as const},
-      {value: 'En cours', label: t.contracts.statusInProgress, color: 'warning' as const},
-      {value: 'Terminé', label: t.contracts.statusCompleted, color: 'success' as const},
-      {value: 'Annulé', label: t.contracts.statusCancelled, color: 'error' as const},
-      {value: 'Expiré', label: t.contracts.statusExpired, color: 'warning' as const},
-    ],
-    [t],
-  );
+  const statutFilterOptions = createContractStatutFilterOptions(t);
 
-  const chipFilters = React.useMemo<ChipFilterConfig[]>(
-    () => [
+  const chipFilters: ChipFilterConfig[] = ([
       {
         key: 'company',
         label: t.contracts.company,
@@ -223,11 +224,9 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
         paramName: 'contract_category',
         options: contractCategoryItemsList.map((c) => ({id: c.code, nom: c.value})),
       },
-    ],
-    [t, contractCategoryItemsList],
-  );
+    ]);
 
-  const columns = React.useMemo<GridColDef[]>(() => [
+  const columns: GridColDef[] = ([
     {
       field: 'numero_contrat',
       headerName: t.contracts.reference,
@@ -388,7 +387,7 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
           {
             label: t.common.display,
             icon: <PrintIcon/>,
-            onClick: (e?: React.MouseEvent<HTMLElement>) => {
+            onClick: (e?: MouseEvent<HTMLElement>) => {
               if (e) {
                 showPrintMenuCall(e, params.row.id);
               }
@@ -410,7 +409,7 @@ const ContractsListClient: React.FC<SessionProps> = ({session}: SessionProps) =>
         );
       },
     },
-  ], [t, contractCategoryItemsList, statutFilterOptions, router, showPrintMenuCall, showDeleteModalCall]);
+  ]);
 
   return (
     <Stack

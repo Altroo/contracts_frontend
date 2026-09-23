@@ -1,17 +1,17 @@
-import React, {forwardRef} from 'react';
+import type {ChangeEvent, ClipboardEvent, FocusEvent, HTMLInputTypeAttribute, InputEvent, InputHTMLAttributes, KeyboardEvent, Ref} from 'react';
 import {ThemeProvider} from '@mui/material';
 import TextField, {type TextFieldProps} from '@mui/material/TextField';
 import type {Theme} from '@mui/material/styles';
 
 type Props = {
-  type: React.HTMLInputTypeAttribute;
+  type: HTMLInputTypeAttribute;
   id: string;
   value: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onInput?: (e: React.InputEvent<HTMLInputElement>) => void;
-  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
-  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  onPaste?: (e: React.ClipboardEvent<HTMLInputElement>) => void;
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+  onInput?: (e: InputEvent<HTMLInputElement>) => void;
+  onBlur?: (e: FocusEvent<HTMLInputElement>) => void;
+  onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
+  onPaste?: (e: ClipboardEvent<HTMLInputElement>) => void;
   theme: Theme;
   cssClass?: string;
   helperText?: string;
@@ -23,16 +23,18 @@ type Props = {
   disabled?: boolean;
   onClick?: () => void;
   autoFocus?: boolean;
-  slotProps?: TextFieldProps['slotProps'] & { htmlInput?: React.InputHTMLAttributes<HTMLInputElement> };
-  inputRef?: React.Ref<HTMLInputElement | null>;
+  slotProps?: TextFieldProps['slotProps'] & { htmlInput?: InputHTMLAttributes<HTMLInputElement> };
+  inputRef?: Ref<HTMLInputElement>;
+  ref?: Ref<HTMLInputElement>;
 };
 
-const CustomOutlinedText = forwardRef<HTMLInputElement, Props>((props, ref) => {
+const CustomOutlinedText = (props: Props) => {
   const {
     cssClass,
     theme,
     slotProps,
     inputRef,
+    ref,
     value,
     onChange,
     onInput,
@@ -54,7 +56,7 @@ const CustomOutlinedText = forwardRef<HTMLInputElement, Props>((props, ref) => {
   } = props;
 
   // Merge parent-provided slotProps.htmlInput with explicit handlers (do not override parent's handlers)
-  const mergedHtmlInput: React.InputHTMLAttributes<HTMLInputElement> = {
+  const mergedHtmlInput: InputHTMLAttributes<HTMLInputElement> = {
     ...(slotProps?.htmlInput ?? {}),
     onChange: slotProps?.htmlInput?.onChange ?? onChange,
     onInput: slotProps?.htmlInput?.onInput ?? onInput,
@@ -83,7 +85,7 @@ const CustomOutlinedText = forwardRef<HTMLInputElement, Props>((props, ref) => {
         disabled={disabled}
         onClick={onClick}
         autoFocus={autoFocus}
-        inputRef={inputRef ?? (ref as React.Ref<HTMLInputElement | null>)}
+        inputRef={inputRef ?? ref}
         variant="outlined"
         slotProps={{
           ...(slotProps ?? {}),
@@ -93,7 +95,7 @@ const CustomOutlinedText = forwardRef<HTMLInputElement, Props>((props, ref) => {
       />
     </ThemeProvider>
   );
-});
+};
 
 CustomOutlinedText.displayName = 'CustomOutlinedText';
 export default CustomOutlinedText;

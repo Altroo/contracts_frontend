@@ -1,6 +1,7 @@
 'use client';
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {runWithCleanup} from '@/utils/runWithCleanup';
+import { useEffect, useEffectEvent, useState, type ChangeEvent, type FC, type KeyboardEvent, type MouseEvent} from 'react';
 import type {ApiErrorResponseType, ResponseDataInterface, SessionProps} from '@/types/_initTypes';
 import {
   Alert,
@@ -73,6 +74,11 @@ import {toFormikValidationSchema} from 'zod-formik-adapter';
 import {formatLocalDate, getLabelForKey, setFormikAutoErrors} from '@/utils/helpers';
 import {
   companyItemsList,
+  blFields,
+  cdlFields,
+  stFields,
+  createCdlClauseOptions,
+  createCdlServiceOptions,
   deviseItemsList as deviseItems,
   getTranslatedRawData,
   tribunalItemsList,
@@ -121,7 +127,7 @@ const hasValidTrancheTotal = (tranches?: Array<{
   pourcentage: number
 }>) => Math.abs(getTrancheTotal(tranches) - 100) < 0.001;
 
-const stopGridEditorKeyPropagation = (event: React.KeyboardEvent<HTMLInputElement>) => {
+const stopGridEditorKeyPropagation = (event: KeyboardEvent<HTMLInputElement>) => {
   event.stopPropagation();
 };
 
@@ -133,11 +139,11 @@ type FormikContentProps = {
   id?: number;
 };
 
-const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
+const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
   const {token, id} = props;
   const {onSuccess, onError} = useToast();
   const {t} = useLanguage();
-  const translatedRawData = useMemo(() => getTranslatedRawData(t), [t]);
+  const translatedRawData = (getTranslatedRawData(t));
   const {
     clauseResiliationItemsList,
     clientQualiteItemsList,
@@ -189,10 +195,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
   } = useGetProjectsListQuery({company: 'casa_di_lusso'}, {skip: !token});
 
   const error = isEditMode ? dataError || editError : addError;
-  const axiosError: ResponseDataInterface<ApiErrorResponseType> | undefined = useMemo(
-    () => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
-    [error],
-  );
+  const axiosError: ResponseDataInterface<ApiErrorResponseType> | undefined = ((error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined));
 
   const [isPending, setIsPending] = useState(false);
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
@@ -485,31 +488,35 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
         payload.st_clauses_actives = [];
         payload.st_observations = '';
       }
-      try {
-        if (isEditMode) {
-          await editContract({id: id!, data: payload}).unwrap();
-          onSuccess(t.contracts.contractUpdatedSuccess);
-          router.push(CONTRACTS_VIEW(id!));
-        } else {
-          const result = await addContract({data: payload}).unwrap();
-          onSuccess(t.contracts.contractCreatedSuccess);
-          router.push(CONTRACTS_VIEW(result.id));
-        }
-      } catch (e) {
-        if (isEditMode) {
-          onError(t.contracts.contractUpdateError);
-        } else {
-          onError(t.contracts.contractCreateError);
-        }
-        setFormikAutoErrors({e, setFieldError});
-      } finally {
-        setIsPending(false);
-      }
+      await runWithCleanup(
+        async () => {
+          try {
+            if (isEditMode) {
+              await editContract({id: id!, data: payload}).unwrap();
+              onSuccess(t.contracts.contractUpdatedSuccess);
+              router.push(CONTRACTS_VIEW(id!));
+            } else {
+              const result = await addContract({data: payload}).unwrap();
+              onSuccess(t.contracts.contractCreatedSuccess);
+              router.push(CONTRACTS_VIEW(result.id));
+            }
+          } catch (e) {
+            if (isEditMode) {
+              onError(t.contracts.contractUpdateError);
+            } else {
+              onError(t.contracts.contractCreateError);
+            }
+            setFormikAutoErrors({e, setFieldError});
+          }
+        },
+        () => {
+          setIsPending(false);
+        },
+      );
     },
   });
 
-  const fieldLabels = useMemo<Record<string, string>>(
-    () => ({
+  const fieldLabels = (({
       company: t.contracts.company,
       contract_category: t.contracts.category,
       numero_contrat: t.contracts.contractNumber,
@@ -600,149 +607,101 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       st_clauses_actives: t.contracts.activeClausesST,
       st_observations: t.contracts.stObservations,
       globalError: t.contracts.globalError,
-    }),
-    [t],
-  );
+    }));
 
   /* ── CDL: Available services and clauses ── */
-  const cdlServiceOptions = useMemo(() => [
-    t.contracts.svcDesign,
-    t.contracts.svcDemolition,
-    t.contracts.svcMasonry,
-    t.contracts.svcCeilings,
-    t.contracts.svcFloorCoatings,
-    t.contracts.svcWallCoatings,
-    t.contracts.svcWoodwork,
-    t.contracts.svcAluminium,
-    t.contracts.svcMetalwork,
-    t.contracts.svcGlasswork,
-    t.contracts.svcPlumbing,
-    t.contracts.svcElectricity,
-    t.contracts.svcHomeAutomation,
-    t.contracts.svcHVAC,
-    t.contracts.svcInsulation,
-    t.contracts.svcPainting,
-    t.contracts.svcPlastering,
-    t.contracts.svcTiling,
-    t.contracts.svcMarble,
-    t.contracts.svcKitchen,
-    t.contracts.svcBathroom,
-    t.contracts.svcDressing,
-    t.contracts.svcStairs,
-    t.contracts.svcPool,
-    t.contracts.svcLandscaping,
-    t.contracts.svcFurniture,
-    t.contracts.svcElevators,
-    t.contracts.svcFireSafety,
-    t.contracts.svcWaterproofing,
-    t.contracts.svcProjectManagement,
-  ], [t]);
-
-  const cdlClauseOptions = useMemo(() => [
-    {key: 'c-comportement', label: t.contracts.clauseBehavior},
-    {key: 'c-prop-intel', label: t.contracts.clauseIP},
-    {key: 'c-image', label: t.contracts.clauseImage},
-    {key: 'c-confidential', label: t.contracts.clauseConfidentiality},
-    {key: 'c-sous-traiter', label: t.contracts.clauseSubcontracting},
-    {key: 'c-materiau-prix', label: t.contracts.clauseMaterialPrices},
-    {key: 'c-force-maj', label: t.contracts.clauseForceMajeure},
-    {key: 'c-abandon-chant', label: t.contracts.clauseSiteAbandonment},
-    {key: 'c-non-debauch', label: t.contracts.clauseNonPoaching},
-    {key: 'c-anti-litige', label: t.contracts.clauseMediation},
-  ], [t]);
+  const cdlServiceOptions = createCdlServiceOptions(t);
+  const cdlClauseOptions = createCdlClauseOptions(t);
 
   /* ── CDL: Tranches helpers ── */
-  const addTranche = useCallback(() => {
+  const addTranche = () => {
     const current = formik.values.tranches ?? [];
-    formik.setFieldValue('tranches', [...current, {label: '', pourcentage: 0}]);
-  }, [formik]);
+    void formik.setFieldValue('tranches', [...current, {label: '', pourcentage: 0}]);
+  };
 
-  const removeTranche = useCallback((index: number) => {
+  const removeTranche = (index: number) => {
     const current = formik.values.tranches ?? [];
-    formik.setFieldValue('tranches', current.filter((_, i) => i !== index));
-  }, [formik]);
+    void formik.setFieldValue('tranches', current.filter((_, i) => i !== index));
+  };
 
-  const updateTranche = useCallback((index: number, field: keyof ContractTrancheType, value: string | number) => {
+  const updateTranche = (index: number, field: keyof ContractTrancheType, value: string | number) => {
     const current = [...(formik.values.tranches ?? [])];
     current[index] = {...current[index], [field]: value};
-    formik.setFieldValue('tranches', current);
-  }, [formik]);
+    void formik.setFieldValue('tranches', current);
+  };
 
   /* ── CDL: Services toggle ── */
-  const toggleService = useCallback((svc: string) => {
+  const toggleService = (svc: string) => {
     const current = formik.values.services ?? [];
     if (current.includes(svc)) {
-      formik.setFieldValue('services', current.filter((s) => s !== svc));
+      void formik.setFieldValue('services', current.filter((s) => s !== svc));
     } else {
-      formik.setFieldValue('services', [...current, svc]);
+      void formik.setFieldValue('services', [...current, svc]);
     }
-  }, [formik]);
+  };
 
   /* ── CDL: Clauses toggle ── */
-  const toggleClause = useCallback((key: string) => {
+  const toggleClause = (key: string) => {
     const current = formik.values.clauses_actives ?? [];
     if (current.includes(key)) {
-      formik.setFieldValue('clauses_actives', current.filter((c) => c !== key));
+      void formik.setFieldValue('clauses_actives', current.filter((c) => c !== key));
     } else {
-      formik.setFieldValue('clauses_actives', [...current, key]);
+      void formik.setFieldValue('clauses_actives', [...current, key]);
     }
-  }, [formik]);
+  };
 
   /* ── ST: Tranches helpers ── */
-  const addStTranche = useCallback(() => {
+  const addStTranche = () => {
     const current = formik.values.st_tranches ?? [];
-    formik.setFieldValue('st_tranches', [...current, {label: '', pourcentage: 0, delai_jours: 0}]);
-  }, [formik]);
+    void formik.setFieldValue('st_tranches', [...current, {label: '', pourcentage: 0, delai_jours: 0}]);
+  };
 
-  const removeStTranche = useCallback((index: number) => {
+  const removeStTranche = (index: number) => {
     const current = formik.values.st_tranches ?? [];
-    formik.setFieldValue('st_tranches', current.filter((_: STTrancheType, i: number) => i !== index));
-  }, [formik]);
+    void formik.setFieldValue('st_tranches', current.filter((_: STTrancheType, i: number) => i !== index));
+  };
 
-  const updateStTranche = useCallback((index: number, field: keyof STTrancheType, value: string | number) => {
+  const updateStTranche = (index: number, field: keyof STTrancheType, value: string | number) => {
     const current = [...(formik.values.st_tranches ?? [])];
     current[index] = {...current[index], [field]: value};
-    formik.setFieldValue('st_tranches', current);
-  }, [formik]);
+    void formik.setFieldValue('st_tranches', current);
+  };
 
   /* ── ST: Clauses toggle ── */
-  const toggleStClause = useCallback((key: string) => {
+  const toggleStClause = (key: string) => {
     const current = formik.values.st_clauses_actives ?? [];
     if (current.includes(key)) {
-      formik.setFieldValue('st_clauses_actives', current.filter((c: string) => c !== key));
+      void formik.setFieldValue('st_clauses_actives', current.filter((c: string) => c !== key));
     } else {
-      formik.setFieldValue('st_clauses_actives', [...current, key]);
+      void formik.setFieldValue('st_clauses_actives', [...current, key]);
     }
-  }, [formik]);
+  };
 
   /* ── ST: Lot & Type prix toggles ── */
-  const toggleStLotType = useCallback((code: string) => {
+  const toggleStLotType = (code: string) => {
     const current = formik.values.st_lot_type ?? [];
     if (current.includes(code)) {
-      formik.setFieldValue('st_lot_type', current.filter((c) => c !== code));
+      void formik.setFieldValue('st_lot_type', current.filter((c) => c !== code));
     } else {
-      formik.setFieldValue('st_lot_type', [...current, code]);
+      void formik.setFieldValue('st_lot_type', [...current, code]);
     }
-  }, [formik]);
+  };
 
-  const toggleStTypePrix = useCallback((code: string) => {
+  const toggleStTypePrix = (code: string) => {
     const current = formik.values.st_type_prix ?? [];
     if (current.includes(code)) {
-      formik.setFieldValue('st_type_prix', current.filter((c) => c !== code));
+      void formik.setFieldValue('st_type_prix', current.filter((c) => c !== code));
     } else {
-      formik.setFieldValue('st_type_prix', [...current, code]);
+      void formik.setFieldValue('st_type_prix', [...current, code]);
     }
-  }, [formik]);
+  };
 
-  const validationErrors = useMemo(() => {
+  const validationErrors = (() => {
     const errors: Record<string, string> = {};
     const currentCompany = formik.values.company;
     const currentCategory = formik.values.contract_category;
     const currentTranches = formik.values.tranches ?? [];
     const currentStTranches = formik.values.st_tranches ?? [];
-    const blFields = new Set(['prestations', 'fournitures', 'eau_electricite', 'acompte', 'tranche2', 'clause_resiliation', 'client_ville', 'client_cp', 'chantier_ville', 'chantier_etage', 'garantie_nb', 'garantie_unite', 'garantie_type', 'exclusions_garantie', 'materiaux_detail', 'notes']);
-    const cdlFields = new Set(['type_contrat', 'services', 'tranches', 'delai_retard', 'frais_redemarrage', 'delai_reserves', 'clauses_actives', 'clause_spec', 'exclusions', 'architecte', 'annexes', 'conditions_acces']);
-    const stFields = new Set(['st_projet', 'st_name', 'st_forme', 'st_capital', 'st_rc', 'st_ice', 'st_if', 'st_cnss', 'st_addr', 'st_rep', 'st_cin', 'st_qualite', 'st_tel', 'st_email', 'st_rib', 'st_banque', 'st_lot_type', 'st_lot_description', 'st_type_prix', 'st_retenue_garantie', 'st_avance', 'st_penalite_taux', 'st_plafond_penalite', 'st_delai_paiement', 'st_tranches', 'st_delai_val', 'st_delai_unit', 'st_garantie_mois', 'st_delai_reserves', 'st_delai_med', 'st_clauses_actives', 'st_observations']);
     const currentIsST = currentCompany === 'casa_di_lusso' && currentCategory === 'sous_traitance';
     if (hasAttemptedSubmit) {
       Object.entries(formik.errors).forEach(([key, value]) => {
@@ -787,7 +746,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       }
     }
     return errors;
-  }, [formik.errors, formik.values.company, formik.values.contract_category, formik.values.tranches, formik.values.st_tranches, hasAttemptedSubmit, t]);
+  })();
 
   const hasValidationErrors = Object.keys(validationErrors).length > 0;
   const isLoading = isAddLoading || isEditLoading || isPending || (isEditMode && isDataLoading) || (!isEditMode && isCodeLoading);
@@ -806,36 +765,34 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
   const isStRequired = (field: string) => isST && (stRequired as readonly string[]).includes(field);
   const isRequired = (field: string) => isBluelineRequired(field) || isCdlRequired(field) || isStRequired(field);
 
-  const handlePenaltyToggle = (_event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
-    formik.setFieldValue('has_penalty', checked);
+  const handlePenaltyToggle = (_event: ChangeEvent<HTMLInputElement>, checked: boolean) => {
+    void formik.setFieldValue('has_penalty', checked);
     if (!checked) {
-      formik.setFieldValue('penalite_retard', '0');
+      void formik.setFieldValue('penalite_retard', '0');
       void formik.setFieldTouched('penalite_retard', false, false);
       return;
     }
 
     const currentPenalty = Number(formik.values.penalite_retard);
     if (!formik.values.penalite_retard || Number.isNaN(currentPenalty) || currentPenalty <= 0) {
-      formik.setFieldValue('penalite_retard', '100');
+      void formik.setFieldValue('penalite_retard', '100');
     }
   };
 
-  /* ── Stable ref so the effect below always sees the latest formik state ── */
-  const formikRef = useRef(formik);
-  useEffect(() => {
-    formikRef.current = formik;
+  const seedRequiredRow = useEffectEvent(() => {
+    const {setFieldValue, values} = formik;
+    if (isBlueline && !values.prestations?.length) {
+      void setFieldValue('prestations', [{nom: '', description: '', quantite: 0, unite: 'm2', prix_unitaire: 0}]);
+    } else if (isST && !values.st_tranches?.length) {
+      void setFieldValue('st_tranches', [{label: '', pourcentage: 0}]);
+    } else if (isCDL && !values.tranches?.length) {
+      void setFieldValue('tranches', [{label: '', pourcentage: 0}]);
+    }
   });
 
-  /* ── Auto-seed the required first row when the company/category changes ── */
+  /* Auto-seed the required first row when the company/category changes. */
   useEffect(() => {
-    const {setFieldValue, values} = formikRef.current;
-    if (isBlueline && !values.prestations?.length) {
-      setFieldValue('prestations', [{nom: '', description: '', quantite: 0, unite: 'm2', prix_unitaire: 0}]);
-    } else if (isST && !values.st_tranches?.length) {
-      setFieldValue('st_tranches', [{label: '', pourcentage: 0}]);
-    } else if (isCDL && !values.tranches?.length) {
-      setFieldValue('tranches', [{label: '', pourcentage: 0}]);
-    }
+    seedRequiredRow();
   }, [
     isBlueline,
     isST,
@@ -846,25 +803,25 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
   ]);
 
   /* ── Prestations helpers ── */
-  const addPrestation = useCallback(() => {
+  const addPrestation = () => {
     const empty: ContractPrestationType = {nom: '', description: '', quantite: 0, unite: 'm2', prix_unitaire: 0};
     const current = formik.values.prestations ?? [];
-    formik.setFieldValue('prestations', [...current, {...empty}]);
-  }, [formik]);
+    void formik.setFieldValue('prestations', [...current, {...empty}]);
+  };
 
-  const removePrestation = useCallback((index: number) => {
+  const removePrestation = (index: number) => {
     const current = formik.values.prestations ?? [];
-    formik.setFieldValue('prestations', current.filter((_, i) => i !== index));
-  }, [formik]);
+    void formik.setFieldValue('prestations', current.filter((_, i) => i !== index));
+  };
 
-  const updatePrestation = useCallback((index: number, field: keyof ContractPrestationType, value: string | number) => {
+  const updatePrestation = (index: number, field: keyof ContractPrestationType, value: string | number) => {
     const current = [...(formik.values.prestations ?? [])];
     current[index] = {...current[index], [field]: value};
-    formik.setFieldValue('prestations', current);
-  }, [formik]);
+    void formik.setFieldValue('prestations', current);
+  };
 
   /* ── ST Tranche cell errors ── */
-  const stTrancheCellErrors = useMemo(() => {
+  const stTrancheCellErrors = (() => {
     const errors: Record<string, string> = {};
     const raw = formik.errors.st_tranches;
     if (Array.isArray(raw)) {
@@ -877,9 +834,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       });
     }
     return errors;
-  }, [formik.errors.st_tranches]);
+  })();
 
-  const trancheCellErrors = useMemo(() => {
+  const trancheCellErrors = (() => {
     const errors: Record<string, string> = {};
     const raw = formik.errors.tranches;
     if (Array.isArray(raw)) {
@@ -892,13 +849,13 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       });
     }
     return errors;
-  }, [formik.errors.tranches]);
+  })();
 
   const cdlTrancheTotalInvalid = hasAttemptedSubmit && isCDL && !hasValidTrancheTotal(formik.values.tranches);
   const stTrancheTotalInvalid = hasAttemptedSubmit && isST && !hasValidTrancheTotal(formik.values.st_tranches);
 
   /* ── Prestations DataGrid columns ── */
-  const prestationCellErrors = useMemo(() => {
+  const prestationCellErrors = (() => {
     const errors: Record<string, string> = {};
     const raw = formik.errors.prestations;
     if (Array.isArray(raw)) {
@@ -911,9 +868,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       });
     }
     return errors;
-  }, [formik.errors.prestations]);
+  })();
 
-  const prestationColumns: GridColDef[] = useMemo(() => [
+  const prestationColumns: GridColDef[] = ([
     {
       field: 'nom',
       headerName: t.contracts.designation,
@@ -963,7 +920,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
               type="text"
               label=""
               value={p.description}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updatePrestation(realIdx, 'description', e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => updatePrestation(realIdx, 'description', e.target.value)}
               size="small"
               theme={gridCellInputTheme}
             />
@@ -991,7 +948,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                 type="text"
                 label=""
                 value={String(p.quantite || '')}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) updatePrestation(realIdx, 'quantite', parseFloat(e.target.value.replace(',', '.')) || 0);
                 }}
                 size="small"
@@ -1050,7 +1007,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                 type="text"
                 label=""
                 value={String(p.prix_unitaire || '')}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) updatePrestation(realIdx, 'prix_unitaire', parseFloat(e.target.value.replace(',', '.')) || 0);
                 }}
                 size="small"
@@ -1108,15 +1065,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
         );
       },
     },
-  ], [formik.values.prestations, formik.values.devise, updatePrestation, removePrestation, prestationCellErrors, hasAttemptedSubmit, t, prestationNomItemsList, prestationUniteItemsList]);
+  ]);
 
-  const prestationRows = useMemo(() =>
-      (formik.values.prestations ?? []).map((p, i) => ({id: i, ...p})),
-    [formik.values.prestations],
-  );
+  const prestationRows = ((formik.values.prestations ?? []).map((p, i) => ({id: i, ...p})));
 
   /* ── CDL: Tranche DataGrid columns ── */
-  const trancheColumns: GridColDef[] = useMemo(() => [
+  const trancheColumns: GridColDef[] = ([
     {
       field: 'label',
       headerName: t.contracts.installmentLabel,
@@ -1137,7 +1091,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                 type="text"
                 label=""
                 value={tr.label}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateTranche(realIdx, 'label', e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => updateTranche(realIdx, 'label', e.target.value)}
                 slotProps={{htmlInput: {onKeyDown: stopGridEditorKeyPropagation}}}
                 size="small"
                 theme={gridCellInputTheme}
@@ -1169,7 +1123,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                 type="text"
                 label=""
                 value={String(tr.pourcentage || '')}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) {
                     updateTranche(realIdx, 'pourcentage', parseFloat(e.target.value.replace(',', '.')) || 0);
                   }
@@ -1207,15 +1161,12 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
         );
       },
     },
-  ], [formik.values.tranches, updateTranche, removeTranche, trancheCellErrors, hasAttemptedSubmit, cdlTrancheTotalInvalid, t]);
+  ]);
 
-  const trancheRows = useMemo(() =>
-      (formik.values.tranches ?? []).map((tr, i) => ({id: i, ...tr})),
-    [formik.values.tranches],
-  );
+  const trancheRows = ((formik.values.tranches ?? []).map((tr, i) => ({id: i, ...tr})));
 
   /* ── ST: Tranche DataGrid columns ── */
-  const stTrancheColumns: GridColDef[] = useMemo(() => [
+  const stTrancheColumns: GridColDef[] = ([
     {
       field: 'label',
       headerName: t.contracts.installmentLabel,
@@ -1236,7 +1187,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                 type="text"
                 label=""
                 value={tr.label}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateStTranche(realIdx, 'label', e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => updateStTranche(realIdx, 'label', e.target.value)}
                 slotProps={{htmlInput: {onKeyDown: stopGridEditorKeyPropagation}}}
                 size="small"
                 theme={gridCellInputTheme}
@@ -1268,7 +1219,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                 type="text"
                 label=""
                 value={String(tr.pourcentage || '')}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) {
                     updateStTranche(realIdx, 'pourcentage', parseFloat(e.target.value.replace(',', '.')) || 0);
                   }
@@ -1301,7 +1252,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
               type="text"
               label=""
               value={String(tr.delai_jours ?? '')}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              onChange={(e: ChangeEvent<HTMLInputElement>) => {
                 if (/^\d*$/.test(e.target.value)) {
                   updateStTranche(realIdx, 'delai_jours', parseInt(e.target.value, 10) || 0);
                 }
@@ -1337,12 +1288,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
         );
       },
     },
-  ], [formik.values.st_tranches, updateStTranche, removeStTranche, stTrancheCellErrors, hasAttemptedSubmit, stTrancheTotalInvalid, t]);
+  ]);
 
-  const stTrancheRows = useMemo(() =>
-      (formik.values.st_tranches ?? []).map((tr, i) => ({id: i, ...tr})),
-    [formik.values.st_tranches],
-  );
+  const stTrancheRows = ((formik.values.st_tranches ?? []).map((tr, i) => ({id: i, ...tr})));
 
   return (
     <Stack spacing={3} sx={{p: {xs: 2, md: 3}}}>
@@ -1414,10 +1362,10 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                   exclusive
                   onChange={(_e, val: string | null) => {
                     if (val) {
-                      formik.setFieldValue('company', val as ContractCompanyType);
-                      formik.setFieldValue('tranches', []);
-                      formik.setFieldValue('st_tranches', []);
-                      formik.setFieldValue('prestations', []);
+                      void formik.setFieldValue('company', val as ContractCompanyType);
+                      void formik.setFieldValue('tranches', []);
+                      void formik.setFieldValue('st_tranches', []);
+                      void formik.setFieldValue('prestations', []);
                       void formik.setTouched({}, false);
                       setHasAttemptedSubmit(false);
                     }
@@ -1455,9 +1403,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       exclusive
                       onChange={(_e, val: string | null) => {
                         if (val) {
-                          formik.setFieldValue('contract_category', val as ContractCategoryType);
-                          formik.setFieldValue('tranches', []);
-                          formik.setFieldValue('st_tranches', []);
+                          void formik.setFieldValue('contract_category', val as ContractCategoryType);
+                          void formik.setFieldValue('tranches', []);
+                          void formik.setFieldValue('st_tranches', []);
                           void formik.setTouched({}, false);
                           setHasAttemptedSubmit(false);
                         }
@@ -1521,7 +1469,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                     <DatePicker
                       label={t.contracts.contractDate}
                       value={formik.values.date_contrat ? new Date(formik.values.date_contrat) : null}
-                      onChange={(date) => formik.setFieldValue('date_contrat', date ? formatLocalDate(date) : '')}
+                      onChange={(date) => void formik.setFieldValue('date_contrat', date ? formatLocalDate(date) : '')}
                       format="dd/MM/yyyy"
                       slotProps={{
                         textField: {
@@ -1548,7 +1496,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       value={statutItems.find((s) => s.code === formik.values.statut)?.value ?? formik.values.statut}
                       onChange={(e: SelectChangeEvent) => {
                         const selected = statutItems.find((s) => s.value === e.target.value);
-                        formik.setFieldValue('statut', selected?.code ?? e.target.value);
+                        void formik.setFieldValue('statut', selected?.code ?? e.target.value);
                       }}
                       size="small"
                       theme={customDropdownTheme()}
@@ -1563,7 +1511,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                         value={typeContratDisplay}
                         onChange={(e: SelectChangeEvent) => {
                           const selected = typeContratItems.find((t) => t.value === e.target.value);
-                          formik.setFieldValue('type_contrat', selected?.code ?? e.target.value);
+                          void formik.setFieldValue('type_contrat', selected?.code ?? e.target.value);
                         }}
                         size="small"
                         theme={customDropdownTheme()}
@@ -1639,7 +1587,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                     value={clientQualiteItemsList.find((q) => q.code === formik.values.client_qualite)?.value ?? formik.values.client_qualite}
                     onChange={(e: SelectChangeEvent) => {
                       const selected = clientQualiteItemsList.find((q) => q.value === e.target.value);
-                      formik.setFieldValue('client_qualite', selected?.code ?? e.target.value);
+                      void formik.setFieldValue('client_qualite', selected?.code ?? e.target.value);
                     }}
                     size="small"
                     theme={customDropdownTheme()}
@@ -1713,7 +1661,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                     value={typeBienItemsList.find((i) => i.code === formik.values.type_bien)?.value ?? formik.values.type_bien}
                     onChange={(e: SelectChangeEvent) => {
                       const selected = typeBienItemsList.find((i) => i.value === e.target.value);
-                      formik.setFieldValue('type_bien', selected?.code ?? e.target.value);
+                      void formik.setFieldValue('type_bien', selected?.code ?? e.target.value);
                     }}
                     size="small"
                     theme={customDropdownTheme()}
@@ -1724,8 +1672,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                     type="text"
                     label={t.contracts.surface}
                     value={formik.values.surface}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      if (/^-?(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) formik.setFieldValue('surface', e.target.value);
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                      if (/^-?(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) void formik.setFieldValue('surface', e.target.value);
                     }}
                     onBlur={formik.handleBlur('surface')}
                     error={formik.touched.surface && Boolean(formik.errors.surface)}
@@ -1752,7 +1700,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                     <DatePicker
                       label={t.contracts.startDate}
                       value={formik.values.date_debut ? new Date(formik.values.date_debut) : null}
-                      onChange={(date) => formik.setFieldValue('date_debut', date ? formatLocalDate(date) : '')}
+                      onChange={(date) => void formik.setFieldValue('date_debut', date ? formatLocalDate(date) : '')}
                       format="dd/MM/yyyy"
                       slotProps={{
                         textField: {
@@ -1780,8 +1728,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                         type="text"
                         label={t.contracts.estimatedDuration}
                         value={formik.values.duree_estimee}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                          if (/^\d*$/.test(e.target.value)) formik.setFieldValue('duree_estimee', e.target.value);
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                          if (/^\d*$/.test(e.target.value)) void formik.setFieldValue('duree_estimee', e.target.value);
                         }}
                         onBlur={formik.handleBlur('duree_estimee')}
                         fullWidth
@@ -1798,7 +1746,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                         value={dureeEstimeeUniteItemsList.find((i) => i.code === formik.values.duree_estimee_unite)?.value ?? formik.values.duree_estimee_unite}
                         onChange={(e: SelectChangeEvent) => {
                           const selected = dureeEstimeeUniteItemsList.find((i) => i.value === e.target.value);
-                          formik.setFieldValue('duree_estimee_unite', selected?.code ?? e.target.value);
+                          void formik.setFieldValue('duree_estimee_unite', selected?.code ?? e.target.value);
                         }}
                         size="small"
                         theme={customDropdownTheme()}
@@ -1859,8 +1807,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                     type="text"
                     label={`${t.contracts.amountHT} *`}
                     value={formik.values.montant_ht}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) formik.setFieldValue('montant_ht', e.target.value);
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                      if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) void formik.setFieldValue('montant_ht', e.target.value);
                     }}
                     onBlur={formik.handleBlur('montant_ht')}
                     error={formik.touched.montant_ht && Boolean(formik.errors.montant_ht)}
@@ -1877,7 +1825,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       label={t.contracts.currency}
                       items={deviseItems}
                       value={formik.values.devise}
-                      onChange={(e: SelectChangeEvent) => formik.setFieldValue('devise', e.target.value)}
+                      onChange={(e: SelectChangeEvent) => void formik.setFieldValue('devise', e.target.value)}
                       size="small"
                       theme={customDropdownTheme()}
                       startIcon={<AttachMoneyIcon fontSize="small"/>}
@@ -1982,7 +1930,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       value={penaliteRetardUniteItemsList.find((item) => item.code === formik.values.penalite_retard_unite)?.value ?? formik.values.penalite_retard_unite}
                       onChange={(e: SelectChangeEvent) => {
                         const selected = penaliteRetardUniteItemsList.find((item) => item.value === e.target.value);
-                        formik.setFieldValue('penalite_retard_unite', selected?.code ?? e.target.value);
+                        void formik.setFieldValue('penalite_retard_unite', selected?.code ?? e.target.value);
                       }}
                       size="small"
                       theme={customDropdownTheme()}
@@ -1998,7 +1946,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                         value={modePaiementTexteItemsList.find((i) => i.code === formik.values.mode_paiement_texte)?.value ?? formik.values.mode_paiement_texte}
                         onChange={(e: SelectChangeEvent) => {
                           const selected = modePaiementTexteItemsList.find((i) => i.value === e.target.value);
-                          formik.setFieldValue('mode_paiement_texte', selected?.code ?? e.target.value);
+                          void formik.setFieldValue('mode_paiement_texte', selected?.code ?? e.target.value);
                         }}
                         size="small"
                         theme={customDropdownTheme()}
@@ -2049,7 +1997,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       value={garantieItemsList.find((g) => g.code === formik.values.garantie)?.value ?? formik.values.garantie}
                       onChange={(e: SelectChangeEvent) => {
                         const selected = garantieItemsList.find((g) => g.value === e.target.value);
-                        formik.setFieldValue('garantie', selected?.code ?? e.target.value);
+                        void formik.setFieldValue('garantie', selected?.code ?? e.target.value);
                       }}
                       size="small"
                       theme={customDropdownTheme()}
@@ -2063,7 +2011,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                     value={tribunalItemsList.find((t) => t.code === formik.values.tribunal)?.value ?? formik.values.tribunal}
                     onChange={(e: SelectChangeEvent) => {
                       const selected = tribunalItemsList.find((t) => t.value === e.target.value);
-                      formik.setFieldValue('tribunal', selected?.code ?? e.target.value);
+                      void formik.setFieldValue('tribunal', selected?.code ?? e.target.value);
                     }}
                     size="small"
                     theme={customDropdownTheme()}
@@ -2077,7 +2025,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       value={confidentialiteItems.find((c) => c.code === formik.values.confidentialite)?.value ?? formik.values.confidentialite}
                       onChange={(e: SelectChangeEvent) => {
                         const selected = confidentialiteItems.find((c) => c.value === e.target.value);
-                        formik.setFieldValue('confidentialite', selected?.code ?? e.target.value);
+                        void formik.setFieldValue('confidentialite', selected?.code ?? e.target.value);
                       }}
                       size="small"
                       theme={customDropdownTheme()}
@@ -2417,7 +2365,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                         value={projectsList.find((p) => String(p.id) === formik.values.st_projet)?.name ?? ''}
                         onChange={(e: SelectChangeEvent) => {
                           const selected = projectsList.find((p) => p.name === e.target.value);
-                          formik.setFieldValue('st_projet', selected ? String(selected.id) : '');
+                          void formik.setFieldValue('st_projet', selected ? String(selected.id) : '');
                         }}
                         size="small"
                         theme={customDropdownTheme()}
@@ -2447,7 +2395,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                           value={stFormeJuridiqueItemsList.find((i) => i.code === formik.values.st_forme)?.value ?? formik.values.st_forme}
                           onChange={(e: SelectChangeEvent) => {
                             const selected = stFormeJuridiqueItemsList.find((i) => i.value === e.target.value);
-                            formik.setFieldValue('st_forme', selected?.code ?? e.target.value);
+                            void formik.setFieldValue('st_forme', selected?.code ?? e.target.value);
                           }}
                           size="small"
                           theme={customDropdownTheme()}
@@ -2774,8 +2722,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                           type="text"
                           label={t.contracts.warrantyRetention}
                           value={formik.values.st_retenue_garantie}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                            if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) formik.setFieldValue('st_retenue_garantie', e.target.value);
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                            if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) void formik.setFieldValue('st_retenue_garantie', e.target.value);
                           }}
                           onBlur={formik.handleBlur('st_retenue_garantie')}
                           fullWidth
@@ -2791,8 +2739,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                           type="text"
                           label={t.contracts.advance}
                           value={formik.values.st_avance}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                            if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) formik.setFieldValue('st_avance', e.target.value);
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                            if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) void formik.setFieldValue('st_avance', e.target.value);
                           }}
                           onBlur={formik.handleBlur('st_avance')}
                           fullWidth
@@ -2810,8 +2758,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                           type="text"
                           label={t.contracts.stLatePenaltyLabel}
                           value={formik.values.st_penalite_taux}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                            if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) formik.setFieldValue('st_penalite_taux', e.target.value);
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                            if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) void formik.setFieldValue('st_penalite_taux', e.target.value);
                           }}
                           onBlur={formik.handleBlur('st_penalite_taux')}
                           fullWidth
@@ -2827,8 +2775,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                           type="text"
                           label={t.contracts.penaltyCeiling}
                           value={formik.values.st_plafond_penalite}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                            if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) formik.setFieldValue('st_plafond_penalite', e.target.value);
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                            if (/^(0|[1-9]\d*)?([.,]\d*)?$/.test(e.target.value)) void formik.setFieldValue('st_plafond_penalite', e.target.value);
                           }}
                           onBlur={formik.handleBlur('st_plafond_penalite')}
                           fullWidth
@@ -2844,8 +2792,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       type="text"
                       label={t.contracts.paymentDelay}
                       value={formik.values.st_delai_paiement}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        if (/^\d*$/.test(e.target.value)) formik.setFieldValue('st_delai_paiement', e.target.value);
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                        if (/^\d*$/.test(e.target.value)) void formik.setFieldValue('st_delai_paiement', e.target.value);
                       }}
                       onBlur={formik.handleBlur('st_delai_paiement')}
                       fullWidth={false}
@@ -2954,8 +2902,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                           type="text"
                           label={`${t.contracts.stExecutionDelay}${isRequired('st_delai_val') ? ' *' : ''}`}
                           value={formik.values.st_delai_val}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                            if (/^\d*$/.test(e.target.value)) formik.setFieldValue('st_delai_val', e.target.value);
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                            if (/^\d*$/.test(e.target.value)) void formik.setFieldValue('st_delai_val', e.target.value);
                           }}
                           onBlur={formik.handleBlur('st_delai_val')}
                           error={formik.touched.st_delai_val && Boolean(formik.errors.st_delai_val)}
@@ -2974,7 +2922,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                           value={stDelaiUnitItemsList.find((i) => i.code === formik.values.st_delai_unit)?.value ?? formik.values.st_delai_unit}
                           onChange={(e: SelectChangeEvent) => {
                             const selected = stDelaiUnitItemsList.find((i) => i.value === e.target.value);
-                            formik.setFieldValue('st_delai_unit', selected?.code ?? e.target.value);
+                            void formik.setFieldValue('st_delai_unit', selected?.code ?? e.target.value);
                           }}
                           size="small"
                           theme={customDropdownTheme()}
@@ -2989,8 +2937,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                           type="text"
                           label={t.contracts.warrantyMonths}
                           value={formik.values.st_garantie_mois}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                            if (/^\d*$/.test(e.target.value)) formik.setFieldValue('st_garantie_mois', e.target.value);
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                            if (/^\d*$/.test(e.target.value)) void formik.setFieldValue('st_garantie_mois', e.target.value);
                           }}
                           onBlur={formik.handleBlur('st_garantie_mois')}
                           fullWidth
@@ -3005,8 +2953,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                           type="text"
                           label={t.contracts.reserveLiftingDelay}
                           value={formik.values.st_delai_reserves}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                            if (/^\d*$/.test(e.target.value)) formik.setFieldValue('st_delai_reserves', e.target.value);
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                            if (/^\d*$/.test(e.target.value)) void formik.setFieldValue('st_delai_reserves', e.target.value);
                           }}
                           onBlur={formik.handleBlur('st_delai_reserves')}
                           fullWidth
@@ -3021,8 +2969,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       type="text"
                       label={t.contracts.formalNoticeDelay}
                       value={formik.values.st_delai_med}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        if (/^\d*$/.test(e.target.value)) formik.setFieldValue('st_delai_med', e.target.value);
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                        if (/^\d*$/.test(e.target.value)) void formik.setFieldValue('st_delai_med', e.target.value);
                       }}
                       onBlur={formik.handleBlur('st_delai_med')}
                       fullWidth={false}
@@ -3191,7 +3139,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       value={fournituresItemsList.find((i) => i.code === formik.values.fournitures)?.value ?? formik.values.fournitures}
                       onChange={(e: SelectChangeEvent) => {
                         const selected = fournituresItemsList.find((i) => i.value === e.target.value);
-                        formik.setFieldValue('fournitures', selected?.code ?? e.target.value);
+                        void formik.setFieldValue('fournitures', selected?.code ?? e.target.value);
                       }}
                       size="small"
                       theme={customDropdownTheme()}
@@ -3220,7 +3168,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       value={eauElectriciteItemsList.find((i) => i.code === formik.values.eau_electricite)?.value ?? formik.values.eau_electricite}
                       onChange={(e: SelectChangeEvent) => {
                         const selected = eauElectriciteItemsList.find((i) => i.value === e.target.value);
-                        formik.setFieldValue('eau_electricite', selected?.code ?? e.target.value);
+                        void formik.setFieldValue('eau_electricite', selected?.code ?? e.target.value);
                       }}
                       size="small"
                       theme={customDropdownTheme()}
@@ -3258,8 +3206,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                           type="text"
                           label={t.contracts.duration}
                           value={formik.values.garantie_nb}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                            if (/^\d*$/.test(e.target.value)) formik.setFieldValue('garantie_nb', e.target.value);
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                            if (/^\d*$/.test(e.target.value)) void formik.setFieldValue('garantie_nb', e.target.value);
                           }}
                           onBlur={formik.handleBlur('garantie_nb')}
                           fullWidth
@@ -3276,7 +3224,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                           value={garantieUniteItemsList.find((i) => i.code === formik.values.garantie_unite)?.value ?? formik.values.garantie_unite}
                           onChange={(e: SelectChangeEvent) => {
                             const selected = garantieUniteItemsList.find((i) => i.value === e.target.value);
-                            formik.setFieldValue('garantie_unite', selected?.code ?? e.target.value);
+                            void formik.setFieldValue('garantie_unite', selected?.code ?? e.target.value);
                           }}
                           size="small"
                           theme={customDropdownTheme()}
@@ -3291,7 +3239,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       value={garantieTypeItemsList.find((i) => i.code === formik.values.garantie_type)?.value ?? formik.values.garantie_type}
                       onChange={(e: SelectChangeEvent) => {
                         const selected = garantieTypeItemsList.find((i) => i.value === e.target.value);
-                        formik.setFieldValue('garantie_type', selected?.code ?? e.target.value);
+                        void formik.setFieldValue('garantie_type', selected?.code ?? e.target.value);
                       }}
                       size="small"
                       theme={customDropdownTheme()}
@@ -3396,7 +3344,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                       value={clauseResiliationItemsList.find((i) => i.code === formik.values.clause_resiliation)?.value ?? formik.values.clause_resiliation}
                       onChange={(e: SelectChangeEvent) => {
                         const selected = clauseResiliationItemsList.find((i) => i.value === e.target.value);
-                        formik.setFieldValue('clause_resiliation', selected?.code ?? e.target.value);
+                        void formik.setFieldValue('clause_resiliation', selected?.code ?? e.target.value);
                       }}
                       size="small"
                       theme={customDropdownTheme()}
@@ -3514,7 +3462,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                 type="submit"
                 loading={isPending}
                 startIcon={isEditMode ? <EditIcon/> : <AddIcon/>}
-                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                onClick={(e: MouseEvent<HTMLButtonElement>) => {
                   setHasAttemptedSubmit(true);
                   if (!formik.isValid) {
                     e.preventDefault();
@@ -3537,7 +3485,7 @@ interface Props extends SessionProps {
   id?: number;
 }
 
-const ContractFormClient: React.FC<Props> = ({session, id}: Props) => {
+const ContractFormClient: FC<Props> = ({session, id}: Props) => {
   const token = useInitAccessToken(session);
   const {t} = useLanguage();
   const isEditMode = id !== undefined;

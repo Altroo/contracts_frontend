@@ -1,4 +1,5 @@
-import React from 'react';
+import {createElement} from 'react';
+import type {ImgHTMLAttributes, ReactNode, Ref, SVGProps} from 'react';
 import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
 import CustomSquareImageUploading from './customSquareImageUploading';
 import '@testing-library/jest-dom';
@@ -24,36 +25,36 @@ const mockCallbacks = (global as unknown as { __mockCallbacks: MockCallbacks }).
 jest.mock('@mui/icons-material/HighlightOffOutlined', () => {
   return {
     __esModule: true,
-    default: (props: React.SVGProps<SVGSVGElement> & { htmlColor?: string }) => {
+    default: (props: SVGProps<SVGSVGElement> & { htmlColor?: string }) => {
       const {htmlColor, ...rest} = props;
-      const svgProps: React.SVGProps<SVGSVGElement> = {...rest};
+      const svgProps: SVGProps<SVGSVGElement> = {...rest};
       if (htmlColor) {
         svgProps.fill = htmlColor;
       }
-      return React.createElement('svg', svgProps);
+      return createElement('svg', svgProps);
     },
   };
 });
 jest.mock('next/image', () => {
   return {
     __esModule: true,
-    default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => React.createElement('img', props),
+    default: (props: ImgHTMLAttributes<HTMLImageElement>) => createElement('img', props),
   };
 });
 
 // Mock react-cropper to capture and expose callbacks
 jest.mock('react-cropper', () => {
    
-  const React = require('react');
+  const {forwardRef, useImperativeHandle, createElement: createLocalElement} = require('react');
   return {
     __esModule: true,
-    default: React.forwardRef(function MockCropper(
+    default: forwardRef(function MockCropper(
       props: {
         ready?: () => void;
         cropend?: () => void;
-        children?: React.ReactNode;
+        children?: ReactNode;
       },
-      ref: React.Ref<{ cropper: { getCroppedCanvas: () => HTMLCanvasElement | null } }>,
+      ref: Ref<{ cropper: { getCroppedCanvas: () => HTMLCanvasElement | null } }>,
     ) {
       // Store callbacks for manual triggering via global
       const mockCallbacksRef = (global as unknown as { __mockCallbacks: MockCallbacks }).__mockCallbacks;
@@ -73,9 +74,9 @@ jest.mock('react-cropper', () => {
       };
 
       // Expose mock cropper via ref
-      React.useImperativeHandle(ref, () => mockCallbacksRef.cropperRef!);
+      useImperativeHandle(ref, () => mockCallbacksRef.cropperRef!);
 
-      return React.createElement('div', {role: 'presentation', 'data-testid': 'cropper'}, props.children);
+      return createLocalElement('div', {role: 'presentation', 'data-testid': 'cropper'}, props.children);
     }),
   };
 });

@@ -1,4 +1,4 @@
-import React from 'react';
+import {type MouseEvent, type ReactElement, type ReactNode} from 'react';
 import {cleanup, fireEvent, render, screen, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {Provider} from 'react-redux';
@@ -60,12 +60,12 @@ jest.mock('@/store/services/account', () => ({
 
 // Mock Protected
 jest.mock('@/components/layouts/protected/protected', () => ({
-  Protected: ({children}: { children: React.ReactNode }) => <div data-testid="protected">{children}</div>,
+  Protected: ({children}: { children: ReactNode }) => <div data-testid="protected">{children}</div>,
 }));
 
 // Mock NavigationBar
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => {
-  const Mock = ({children}: { children: React.ReactNode }) => <div data-testid="navigation-bar">{children}</div>;
+  const Mock = ({children}: { children: ReactNode }) => <div data-testid="navigation-bar">{children}</div>;
   Mock.displayName = 'NavigationBar';
   return {__esModule: true, default: Mock};
 });
@@ -113,7 +113,7 @@ jest.mock('@/components/htmlElements/buttons/primaryLoadingButton/primaryLoading
   default: ({buttonText, type, onClick}: {
     buttonText: string;
     type?: string;
-    onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+    onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
   }) => (
     <button data-testid="submit-button" type={type as 'submit' | 'button'} onClick={onClick}>
       {buttonText}
@@ -177,7 +177,7 @@ const mockSession: AppSession = {
   },
 };
 
-const renderWithProviders = (ui: React.ReactElement) => {
+const renderWithProviders = (ui: ReactElement) => {
   return render(<Provider store={mockStore}>{ui}</Provider>);
 };
 

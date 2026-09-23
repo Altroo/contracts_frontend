@@ -1,4 +1,4 @@
-import React from 'react';
+import {type FC} from 'react';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import {Close as CloseIcon} from '@mui/icons-material';
 import {useLanguage} from '@/utils/hooks';
@@ -9,7 +9,7 @@ interface PdfLanguageModalProps {
   onClose: () => void;
 }
 
-const PdfLanguageModal: React.FC<PdfLanguageModalProps> = ({onSelectLanguage, onClose}) => {
+const PdfLanguageModal: FC<PdfLanguageModalProps> = ({onSelectLanguage, onClose}) => {
   const {t} = useLanguage();
   return (
     <ActionModals

@@ -1,6 +1,6 @@
 import {jest} from '@jest/globals';
 import {renderToStaticMarkup} from 'react-dom/server';
-import React from 'react';
+import type {ReactElement} from 'react';
 
 type SessionUser = { pk: number; email: string };
 type Session = { user: SessionUser } | null;
@@ -22,8 +22,8 @@ jest.mock('@/components/pages/contracts/contract-view', () => ({
   __esModule: true,
   default: (props: { session?: Session; id?: number }) => {
      
-    const React = require('react');
-    return React.createElement(
+    const {createElement} = require('react');
+    return createElement(
       'div',
       null,
       `CONTRACT_VIEW_CLIENT_MARKER:${JSON.stringify(props?.session ?? null)}:ID=${props?.id ?? ''}`,
@@ -75,7 +75,7 @@ describe('ContractViewPage server component', () => {
     });
 
     const result = await Page!({params: Promise.resolve({id: '42'})});
-    const html = renderToStaticMarkup(result as unknown as React.ReactElement);
+    const html = renderToStaticMarkup(result as unknown as ReactElement);
     const decoded = html.replace(/&quot;/g, '"');
 
     expect(decoded).toContain('"pk":20');

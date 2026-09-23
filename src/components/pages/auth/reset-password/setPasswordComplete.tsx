@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import {type FC} from 'react';
 import Styles from '@/styles/auth/auth.module.sass';
 import AuthLayout from '@/components/layouts/auth/authLayout';
 import {Stack} from '@mui/material';
@@ -12,7 +12,7 @@ import {Desktop, TabletAndMobile} from '@/utils/clientHelpers';
 import {Login as LoginIcon} from '@mui/icons-material';
 import {useLanguage} from '@/utils/hooks';
 
-const SetPasswordCompleteClient: React.FC = () => {
+const SetPasswordCompleteClient: FC = () => {
   const {t} = useLanguage();
 
   return (

@@ -1,6 +1,7 @@
 'use client';
 
-import React, {useRef, useState} from 'react';
+import {runWithCleanup} from '@/utils/runWithCleanup';
+import {useRef, useState, type ChangeEvent, type ClipboardEvent, type FC, type InputEvent, type KeyboardEvent, type RefObject} from 'react';
 import Styles from '@/styles/auth/auth.module.sass';
 import {setFormikAutoErrors} from '@/utils/helpers';
 import {Desktop, TabletAndMobile} from '@/utils/clientHelpers';
@@ -20,14 +21,14 @@ import PrimaryLoadingButton from '@/components/htmlElements/buttons/primaryLoadi
 import {usePasswordResetMutation, useSendPasswordResetCodeMutation} from '@/store/services/account';
 import {useSession} from 'next-auth/react';
 import {useLanguage, useToast} from '@/utils/hooks';
+import {resetCodeFields} from '@/utils/rawData';
+import type {ResetCodeFieldKey} from '@/types/authTypes';
 import {Send as SendIcon, ThumbUpAlt as ThumbUpAltIcon} from '@mui/icons-material';
 
 type EnterCodePageContentProps = {
   email: string;
 };
 
-type FieldKey = 'one' | 'two' | 'three' | 'four' | 'five' | 'six';
-const fields: FieldKey[] = ['one', 'two', 'three', 'four', 'five', 'six'];
 
 const EnterCodePageContent = ({email}: EnterCodePageContentProps) => {
   const router = useRouter();
@@ -37,7 +38,7 @@ const EnterCodePageContent = ({email}: EnterCodePageContentProps) => {
   const [passwordReset, {isLoading: isPasswordResetLoading}] = usePasswordResetMutation();
   const [isPending, setIsPending] = useState(false);
 
-  const inputRefs: Record<FieldKey, React.RefObject<HTMLInputElement | null>> = {
+  const inputRefs: Record<ResetCodeFieldKey, RefObject<HTMLInputElement | null>> = {
     one: useRef<HTMLInputElement | null>(null),
     two: useRef<HTMLInputElement | null>(null),
     three: useRef<HTMLInputElement | null>(null),
@@ -47,17 +48,17 @@ const EnterCodePageContent = ({email}: EnterCodePageContentProps) => {
   };
 
   // input/onChange handler attached to native input (htmlInput)
-  const handleInput = (field: FieldKey, e: React.InputEvent<HTMLInputElement> | React.ChangeEvent<HTMLInputElement>) => {
+  const handleInput = (field: ResetCodeFieldKey, e: InputEvent<HTMLInputElement> | ChangeEvent<HTMLInputElement>) => {
     const val = (e.currentTarget as HTMLInputElement).value.replace(/\D/g, '').slice(0, 1);
-    formik.setFieldValue(field, val);
+    void formik.setFieldValue(field, val);
 
     // update combined code if you use one
     const next = {...formik.values, [field]: val} as Record<string, string>;
-    formik.setFieldValue('code', fields.map((k) => next[k]).join(''));
+    void formik.setFieldValue('code', resetCodeFields.map((k) => next[k]).join(''));
 
     if (val.length >= 1) {
-      const i = fields.indexOf(field);
-      const nextField = fields[i + 1];
+      const i = resetCodeFields.indexOf(field);
+      const nextField = resetCodeFields[i + 1];
       if (nextField) setTimeout(() => inputRefs[nextField].current?.focus(), 0);
       else setTimeout(() => formik.validateForm().catch(() => {
         // Validation errors are handled by formik state
@@ -66,12 +67,12 @@ const EnterCodePageContent = ({email}: EnterCodePageContentProps) => {
   };
 
   // Backspace navigation on native input
-  const handleKeyDown = (field: FieldKey, e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (field: ResetCodeFieldKey, e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace') {
       const curVal = (e.currentTarget as HTMLInputElement).value;
       if (!curVal) {
-        const i = fields.indexOf(field);
-        const prev = fields[i - 1];
+        const i = resetCodeFields.indexOf(field);
+        const prev = resetCodeFields[i - 1];
         if (prev) {
           inputRefs[prev].current?.focus();
         }
@@ -80,19 +81,19 @@ const EnterCodePageContent = ({email}: EnterCodePageContentProps) => {
   };
 
   // Paste handler: fill fields with digits from clipboard
-  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+  const handlePaste = (e: ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const txt = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, fields.length);
+    const txt = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, resetCodeFields.length);
     if (!txt) return;
     const digits = txt.split('');
-    digits.forEach((ch, idx) => formik.setFieldValue(fields[idx], ch));
-    formik.setFieldValue('code', digits.join(''));
+    digits.forEach((ch, idx) => void formik.setFieldValue(resetCodeFields[idx], ch));
+    void formik.setFieldValue('code', digits.join(''));
     setTimeout(() => {
       formik.validateForm().catch(() => {
         // Validation errors are handled by formik state
       });
-      const focusIndex = Math.min(digits.length, fields.length - 1);
-      inputRefs[fields[focusIndex]].current?.focus();
+      const focusIndex = Math.min(digits.length, resetCodeFields.length - 1);
+      inputRefs[resetCodeFields[focusIndex]].current?.focus();
     }, 0);
   };
 
@@ -103,15 +104,20 @@ const EnterCodePageContent = ({email}: EnterCodePageContentProps) => {
     onSubmit: async (values, {setFieldError}) => {
       setIsPending(true);
       const code = values.one + values.two + values.three + values.four + values.five + values.six;
-      try {
-        await passwordReset({email, code}).unwrap();
-        await cookiesPoster('/api/cookies', {code});
-        router.push(AUTH_RESET_PASSWORD_SET_PASSWORD);
-      } catch (e) {
-        setFormikAutoErrors({e, setFieldError});
-      } finally {
-        setIsPending(false);
-      }
+      await runWithCleanup(
+        async () => {
+          try {
+            await passwordReset({email, code}).unwrap();
+            await cookiesPoster('/api/cookies', {code});
+            router.push(AUTH_RESET_PASSWORD_SET_PASSWORD);
+          } catch (e) {
+            setFormikAutoErrors({e, setFieldError});
+          }
+        },
+        () => {
+          setIsPending(false);
+        },
+      );
     },
   });
 
@@ -148,7 +154,7 @@ const EnterCodePageContent = ({email}: EnterCodePageContentProps) => {
                 justifyContent: "space-between",
                 alignItems: "center"
               }}>
-              {fields.map((field) => (
+              {resetCodeFields.map((field) => (
                 <CustomOutlinedText
                   autoFocus={field === 'one'}
                   key={field}
@@ -163,10 +169,10 @@ const EnterCodePageContent = ({email}: EnterCodePageContentProps) => {
                   slotProps={{
                     htmlInput: {
                       maxLength: 1,
-                      onInput: (e: React.InputEvent<HTMLInputElement>) => handleInput(field, e),
-                      onChange: (e: React.ChangeEvent<HTMLInputElement>) => handleInput(field, e),
-                      onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => handleKeyDown(field, e),
-                      onPaste: (e: React.ClipboardEvent<HTMLInputElement>) => handlePaste(e),
+                      onInput: (e: InputEvent<HTMLInputElement>) => handleInput(field, e),
+                      onChange: (e: ChangeEvent<HTMLInputElement>) => handleInput(field, e),
+                      onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => handleKeyDown(field, e),
+                      onPaste: (e: ClipboardEvent<HTMLInputElement>) => handlePaste(e),
                     },
                   }}
                   inputRef={inputRefs[field]}
@@ -209,7 +215,7 @@ type Props = {
   email: string;
 };
 
-const EnterCodeClient: React.FC<Props> = ({email}) => {
+const EnterCodeClient: FC<Props> = ({email}) => {
   const {data: session, status} = useSession();
   const loading = status === 'loading';
 

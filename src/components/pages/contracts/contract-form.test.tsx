@@ -1,4 +1,4 @@
-import React from 'react';
+import {type ChangeEvent, type FocusEvent, type HTMLInputTypeAttribute, type ReactElement, type ReactNode} from 'react';
 import {cleanup, fireEvent, render, screen, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {Provider} from 'react-redux';
@@ -71,10 +71,10 @@ jest.mock('@/components/formikElements/customTextInput/customTextInput', () => (
   }: {
     id: string;
     label: string;
-    type?: React.HTMLInputTypeAttribute;
+    type?: HTMLInputTypeAttribute;
     value?: string;
-    onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
+    onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+    onBlur?: (event: FocusEvent<HTMLInputElement>) => void;
     disabled?: boolean;
   }) => (
     <div data-testid={`input-${id}`}>
@@ -130,14 +130,14 @@ jest.mock('@/utils/themes', () => ({
 
 // Mock Protected
 jest.mock('@/components/layouts/protected/protected', () => ({
-  Protected: ({children, permission}: { children: React.ReactNode; permission?: string }) => (
+  Protected: ({children, permission}: { children: ReactNode; permission?: string }) => (
     <div data-testid="protected" data-permission={permission ?? ''}>{children}</div>
   ),
 }));
 
 // Mock NavigationBar
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => {
-  const Mock = ({children}: { children: React.ReactNode }) => <div data-testid="navigation-bar">{children}</div>;
+  const Mock = ({children}: { children: ReactNode }) => <div data-testid="navigation-bar">{children}</div>;
   Mock.displayName = 'NavigationBar';
   return {__esModule: true, default: Mock};
 });
@@ -149,6 +149,9 @@ jest.mock('@/utils/helpers', () => ({
 }));
 
 jest.mock('@/utils/rawData', () => ({
+  ...jest.requireActual('@/utils/rawData'),
+  createCdlServiceOptions: () => [],
+  createCdlClauseOptions: () => [],
   companyItemsList: [
     {code: 'casa_di_lusso', value: 'Casa di Lusso'},
     {code: 'blueline_works', value: 'Blueline Works'},
@@ -285,7 +288,7 @@ const mockSession: AppSession = {
   },
 };
 
-const renderWithProviders = (ui: React.ReactElement) => {
+const renderWithProviders = (ui: ReactElement) => {
   return render(<Provider store={mockStore}>{ui}</Provider>);
 };
 

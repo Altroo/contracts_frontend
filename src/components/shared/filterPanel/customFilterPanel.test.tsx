@@ -1,4 +1,3 @@
-import React from 'react';
 import {fireEvent, render, screen, within} from '@testing-library/react';
 import CustomFilterPanel, {type CustomFilterItem, type CustomFilterModel, filterHasValue} from './customFilterPanel';
 import {type GridColDef, GridLogicOperator} from '@mui/x-data-grid';

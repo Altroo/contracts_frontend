@@ -1,6 +1,6 @@
 'use client';
 
-import React, {ForwardedRef, forwardRef} from 'react';
+import type {ReactNode, Ref} from 'react';
 import Styles from './primaryAnchorButton.module.sass';
 import {Button, ThemeProvider} from '@mui/material';
 import Link from 'next/link';
@@ -11,7 +11,7 @@ type Props = {
   buttonText: string;
   active: boolean;
   nextPage: string | UrlObject;
-  startIcon?: React.ReactNode;
+  startIcon?: ReactNode;
   onClick?: () => void;
   anchorcssClass?: string;
   cssClass?: string;
@@ -19,11 +19,11 @@ type Props = {
   shallow?: boolean;
   replace?: boolean;
   type?: 'submit' | 'reset' | 'button' | undefined;
-  children?: React.ReactNode;
+  children?: ReactNode;
+  ref?: Ref<HTMLAnchorElement>;
 };
 
-const PrimaryAnchorButton = forwardRef<HTMLAnchorElement, Props>(
-  (props: Props, ref: ForwardedRef<HTMLAnchorElement>) => {
+const PrimaryAnchorButton = ({ref, ...props}: Props) => {
     return (
       <Link
         href={props.nextPage}
@@ -49,8 +49,7 @@ const PrimaryAnchorButton = forwardRef<HTMLAnchorElement, Props>(
         </ThemeProvider>
       </Link>
     );
-  },
-);
+};
 PrimaryAnchorButton.displayName = 'PrimaryAnchorButton';
 
 export default PrimaryAnchorButton;

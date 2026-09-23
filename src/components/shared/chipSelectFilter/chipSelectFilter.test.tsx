@@ -1,11 +1,11 @@
-import React from 'react';
+import {type ReactElement} from 'react';
 import {fireEvent, render, screen} from '@testing-library/react';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
 import type {ChipSelectOption} from './chipSelectFilter';
 import ChipSelectFilter from './chipSelectFilter';
 import '@testing-library/jest-dom';
 
-const renderWithTheme = (ui: React.ReactElement) =>
+const renderWithTheme = (ui: ReactElement) =>
   render(<ThemeProvider theme={createTheme()}>{ui}</ThemeProvider>);
 
 const options: ChipSelectOption[] = [

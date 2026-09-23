@@ -1,6 +1,7 @@
 'use client';
 
-import React, {useState} from 'react';
+import {runWithCleanup} from '@/utils/runWithCleanup';
+import {useState, type FC} from 'react';
 import {useRouter} from 'next/navigation';
 import {Avatar, Box, Button, Stack, Typography} from '@mui/material';
 import {
@@ -18,6 +19,7 @@ import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
 import {useBulkDeleteUsersMutation, useDeleteUserMutation, useGetUsersListQuery} from '@/store/services/account';
 import {USERS_ADD, USERS_EDIT, USERS_VIEW} from '@/utils/routes';
+import {createBooleanFilterOptions, createGenderFilterOptions} from '@/utils/rawData';
 import DarkTooltip from '@/components/htmlElements/tooltip/darkTooltip/darkTooltip';
 import type {PaginationResponseType, SessionProps} from '@/types/_initTypes';
 import PaginatedDataGrid from '@/components/shared/paginatedDataGrid/paginatedDataGrid';
@@ -35,7 +37,7 @@ import {
 } from '@/components/shared/dropdownFilter/dropdownFilter';
 import {createDateRangeFilterOperator} from '@/components/shared/dateRangeFilter/dateRangeFilterOperator';
 
-const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
+const UsersListClient: FC<SessionProps> = ({session}: SessionProps) => {
   const router = useRouter();
   const {onSuccess, onError} = useToast();
   const {t} = useLanguage();
@@ -74,18 +76,23 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
   const [bulkDeleteUsers] = useBulkDeleteUsersMutation();
 
   const deleteHandler = async () => {
-    try {
-      await deleteRecord({id: selectedUserId!}).unwrap();
-      // success toast
-      onSuccess(t.users.userDeletedSuccess);
-      // refresh the page / data
-      refetch();
-    } catch (err) {
-      // error toast
-      onError(extractApiErrorMessage(err, t.users.userDeleteError));
-    } finally {
-      setShowDeleteModal(false);
-    }
+    await runWithCleanup(
+      async () => {
+        try {
+          await deleteRecord({id: selectedUserId!}).unwrap();
+          // success toast
+          onSuccess(t.users.userDeletedSuccess);
+          // refresh the page / data
+          refetch();
+        } catch (err) {
+          // error toast
+          onError(extractApiErrorMessage(err, t.users.userDeleteError));
+        }
+      },
+      () => {
+        setShowDeleteModal(false);
+      },
+    );
   };
 
   const deleteModalActions = [
@@ -109,16 +116,21 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
   };
 
   const bulkDeleteHandler = async () => {
-    try {
-      await bulkDeleteUsers({ids: selectedUserIds}).unwrap();
-      onSuccess(t.users.bulkUserDeletedSuccess(selectedUserIds.length));
-    } catch (err) {
-      onError(extractApiErrorMessage(err, t.users.userDeleteError));
-    } finally {
-      setSelectedUserIds([]);
-      setShowBulkDeleteModal(false);
-      refetch();
-    }
+    await runWithCleanup(
+      async () => {
+        try {
+          await bulkDeleteUsers({ids: selectedUserIds}).unwrap();
+          onSuccess(t.users.bulkUserDeletedSuccess(selectedUserIds.length));
+        } catch (err) {
+          onError(extractApiErrorMessage(err, t.users.userDeleteError));
+        }
+      },
+      () => {
+        setSelectedUserIds([]);
+        setShowBulkDeleteModal(false);
+        refetch();
+      },
+    );
   };
 
   const bulkDeleteModalActions = [
@@ -138,21 +150,8 @@ const UsersListClient: React.FC<SessionProps> = ({session}: SessionProps) => {
     },
   ];
 
-  const genderFilterOptions = React.useMemo(
-    () => [
-      {value: 'Homme', label: t.users.male},
-      {value: 'Femme', label: t.users.female},
-    ],
-    [t],
-  );
-
-  const TrueFalseFilterOptions = React.useMemo(
-    () => [
-      {value: 'true', label: t.common.yes},
-      {value: 'false', label: t.common.no},
-    ],
-    [t],
-  );
+  const genderFilterOptions = createGenderFilterOptions(t);
+  const TrueFalseFilterOptions = createBooleanFilterOptions(t);
 
   const columns: GridColDef[] = [
     {

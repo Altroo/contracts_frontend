@@ -1,6 +1,7 @@
 'use client';
 
-import React, {useEffect, useState} from 'react';
+import {runWithCleanup} from '@/utils/runWithCleanup';
+import {useEffect, useState, type FC} from 'react';
 import Styles from '@/styles/dashboard/settings/settings.module.sass';
 import CustomTextInput from '@/components/formikElements/customTextInput/customTextInput';
 import {Box, FormControlLabel, Stack, Switch, useMediaQuery, useTheme,} from '@mui/material';
@@ -20,7 +21,7 @@ import type {NotificationPreferenceFormValues} from '@/types/contractNotificatio
 
 const inputTheme = textInputTheme();
 
-const FormikContent: React.FC = () => {
+const FormikContent: FC = () => {
   const {onSuccess, onError} = useToast();
   const {t} = useLanguage();
   const {data: preferences, isLoading: isPreferencesLoading} = useGetNotificationPreferencesQuery();
@@ -40,22 +41,27 @@ const FormikContent: React.FC = () => {
     enableReinitialize: true,
     onSubmit: async (values, {setFieldError}) => {
       setIsPending(true);
-      try {
-        await updatePreferences({
-          notify_unsigned_contract: values.notify_unsigned_contract,
-          notify_work_start: values.notify_work_start,
-          notify_reserve_deadline: values.notify_reserve_deadline,
-          notify_status_change: values.notify_status_change,
-          unsigned_alert_days: values.unsigned_alert_days,
-          work_start_alert_days: values.work_start_alert_days,
-        }).unwrap();
-        onSuccess(t.settings.notificationUpdateSuccess);
-      } catch (e) {
-        onError(t.settings.notificationUpdateError);
-        setFormikAutoErrors({e, setFieldError});
-      } finally {
-        setIsPending(false);
-      }
+      await runWithCleanup(
+        async () => {
+          try {
+            await updatePreferences({
+              notify_unsigned_contract: values.notify_unsigned_contract,
+              notify_work_start: values.notify_work_start,
+              notify_reserve_deadline: values.notify_reserve_deadline,
+              notify_status_change: values.notify_status_change,
+              unsigned_alert_days: values.unsigned_alert_days,
+              work_start_alert_days: values.work_start_alert_days,
+            }).unwrap();
+            onSuccess(t.settings.notificationUpdateSuccess);
+          } catch (e) {
+            onError(t.settings.notificationUpdateError);
+            setFormikAutoErrors({e, setFieldError});
+          }
+        },
+        () => {
+          setIsPending(false);
+        },
+      );
     },
   });
 
@@ -92,7 +98,7 @@ const FormikContent: React.FC = () => {
                 control={
                   <Switch
                     checked={formik.values.notify_unsigned_contract}
-                    onChange={(e) => formik.setFieldValue('notify_unsigned_contract', e.target.checked)}
+                    onChange={(e) => void formik.setFieldValue('notify_unsigned_contract', e.target.checked)}
                   />
                 }
                 label={t.settings.notifyUnsignedContract}
@@ -101,7 +107,7 @@ const FormikContent: React.FC = () => {
                 control={
                   <Switch
                     checked={formik.values.notify_work_start}
-                    onChange={(e) => formik.setFieldValue('notify_work_start', e.target.checked)}
+                    onChange={(e) => void formik.setFieldValue('notify_work_start', e.target.checked)}
                   />
                 }
                 label={t.settings.notifyWorkStart}
@@ -110,7 +116,7 @@ const FormikContent: React.FC = () => {
                 control={
                   <Switch
                     checked={formik.values.notify_reserve_deadline}
-                    onChange={(e) => formik.setFieldValue('notify_reserve_deadline', e.target.checked)}
+                    onChange={(e) => void formik.setFieldValue('notify_reserve_deadline', e.target.checked)}
                   />
                 }
                 label={t.settings.notifyReserveDeadline}
@@ -119,7 +125,7 @@ const FormikContent: React.FC = () => {
                 control={
                   <Switch
                     checked={formik.values.notify_status_change}
-                    onChange={(e) => formik.setFieldValue('notify_status_change', e.target.checked)}
+                    onChange={(e) => void formik.setFieldValue('notify_status_change', e.target.checked)}
                   />
                 }
                 label={t.settings.notifyStatusChange}
@@ -130,7 +136,7 @@ const FormikContent: React.FC = () => {
                 type="number"
                 size="small"
                 value={String(formik.values.unsigned_alert_days)}
-                onChange={(e) => formik.setFieldValue('unsigned_alert_days', Number(e.target.value))}
+                onChange={(e) => void formik.setFieldValue('unsigned_alert_days', Number(e.target.value))}
                 slotProps={{htmlInput: {min: 1, max: 365}}}
                 fullWidth
                 theme={inputTheme}
@@ -141,7 +147,7 @@ const FormikContent: React.FC = () => {
                 type="number"
                 size="small"
                 value={String(formik.values.work_start_alert_days)}
-                onChange={(e) => formik.setFieldValue('work_start_alert_days', Number(e.target.value))}
+                onChange={(e) => void formik.setFieldValue('work_start_alert_days', Number(e.target.value))}
                 slotProps={{htmlInput: {min: 1, max: 30}}}
                 fullWidth
                 theme={inputTheme}
@@ -163,7 +169,7 @@ const FormikContent: React.FC = () => {
   );
 };
 
-const NotificationsClient: React.FC = () => {
+const NotificationsClient: FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const {t} = useLanguage();

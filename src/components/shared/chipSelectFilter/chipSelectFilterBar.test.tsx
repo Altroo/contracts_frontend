@@ -1,11 +1,11 @@
-import React from 'react';
+import {type ReactElement} from 'react';
 import {render, screen} from '@testing-library/react';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
 import type {ChipFilterConfig} from './chipSelectFilterBar';
 import ChipSelectFilterBar from './chipSelectFilterBar';
 import '@testing-library/jest-dom';
 
-const renderWithTheme = (ui: React.ReactElement) =>
+const renderWithTheme = (ui: ReactElement) =>
   render(<ThemeProvider theme={createTheme()}>{ui}</ThemeProvider>);
 
 const filters: ChipFilterConfig[] = [

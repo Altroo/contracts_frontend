@@ -1,6 +1,7 @@
 'use client';
 
-import React, {useMemo, useState} from 'react';
+import {runWithCleanup} from '@/utils/runWithCleanup';
+import { useState, type FC, type MouseEvent} from 'react';
 import type {ApiErrorResponseType, ResponseDataInterface, SessionProps} from '@/types/_initTypes';
 import Styles from '@/styles/dashboard/dashboard.module.sass';
 import NavigationBar from '@/components/layouts/navigationBar/navigationBar';
@@ -81,7 +82,7 @@ type FormikContentProps = {
   id?: number;
 };
 
-const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) => {
+const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
   const {token, id} = props;
   const {onSuccess, onError} = useToast();
   const {t} = useLanguage();
@@ -105,9 +106,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
   const [editUser, {isLoading: isEditLoading, error: editError}] = useEditUserMutation();
 
   const error = checkEmailError || (isEditMode ? dataError || editError : addError);
-  const axiosError: ResponseDataInterface<ApiErrorResponseType> | undefined = useMemo(() => {
+  const axiosError: ResponseDataInterface<ApiErrorResponseType> | undefined = (() => {
     return error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined;
-  }, [error]);
+  })();
 
   const [isPending, setIsPending] = useState(false);
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
@@ -138,34 +139,39 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {globalError, ...fields} = data;
       const payload = {...fields};
-      try {
-        if (rawData?.email !== data.email) {
-          await checkEmail({email: data.email}).unwrap();
-        }
-        if (isEditMode) {
-          await editUser({id: id!, data: payload}).unwrap();
-          onSuccess(t.users.userUpdatedSuccess);
-          router.push(USERS_VIEW(id!));
-        } else {
-          await addUser({data: payload}).unwrap();
-          onSuccess(t.users.userCreatedSuccess);
-          router.push(USERS_LIST);
-        }
-      } catch (e) {
-        if (isEditMode) {
-          onError(t.users.userUpdateError);
-        } else {
-          onError(t.users.userCreateError);
-        }
-        setFormikAutoErrors({e, setFieldError});
-      } finally {
-        setIsPending(false);
-      }
+      const isEmailChanged = rawData?.email !== data.email;
+      await runWithCleanup(
+        async () => {
+          try {
+            if (isEmailChanged) {
+              await checkEmail({email: data.email}).unwrap();
+            }
+            if (isEditMode) {
+              await editUser({id: id!, data: payload}).unwrap();
+              onSuccess(t.users.userUpdatedSuccess);
+              router.push(USERS_VIEW(id!));
+            } else {
+              await addUser({data: payload}).unwrap();
+              onSuccess(t.users.userCreatedSuccess);
+              router.push(USERS_LIST);
+            }
+          } catch (e) {
+            if (isEditMode) {
+              onError(t.users.userUpdateError);
+            } else {
+              onError(t.users.userCreateError);
+            }
+            setFormikAutoErrors({e, setFieldError});
+          }
+        },
+        () => {
+          setIsPending(false);
+        },
+      );
     },
   });
 
-  const fieldLabels = useMemo<Record<string, string>>(
-    () => ({
+  const fieldLabels = (({
       email: t.users.email,
       first_name: t.users.firstName,
       last_name: t.users.lastName,
@@ -180,11 +186,9 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       can_edit: t.users.canEdit,
       can_delete: t.users.canDelete,
       globalError: t.errors.globalError,
-    }),
-    [t],
-  );
+    }));
 
-  const validationErrors = useMemo(() => {
+  const validationErrors = (() => {
     const errors: Record<string, string> = {};
     if (hasAttemptedSubmit) {
       Object.entries(formik.errors).forEach(([key, value]) => {
@@ -194,7 +198,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
       });
     }
     return errors;
-  }, [formik.errors, hasAttemptedSubmit]);
+  })();
 
   const hasValidationErrors = Object.keys(validationErrors).length > 0;
 
@@ -273,8 +277,8 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                   <CustomSquareImageUploading
                     image={formik.values.avatar}
                     croppedImage={formik.values.avatar_cropped}
-                    onChange={(img) => formik.setFieldValue('avatar', img)}
-                    onCrop={(cropped) => formik.setFieldValue('avatar_cropped', cropped)}
+                    onChange={(img) => void formik.setFieldValue('avatar', img)}
+                    onCrop={(cropped) => void formik.setFieldValue('avatar_cropped', cropped)}
                   />
                 </Box>
               </CardContent>
@@ -348,7 +352,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                     label={`${t.users.gender} *`}
                     items={genderItemsList}
                     value={formik.values.gender}
-                    onChange={(e) => formik.setFieldValue('gender', e.target.value)}
+                    onChange={(e) => void formik.setFieldValue('gender', e.target.value)}
                     theme={customDropdownTheme()}
                     startIcon={<GroupsIcon fontSize="small"/>}
                     onBlur={formik.handleBlur('gender')}
@@ -475,7 +479,7 @@ const FormikContent: React.FC<FormikContentProps> = (props: FormikContentProps) 
                 active={!isPending}
                 loading={isPending}
                 startIcon={isEditMode ? <EditIcon/> : <AddIcon/>}
-                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                onClick={(e: MouseEvent<HTMLButtonElement>) => {
                   setHasAttemptedSubmit(true);
                   if (!formik.isValid) {
                     e.preventDefault();
@@ -498,7 +502,7 @@ interface Props extends SessionProps {
   id?: number;
 }
 
-const UsersFormClient: React.FC<Props> = ({session, id}: Props) => {
+const UsersFormClient: FC<Props> = ({session, id}: Props) => {
   const token = useInitAccessToken(session);
   const {t} = useLanguage();
   const isEditMode = id !== undefined;

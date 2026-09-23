@@ -1,5 +1,12 @@
 import type {AccountGenderCodeValueType} from '@/types/accountTypes';
 import type {TranslationDictionary} from '@/types/languageTypes';
+import type {ContractStatusChipColor} from '@/types/contractTypes';
+import type {ResetCodeFieldKey} from '@/types/authTypes';
+import type {AuthIllustration} from '@/types/authTypes';
+import ContractSVG from '../../public/assets/images/auth_illu/contract.svg';
+import HandshakeSVG from '../../public/assets/images/auth_illu/handshake.svg';
+import BlueprintSVG from '../../public/assets/images/auth_illu/blueprint.svg';
+import SignatureSVG from '../../public/assets/images/auth_illu/signature.svg';
 
 /* ── Static (non-translatable) exports ── */
 
@@ -9,6 +16,28 @@ export const companyItemsList: Array<{ code: string; value: string }> = [
 ];
 
 export const deviseItemsList: string[] = ['MAD', 'EUR', 'USD'];
+export const resetCodeFields: ResetCodeFieldKey[] = ['one', 'two', 'three', 'four', 'five', 'six'];
+export const authIllustrations: AuthIllustration[] = [
+  {image: ContractSVG.src, color: '#E8F5E9'},
+  {image: HandshakeSVG.src, color: '#FFF3E0'},
+  {image: BlueprintSVG.src, color: '#E3F2FD'},
+  {image: SignatureSVG.src, color: '#F3E5F5'},
+];
+export const dropdownItemHeight = 48;
+export const dropdownMenuProps = {
+  slotProps: {
+    paper: {
+      style: {
+        maxHeight: dropdownItemHeight * 4.5 + 8,
+        width: 250,
+      },
+    },
+  },
+};
+
+export const blFields = new Set(['prestations', 'fournitures', 'eau_electricite', 'acompte', 'tranche2', 'clause_resiliation', 'client_ville', 'client_cp', 'chantier_ville', 'chantier_etage', 'garantie_nb', 'garantie_unite', 'garantie_type', 'exclusions_garantie', 'materiaux_detail', 'notes']);
+export const cdlFields = new Set(['type_contrat', 'services', 'tranches', 'delai_retard', 'frais_redemarrage', 'delai_reserves', 'clauses_actives', 'clause_spec', 'exclusions', 'architecte', 'annexes', 'conditions_acces']);
+export const stFields = new Set(['st_projet', 'st_name', 'st_forme', 'st_capital', 'st_rc', 'st_ice', 'st_if', 'st_cnss', 'st_addr', 'st_rep', 'st_cin', 'st_qualite', 'st_tel', 'st_email', 'st_rib', 'st_banque', 'st_lot_type', 'st_lot_description', 'st_type_prix', 'st_retenue_garantie', 'st_avance', 'st_penalite_taux', 'st_plafond_penalite', 'st_delai_paiement', 'st_tranches', 'st_delai_val', 'st_delai_unit', 'st_garantie_mois', 'st_delai_reserves', 'st_delai_med', 'st_clauses_actives', 'st_observations']);
 
 export const tribunalItemsList: Array<{ code: string; value: string }> = [
   {code: 'Tanger', value: 'Tanger'},
@@ -19,9 +48,7 @@ export const tribunalItemsList: Array<{ code: string; value: string }> = [
   {code: 'Agadir', value: 'Agadir'},
 ];
 
-export type ChipColor = 'default' | 'warning' | 'success' | 'error' | 'info' | 'primary' | 'secondary';
-
-const contractStatusColorsList: Array<{ code: string; color: ChipColor }> = [
+const contractStatusColorsList: Array<{ code: string; color: ContractStatusChipColor }> = [
   {code: 'Brouillon', color: 'default'},
   {code: 'Envoyé', color: 'info'},
   {code: 'Signé', color: 'primary'},
@@ -31,9 +58,72 @@ const contractStatusColorsList: Array<{ code: string; color: ChipColor }> = [
   {code: 'Expiré', color: 'warning'},
 ];
 
-export const getContractStatusColor = (statut: string): ChipColor => {
+export const getContractStatusColor = (statut: string): ContractStatusChipColor => {
   return contractStatusColorsList.find((item) => item.code === statut)?.color ?? 'default';
 };
+
+export const createContractStatutFilterOptions = (t: TranslationDictionary) =>
+  getTranslatedRawData(t).contractStatutItemsList.map(({code, value}) => ({
+    value: code,
+    label: value,
+    color: getContractStatusColor(code),
+  }));
+
+export const createCdlServiceOptions = (t: TranslationDictionary) => [
+  t.contracts.svcDesign,
+  t.contracts.svcDemolition,
+  t.contracts.svcMasonry,
+  t.contracts.svcCeilings,
+  t.contracts.svcFloorCoatings,
+  t.contracts.svcWallCoatings,
+  t.contracts.svcWoodwork,
+  t.contracts.svcAluminium,
+  t.contracts.svcMetalwork,
+  t.contracts.svcGlasswork,
+  t.contracts.svcPlumbing,
+  t.contracts.svcElectricity,
+  t.contracts.svcHomeAutomation,
+  t.contracts.svcHVAC,
+  t.contracts.svcInsulation,
+  t.contracts.svcPainting,
+  t.contracts.svcPlastering,
+  t.contracts.svcTiling,
+  t.contracts.svcMarble,
+  t.contracts.svcKitchen,
+  t.contracts.svcBathroom,
+  t.contracts.svcDressing,
+  t.contracts.svcStairs,
+  t.contracts.svcPool,
+  t.contracts.svcLandscaping,
+  t.contracts.svcFurniture,
+  t.contracts.svcElevators,
+  t.contracts.svcFireSafety,
+  t.contracts.svcWaterproofing,
+  t.contracts.svcProjectManagement,
+];
+
+export const createCdlClauseOptions = (t: TranslationDictionary) => [
+  {key: 'c-comportement', label: t.contracts.clauseBehavior},
+  {key: 'c-prop-intel', label: t.contracts.clauseIP},
+  {key: 'c-image', label: t.contracts.clauseImage},
+  {key: 'c-confidential', label: t.contracts.clauseConfidentiality},
+  {key: 'c-sous-traiter', label: t.contracts.clauseSubcontracting},
+  {key: 'c-materiau-prix', label: t.contracts.clauseMaterialPrices},
+  {key: 'c-force-maj', label: t.contracts.clauseForceMajeure},
+  {key: 'c-abandon-chant', label: t.contracts.clauseSiteAbandonment},
+  {key: 'c-non-debauch', label: t.contracts.clauseNonPoaching},
+  {key: 'c-anti-litige', label: t.contracts.clauseMediation},
+];
+
+export const createGenderFilterOptions = (t: TranslationDictionary) => [
+  {value: 'Homme', label: t.users.male},
+  {value: 'Femme', label: t.users.female},
+];
+
+export const createBooleanFilterOptions = (t: TranslationDictionary) => [
+  {value: 'true', label: t.common.yes},
+  {value: 'false', label: t.common.no},
+];
 
 /* ── Translated raw data ── */
 

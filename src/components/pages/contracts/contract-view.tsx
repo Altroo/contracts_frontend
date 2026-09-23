@@ -1,6 +1,7 @@
 'use client';
 
-import React, {isValidElement, useMemo, useState} from 'react';
+import {runWithCleanup} from '@/utils/runWithCleanup';
+import {isValidElement, useState, type FC, type ReactNode} from 'react';
 import {useRouter} from 'next/navigation';
 import type {ApiErrorResponseType, ResponseDataInterface, SessionProps} from '@/types/_initTypes';
 import {useInitAccessToken} from '@/contexts/InitContext';
@@ -79,16 +80,16 @@ import {companyItemsList, getContractStatusColor, getTranslatedRawData,} from '@
 import type {ContractStatutType} from '@/types/contractTypes';
 
 interface InfoRowProps {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
-  value: string | number | null | undefined | React.ReactNode;
+  value: string | number | null | undefined | ReactNode;
 }
 
-const InfoRow: React.FC<InfoRowProps> = ({icon, label, value}) => {
+const InfoRow: FC<InfoRowProps> = ({icon, label, value}) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const displayValue = React.isValidElement(value)
+  const displayValue = isValidElement(value)
     ? value
     : value === null || value === undefined || String(value).trim() === ''
       ? '-'
@@ -147,14 +148,11 @@ interface Props extends SessionProps {
   id: number;
 }
 
-const ContractViewClient: React.FC<Props> = ({session, id}) => {
+const ContractViewClient: FC<Props> = ({session, id}) => {
   const router = useRouter();
   const token = useInitAccessToken(session);
   const {data: contract, isLoading, error} = useGetContractQuery({id}, {skip: !token});
-  const axiosError = useMemo(
-    () => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
-    [error],
-  );
+  const axiosError = ((error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined));
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -197,32 +195,42 @@ const ContractViewClient: React.FC<Props> = ({session, id}) => {
     setShowLanguageModal(false);
     if (!token || !pendingDocFormat) return;
     setIsDocLoading(true);
-    try {
-      let url: string;
-      if (pendingDocFormat === 'pdf') url = CONTRACT_PDF(id, language);
-      else url = CONTRACT_DOC(id, language);
-      const blob = await fetchFileBlob(url, token);
-      const blobUrl = window.URL.createObjectURL(blob);
-      window.open(blobUrl, '_blank');
-      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
-    } catch {
-      onError(t.errors.documentOpenError);
-    } finally {
-      setPendingDocFormat(null);
-      setIsDocLoading(false);
-    }
+    await runWithCleanup(
+      async () => {
+        try {
+          let url: string;
+          if (pendingDocFormat === 'pdf') url = CONTRACT_PDF(id, language);
+          else url = CONTRACT_DOC(id, language);
+          const blob = await fetchFileBlob(url, token);
+          const blobUrl = window.URL.createObjectURL(blob);
+          window.open(blobUrl, '_blank');
+          setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
+        } catch {
+          onError(t.errors.documentOpenError);
+        }
+      },
+      () => {
+        setPendingDocFormat(null);
+        setIsDocLoading(false);
+      },
+    );
   };
 
   const handleDelete = async () => {
-    try {
-      await deleteRecord({id}).unwrap();
-      onSuccess(t.contracts.contractDeletedSuccess);
-      router.push(CONTRACTS_LIST);
-    } catch (err) {
-      onError(extractApiErrorMessage(err, t.errors.deletionError));
-    } finally {
-      setShowDeleteModal(false);
-    }
+    await runWithCleanup(
+      async () => {
+        try {
+          await deleteRecord({id}).unwrap();
+          onSuccess(t.contracts.contractDeletedSuccess);
+          router.push(CONTRACTS_LIST);
+        } catch (err) {
+          onError(extractApiErrorMessage(err, t.errors.deletionError));
+        }
+      },
+      () => {
+        setShowDeleteModal(false);
+      },
+    );
   };
 
   const handleStatusChange = async (newStatut: ContractStatutType) => {

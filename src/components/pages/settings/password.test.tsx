@@ -1,4 +1,4 @@
-import React from 'react';
+import {type ReactElement, type ReactNode} from 'react';
 import {cleanup, render, screen} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {Provider} from 'react-redux';
@@ -39,7 +39,7 @@ jest.mock('@/store/selectors', () => ({
 // Mock NavigationBar
 jest.mock('@/components/layouts/navigationBar/navigationBar', () => ({
   __esModule: true,
-  default: ({children, title}: { children: React.ReactNode; title: string }) => (
+  default: ({children, title}: { children: ReactNode; title: string }) => (
     <div data-testid="navigation-bar">
       <h1 data-testid="nav-title">{title}</h1>
       {children}
@@ -106,7 +106,7 @@ jest.mock('@/styles/dashboard/settings/settings.module.sass', () => ({
   fixMobile: 'fixMobile',
 }));
 
-const renderWithProviders = (ui: React.ReactElement) => render(<Provider store={mockStore}>{ui}</Provider>);
+const renderWithProviders = (ui: ReactElement) => render(<Provider store={mockStore}>{ui}</Provider>);
 
 describe('PasswordClient', () => {
   beforeEach(() => {

@@ -1,7 +1,19 @@
 import {
+  authIllustrations,
+  blFields,
+  cdlFields,
+  createCdlClauseOptions,
+  createCdlServiceOptions,
+  createBooleanFilterOptions,
+  createContractStatutFilterOptions,
+  createGenderFilterOptions,
+  dropdownItemHeight,
+  dropdownMenuProps,
   deviseItemsList,
   getContractStatusColor,
   getTranslatedRawData,
+  resetCodeFields,
+  stFields,
 } from './rawData';
 import {fr} from '@/translations/fr';
 
@@ -22,6 +34,54 @@ const {
 } = rawData;
 
 describe('items lists', () => {
+  it('keeps the auth illustration palette in raw data', () => {
+    expect(authIllustrations).toHaveLength(4);
+    expect(authIllustrations.every(({image, color}) => image && color.startsWith('#'))).toBe(true);
+  });
+  it('keeps category-specific validation fields in raw data', () => {
+    expect(blFields.has('prestations')).toBe(true);
+    expect(cdlFields.has('services')).toBe(true);
+    expect(stFields.has('st_tranches')).toBe(true);
+    expect(blFields.has('st_tranches')).toBe(false);
+  });
+
+  it('keeps password reset digit fields in input order', () => {
+    expect(resetCodeFields).toEqual(['one', 'two', 'three', 'four', 'five', 'six']);
+  });
+
+  it('keeps dropdown dimensions together', () => {
+    expect(dropdownItemHeight).toBe(48);
+    expect(dropdownMenuProps.slotProps.paper.style.maxHeight).toBe(224);
+  });
+
+  it('builds contract filter options from the translated status data', () => {
+    expect(createContractStatutFilterOptions(fr)).toEqual(
+      contractStatutItemsList.map(({code, value}) => ({
+        value: code,
+        label: value,
+        color: getContractStatusColor(code),
+      })),
+    );
+  });
+
+  it('provides translated CDL service and clause options', () => {
+    expect(createCdlServiceOptions(fr)).toContain(fr.contracts.svcDesign);
+    expect(createCdlServiceOptions(fr)).toContain(fr.contracts.svcProjectManagement);
+    expect(createCdlClauseOptions(fr)).toContainEqual({key: 'c-comportement', label: fr.contracts.clauseBehavior});
+    expect(createCdlClauseOptions(fr)).toHaveLength(10);
+  });
+
+  it('provides translated user filter options', () => {
+    expect(createGenderFilterOptions(fr)).toEqual([
+      {value: 'Homme', label: fr.users.male},
+      {value: 'Femme', label: fr.users.female},
+    ]);
+    expect(createBooleanFilterOptions(fr)).toEqual([
+      {value: 'true', label: fr.common.yes},
+      {value: 'false', label: fr.common.no},
+    ]);
+  });
+
   describe('genderItemsList', () => {
     it('has two entries with correct codes and values', () => {
       expect(genderItemsList).toHaveLength(2);

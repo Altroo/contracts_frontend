@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import {useState, type FC} from 'react';
 import {Box} from '@mui/material';
 import {GridFilterInputValueProps, GridFilterOperator} from '@mui/x-data-grid';
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
@@ -13,7 +13,7 @@ interface DateRangeValue {
   to?: string;
 }
 
-const DateRangeFilterInput: React.FC<GridFilterInputValueProps> = (props) => {
+const DateRangeFilterInput: FC<GridFilterInputValueProps> = (props) => {
   const {item, applyValue} = props;
   const {t} = useLanguage();
   const value = (item.value as DateRangeValue) || {};

@@ -12,10 +12,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
     description: t.metadata.editUserDescription,
   };
 };
-
-interface Props {
-  params: Promise<{ id: string }>;
-}
+import type {IdRouteProps as Props} from '@/types/routeTypes';
 
 const UserEditPage = async ({params}: Props) => {
   const session = await auth();

@@ -1,17 +1,17 @@
 import type {CSSProperties} from 'react';
-import React from 'react';
+import {type FC, type ReactNode} from 'react';
 import {Backdrop, CircularProgress} from '@mui/material';
 
 type Props = {
   cssStyle?: CSSProperties;
-  children?: React.ReactNode;
+  children?: ReactNode;
   backdropColor: string;
   circularColor: string;
   backdropOpen?: boolean;
 };
 
 // '#FFFFFF'
-const ApiProgress: React.FC<Props> = (props: Props) => {
+const ApiProgress: FC<Props> = (props: Props) => {
   return (
     <Backdrop sx={{backgroundColor: props.backdropColor, zIndex: (theme) => theme.zIndex.drawer + 1}}
               open={props.backdropOpen ?? true}>

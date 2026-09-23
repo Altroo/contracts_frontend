@@ -1,6 +1,7 @@
 'use client';
 
-import React, {isValidElement, useMemo, useState} from 'react';
+import {runWithCleanup} from '@/utils/runWithCleanup';
+import {isValidElement, useState, type FC, type ReactNode} from 'react';
 import {useRouter} from 'next/navigation';
 import type {ApiErrorResponseType, ResponseDataInterface, SessionProps} from '@/types/_initTypes';
 import {useInitAccessToken} from '@/contexts/InitContext';
@@ -45,16 +46,16 @@ import {Protected} from '@/components/layouts/protected/protected';
 import ApiAlert from '@/components/formikElements/apiLoading/apiAlert/apiAlert';
 
 interface InfoRowProps {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
-  value: string | number | null | undefined | React.ReactNode;
+  value: string | number | null | undefined | ReactNode;
 }
 
-const InfoRow: React.FC<InfoRowProps> = ({icon, label, value}) => {
+const InfoRow: FC<InfoRowProps> = ({icon, label, value}) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const displayValue = React.isValidElement(value) ? value : value && value.toString().length > 1 ? value : '-';
+  const displayValue = isValidElement(value) ? value : value && value.toString().length > 1 ? value : '-';
 
   return (
     <Stack
@@ -109,14 +110,11 @@ interface Props extends SessionProps {
   id: number;
 }
 
-const UsersViewClient: React.FC<Props> = ({session, id}) => {
+const UsersViewClient: FC<Props> = ({session, id}) => {
   const router = useRouter();
   const token = useInitAccessToken(session);
   const {data: userData, isLoading, error} = useGetUserQuery({id}, {skip: !token});
-  const axiosError = useMemo(
-    () => (error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined),
-    [error],
-  );
+  const axiosError = ((error ? (error as ResponseDataInterface<ApiErrorResponseType>) : undefined));
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -124,17 +122,24 @@ const UsersViewClient: React.FC<Props> = ({session, id}) => {
   const {onSuccess, onError} = useToast();
   const {t} = useLanguage();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const userDisplayName = [userData?.first_name, userData?.last_name].filter(Boolean).join(' ');
+  const userHeading = userDisplayName || userData?.email || t.users.userDetails;
 
   const handleDelete = async () => {
-    try {
-      await deleteRecord({id}).unwrap();
-      onSuccess(t.users.userDeletedSuccess);
-      router.push(USERS_LIST);
-    } catch (err) {
-      onError(extractApiErrorMessage(err, t.users.userDeleteError));
-    } finally {
-      setShowDeleteModal(false);
-    }
+    await runWithCleanup(
+      async () => {
+        try {
+          await deleteRecord({id}).unwrap();
+          onSuccess(t.users.userDeletedSuccess);
+          router.push(USERS_LIST);
+        } catch (err) {
+          onError(extractApiErrorMessage(err, t.users.userDeleteError));
+        }
+      },
+      () => {
+        setShowDeleteModal(false);
+      },
+    );
   };
 
   const deleteModalActions = [
@@ -253,7 +258,7 @@ const UsersViewClient: React.FC<Props> = ({session, id}) => {
                               fontSize: isMobile ? '20px' : '25px',
                               fontWeight: 700
                             }}>
-                            {[userData?.first_name, userData?.last_name].filter(Boolean).join(' ') || userData?.email || t.users.userDetails}
+                            {userHeading}
                           </Typography>
                           <Stack
                             direction="row"

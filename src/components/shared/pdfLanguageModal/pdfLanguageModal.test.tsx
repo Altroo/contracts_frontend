@@ -1,4 +1,4 @@
-import React from 'react';
+import {type FC, type ReactNode} from 'react';
 import {fireEvent, render, screen} from '@testing-library/react';
 import PdfLanguageModal from './pdfLanguageModal';
 
@@ -6,7 +6,7 @@ interface ModalAction {
   active?: boolean;
   text: string;
   onClick: () => void;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   color?: string;
 }
 
@@ -18,8 +18,8 @@ interface ActionModalsProps {
 
 jest.mock('@/components/htmlElements/modals/actionModal/actionModals', () => {
    
-  const React = require('react');
-  const Mock: React.FC<ActionModalsProps> = ({title, body, actions}) => (
+
+  const Mock: FC<ActionModalsProps> = ({title, body, actions}) => (
     <div data-testid="action-modals">
       <h1>{title}</h1>
       <p>{body}</p>

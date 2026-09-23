@@ -1,4 +1,4 @@
-import React from 'react';
+import {type ReactNode} from 'react';
 import {renderHook} from '@testing-library/react';
 import {Provider} from 'react-redux';
 import {configureStore} from '@reduxjs/toolkit';
@@ -12,7 +12,7 @@ import {LanguageContext} from '@/contexts/languageContext';
 import type {LanguageContextType} from '@/contexts/languageContext';
 import {translations} from '@/translations';
 
-const wrapper = ({children}: { children: React.ReactNode }) => (
+const wrapper = ({children}: { children: ReactNode }) => (
   <Provider store={store}>{children}</Provider>
 );
 
@@ -43,7 +43,7 @@ describe('usePermission', () => {
   const makeWrapper =
     (profil: Record<string, unknown>) =>
       // eslint-disable-next-line react/display-name
-      ({children}: { children: React.ReactNode }) => {
+      ({children}: { children: ReactNode }) => {
         const fakeStore = configureStore({
           reducer: {
             account: () => ({profil}),
@@ -99,7 +99,7 @@ describe('useIsClient', () => {
 describe('useToast', () => {
   it('returns the toast context value when within provider', () => {
     const mockCtx = {onSuccess: jest.fn(), onError: jest.fn()};
-    const contextWrapper = ({children}: { children: React.ReactNode }) => (
+    const contextWrapper = ({children}: { children: ReactNode }) => (
       <ToastContext.Provider value={mockCtx}>{children}</ToastContext.Provider>
     );
     const {result} = renderHook(() => useToast(), {wrapper: contextWrapper});
@@ -124,7 +124,7 @@ describe('useLanguage', () => {
       setLanguage: jest.fn(),
       t: translations.fr,
     };
-    const langWrapper = ({children}: { children: React.ReactNode }) => (
+    const langWrapper = ({children}: { children: ReactNode }) => (
       <LanguageContext.Provider value={mockCtx}>{children}</LanguageContext.Provider>
     );
     const {result} = renderHook(() => useLanguage(), {wrapper: langWrapper});
@@ -139,7 +139,7 @@ describe('useLanguage', () => {
       setLanguage: jest.fn(),
       t: translations.en,
     };
-    const langWrapper = ({children}: { children: React.ReactNode }) => (
+    const langWrapper = ({children}: { children: ReactNode }) => (
       <LanguageContext.Provider value={mockCtx}>{children}</LanguageContext.Provider>
     );
     const {result} = renderHook(() => useLanguage(), {wrapper: langWrapper});
@@ -155,7 +155,7 @@ describe('useLanguage', () => {
       setLanguage,
       t: translations.fr,
     };
-    const langWrapper = ({children}: { children: React.ReactNode }) => (
+    const langWrapper = ({children}: { children: ReactNode }) => (
       <LanguageContext.Provider value={mockCtx}>{children}</LanguageContext.Provider>
     );
     const {result} = renderHook(() => useLanguage(), {wrapper: langWrapper});

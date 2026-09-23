@@ -250,3 +250,4 @@ export type ContractFormValuesType = {
   st_observations: string;
   globalError: string;
 };
+export type ContractStatusChipColor = 'default' | 'warning' | 'success' | 'error' | 'info' | 'primary' | 'secondary';
