@@ -6,6 +6,7 @@ import { type TextFieldProps } from '@mui/material/TextField';
 import TextField from '@/components/shared/aiTextField/aiTextField';
 
 type Props = {
+	ai?: boolean;
 	type: HTMLInputTypeAttribute;
 	id: string;
 	value: string;
