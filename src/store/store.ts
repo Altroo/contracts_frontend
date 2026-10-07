@@ -1,59 +1,62 @@
-import createSagaMiddleware, {type Task} from 'redux-saga';
-import type {Action, Store} from '@reduxjs/toolkit';
-import {combineReducers, configureStore, ThunkDispatch} from '@reduxjs/toolkit';
-import {rootSaga} from '@/store/sagas';
+import { aiAssistantApi } from '@/store/services/aiAssistant';
+import createSagaMiddleware, { type Task } from 'redux-saga';
+import type { Action, Store } from '@reduxjs/toolkit';
+import { combineReducers, configureStore, ThunkDispatch } from '@reduxjs/toolkit';
+import { rootSaga } from '@/store/sagas';
 import _initReducer from '@/store/slices/_initSlice';
 import accountReducer from '@/store/slices/accountSlice';
 import wsReducer from '@/store/slices/wsSlice';
-import {accountApi, profilApi, usersApi} from '@/store/services/account';
-import {contractApi} from '@/store/services/contract';
+import { accountApi, profilApi, usersApi } from '@/store/services/account';
+import { contractApi } from '@/store/services/contract';
 import { notificationApi } from '@/store/services/notification';
 import notificationReducer from '@/store/slices/notificationSlice';
 
 const rootReducer = combineReducers({
-  _init: _initReducer,
-  account: accountReducer,
-  ws: wsReducer,
-  notification: notificationReducer,
-  [accountApi.reducerPath]: accountApi.reducer,
-  [profilApi.reducerPath]: profilApi.reducer,
-  [usersApi.reducerPath]: usersApi.reducer,
-  [contractApi.reducerPath]: contractApi.reducer,
-  [notificationApi.reducerPath]: notificationApi.reducer,
+	[aiAssistantApi.reducerPath]: aiAssistantApi.reducer,
+	_init: _initReducer,
+	account: accountReducer,
+	ws: wsReducer,
+	notification: notificationReducer,
+	[accountApi.reducerPath]: accountApi.reducer,
+	[profilApi.reducerPath]: profilApi.reducer,
+	[usersApi.reducerPath]: usersApi.reducer,
+	[contractApi.reducerPath]: contractApi.reducer,
+	[notificationApi.reducerPath]: notificationApi.reducer,
 });
 
 export interface SagaStore extends Store {
-  sagaTask?: Task;
+	sagaTask?: Task;
 }
 
 const reducers = (state: ReturnType<typeof rootReducer> | undefined, action: Action) => {
-  return rootReducer(state, action);
+	return rootReducer(state, action);
 };
 
 export const makeStore = (): SagaStore => {
-  const sagaMw = createSagaMiddleware();
-  const s = configureStore({
-    reducer: reducers,
-    middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware({
-        serializableCheck: {
-          ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
-          ignoredPaths: ['meta.arg', 'meta.baseQueryMeta', 'payload.timestamp'],
-        },
-        thunk: true,
-      })
-        .prepend(sagaMw)
-        .concat(
-          accountApi.middleware,
-          profilApi.middleware,
-          usersApi.middleware,
-          contractApi.middleware,
-          notificationApi.middleware,
-        ),
-    devTools: process.env.NODE_ENV !== 'production',
-  }) as SagaStore;
-  s.sagaTask = sagaMw.run(rootSaga);
-  return s;
+	const sagaMw = createSagaMiddleware();
+	const s = configureStore({
+		reducer: reducers,
+		middleware: (getDefaultMiddleware) =>
+			getDefaultMiddleware({
+				serializableCheck: {
+					ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+					ignoredPaths: ['meta.arg', 'meta.baseQueryMeta', 'payload.timestamp'],
+				},
+				thunk: true,
+			})
+				.prepend(sagaMw)
+				.concat(
+					aiAssistantApi.middleware,
+					accountApi.middleware,
+					profilApi.middleware,
+					usersApi.middleware,
+					contractApi.middleware,
+					notificationApi.middleware,
+				),
+		devTools: process.env.NODE_ENV !== 'production',
+	}) as SagaStore;
+	s.sagaTask = sagaMw.run(rootSaga);
+	return s;
 };
 
 export const store: SagaStore = makeStore();
