@@ -1,5 +1,6 @@
+import {ThemeProvider} from '@/providers/scopedThemeProvider';
 import type {ChangeEvent, ClipboardEvent, FocusEvent, HTMLInputTypeAttribute, InputEvent, InputHTMLAttributes, KeyboardEvent, Ref} from 'react';
-import {ThemeProvider} from '@mui/material';
+
 import TextField, {type TextFieldProps} from '@mui/material/TextField';
 import type {Theme} from '@mui/material/styles';
 

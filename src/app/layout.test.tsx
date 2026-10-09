@@ -13,6 +13,10 @@ jest.mock('@/auth', () => ({
 
 jest.mock('@/styles/globals.sass', () => ({}));
 
+jest.mock('@/components/shared/themeToggle/themeToggle', () => ({
+  AuthThemeToggle: () => null,
+}));
+
 jest.mock('@/providers/sessionProvider', () => ({
   __esModule: true,
   default: (props: { session?: Session; children?: ReactNode }) => {
@@ -135,6 +139,7 @@ describe('RootLayout', () => {
     expect(html).toContain('INIT_EFFECTS');
     expect(html).toContain('TOAST_PROVIDER');
     expect(html).toContain('CHILD_CONTENT');
+    expect(html).toContain('data-theme="light"');
     // auth() is not called — session is fetched client-side by SessionProvider
     expect(mockAuth).not.toHaveBeenCalled();
   });

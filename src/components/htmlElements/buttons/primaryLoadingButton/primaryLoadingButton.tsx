@@ -1,5 +1,6 @@
+import {ThemeProvider} from '@/providers/scopedThemeProvider';
 import {type FC, type MouseEventHandler, type ReactNode} from 'react';
-import {Button, ThemeProvider} from '@mui/material';
+import {Button} from '@mui/material';
 import Styles from './primaryLoadingButton.module.sass';
 import {getDefaultTheme} from '@/utils/themes';
 

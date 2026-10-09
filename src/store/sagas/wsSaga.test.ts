@@ -4,7 +4,7 @@ import {initWebsocket} from '@/store/services/ws';
 import {getAccessToken} from '@/store/selectors';
 import type {Action} from 'redux';
 import * as Types from '@/store/actions';
-import {setWSMaintenance} from '@/store/slices/wsSlice';
+import {setWSMaintenance, setWSServerVersion} from '@/store/slices/wsSlice';
 import {initMaintenanceSaga} from '@/store/sagas/_initSaga';
 
 jest.mock('@/store/services/ws', () => ({
@@ -83,7 +83,7 @@ describe('watchWS saga', () => {
   it('should map WS_MAINTENANCE to setWSMaintenance', async () => {
     const dispatched: Action[] = [];
     const mockToken = 'mock-token';
-    const mockAction = {type: Types.WS_MAINTENANCE, maintenance: true};
+    const mockAction = {type: Types.WS_MAINTENANCE, maintenance: true, version: '3.10.0'};
 
     (getAccessToken as jest.Mock).mockReturnValue(mockToken);
 
@@ -107,5 +107,6 @@ describe('watchWS saga', () => {
 
     expect(initWebsocket).toHaveBeenCalledWith(expect.any(Function));
     expect(dispatched).toContainEqual(setWSMaintenance(true));
+    expect(dispatched).toContainEqual(setWSServerVersion('3.10.0'));
   });
 });

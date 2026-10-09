@@ -15,6 +15,8 @@ import Maintenance from '@/components/shared/maintenance/Maintenance';
 import {LanguageContextProvider} from '@/contexts/languageContext';
 import {getServerTranslations} from '@/utils/serverTranslations';
 import {cookies} from 'next/headers';
+import {resolveColorMode} from '@/utils/colorMode';
+import {AuthThemeToggle} from '@/components/shared/themeToggle/themeToggle';
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const t = await getServerTranslations();
@@ -71,9 +73,10 @@ export const viewport: Viewport = {
 const RootLayout: FC<RootLayoutProps> = async (props) => {
   const t = await getServerTranslations();
   const cookieStore = await cookies();
+  const colorMode = resolveColorMode(cookieStore.get('app-theme')?.value);
   const lang = cookieStore.get('app-language')?.value === 'en' ? 'en' : 'fr';
   return (
-    <html lang={lang} data-scroll-behavior="smooth">
+    <html lang={lang} data-theme={colorMode} data-scroll-behavior="smooth">
     <body>
     <a href="#main-content" className="skip-to-content">
       {t.common.skipToContent}
@@ -83,8 +86,9 @@ const RootLayout: FC<RootLayoutProps> = async (props) => {
         <InitContextProvider>
           <InitEffects/>
           <AppRouterCacheProvider>
-            <ThemeProvider>
+            <ThemeProvider initialTheme={colorMode}>
               <LanguageContextProvider initialLanguage={lang}>
+                <AuthThemeToggle/>
                 <ErrorBoundary>
                   <ToastContextProvider>
                     <SessionExpiredListener/>

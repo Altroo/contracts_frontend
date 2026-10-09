@@ -9,6 +9,7 @@ import {WSMaintenanceAction, WSNotificationAction, WSUserAvatarAction, WSReconne
 
 export interface WSMaintenanceBootstrap {
   maintenance: boolean;
+  version?: string;
 }
 
 export type WSAction =
@@ -22,6 +23,7 @@ type WSMessage = {
   pk?: number;
   avatar?: string;
   maintenance?: boolean;
+  version?: string;
   id?: number;
   title?: string;
   message?: string;

@@ -1,5 +1,6 @@
+import {ThemeProvider} from '@/providers/scopedThemeProvider';
 import type {Dispatch, ReactNode, Ref, SetStateAction, SyntheticEvent} from 'react';
-import {Slide, Snackbar, Stack, ThemeProvider} from '@mui/material';
+import {Slide, Snackbar, Stack} from '@mui/material';
 import type {SlideProps} from '@mui/material/Slide';
 import Styles from './customToast.module.sass';
 import MuiAlert, {AlertColor, AlertProps} from '@mui/material/Alert';
@@ -36,7 +37,7 @@ const CustomToast = (props: Props) => {
     <ThemeProvider theme={customToastTheme()}>
       <Stack spacing={2} className={Styles.rootStack}>
         <Snackbar
-          style={{width: 'max-content'}}
+          style={{width: 'max-content', maxWidth: 'calc(100vw - 56px)'}}
           open={props.show}
           autoHideDuration={6000}
           onClose={handleClose}

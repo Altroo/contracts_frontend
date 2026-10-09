@@ -1,8 +1,9 @@
 'use client';
+import {ThemeProvider} from '@/providers/scopedThemeProvider';
 
 import {runWithCleanup} from '@/utils/runWithCleanup';
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode, type SyntheticEvent} from 'react';
-import {styled, ThemeProvider} from '@mui/material/styles';
+import {styled} from '@mui/material/styles';
 import MuiAppBar, {type AppBarProps as MuiAppBarProps} from '@mui/material/AppBar';
 import {
   Accordion,
@@ -37,6 +38,7 @@ import {
   DoneAll as DoneAllIcon,
   ExpandMore as ExpandMoreIcon,
   Gavel as GavelIcon,
+  History as HistoryIcon,
   Logout as LogoutIcon,
   Menu as MenuIcon,
   MoreVert as MoreVertIcon,
@@ -46,6 +48,7 @@ import {
 } from '@mui/icons-material';
 import {useAppDispatch, useAppSelector, useLanguage} from '@/utils/hooks';
 import {getProfilState, getUnreadNotificationCount} from '@/store/selectors';
+import ThemeToggle from '@/components/shared/themeToggle/themeToggle';
 import LanguageSwitcher, {LanguageFlag} from '@/components/shared/languageSwitcher/languageSwitcher';
 import {cookiesDeleter} from '@/utils/apiHelpers';
 import {
@@ -54,6 +57,7 @@ import {
   CONTRACTS_ADD,
   CONTRACTS_LIST,
   DASHBOARD_EDIT_PROFILE,
+  DASHBOARD_CHANGELOG,
   DASHBOARD_NOTIFICATIONS,
   DASHBOARD_PASSWORD,
   SITE_ROOT,
@@ -277,6 +281,7 @@ const NavigationBar = (props: Props) => {
   const [userExpanded, setUserExpanded] = useState<string | false>(false);
 
   const defaultExpanded: string | false = (() => {
+    if (pathname === '/dashboard/changelog') return false;
     const exactMatch = Object.entries(navigationMenu).find(([, section]) =>
       section.items.some((item) => {
         const normalizedPath = item.path.replace(/^https?:\/\/[^/]+/, '');
@@ -364,6 +369,7 @@ const NavigationBar = (props: Props) => {
               <Stack direction="row" spacing={1} sx={{
                 alignItems: "center"
               }}>
+                <ThemeToggle/>
                 {!loading && session && (
                   <>
                     <Desktop>
@@ -541,9 +547,9 @@ const NavigationBar = (props: Props) => {
                             sx={{
                               pl: open ? 9 : 2,
                               minHeight: 48,
-                              backgroundColor: normalizePath(item.path) === pathname ? '#F0F0F0' : 'transparent',
+                              backgroundColor: normalizePath(item.path) === pathname ? 'var(--app-selected, #F0F0F0)' : 'transparent',
                               '&.Mui-selected': {
-                                backgroundColor: '#E0E0E0',
+                                backgroundColor: 'var(--app-hover, #E0E0E0)',
                                 fontWeight: 600,
                               },
                             }}
@@ -557,6 +563,19 @@ const NavigationBar = (props: Props) => {
                 </Accordion>
               </Box>
             ))}
+            <ListItem disablePadding>
+              <ListItemButton
+                component={Link}
+                href={DASHBOARD_CHANGELOG}
+                selected={pathname === '/dashboard/changelog'}
+                aria-current={pathname === '/dashboard/changelog' ? 'page' : undefined}
+                onClick={() => { if (isMobile) setOpen(false); }}
+                sx={{minHeight: 48, px: 2.5}}
+              >
+                <ListItemIcon sx={{minWidth: 0, mr: 3}}><HistoryIcon/></ListItemIcon>
+                <ListItemText primary={t.navigation.changelog}/>
+              </ListItemButton>
+            </ListItem>
           </List>
         </Drawer>
         <Main open={open}>{props.children}</Main>

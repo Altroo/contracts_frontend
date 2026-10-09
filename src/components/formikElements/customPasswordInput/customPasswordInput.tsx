@@ -1,6 +1,7 @@
+import {ThemeProvider} from '@/providers/scopedThemeProvider';
 import {useState} from 'react';
 import type {ChangeEvent, FocusEvent, ReactNode, Ref} from 'react';
-import {IconButton, InputAdornment, TextField, ThemeProvider} from '@mui/material';
+import {IconButton, InputAdornment, TextField} from '@mui/material';
 import type {Theme} from '@mui/material/styles';
 import {Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon} from '@mui/icons-material';
 import {useLanguage} from '@/utils/hooks';

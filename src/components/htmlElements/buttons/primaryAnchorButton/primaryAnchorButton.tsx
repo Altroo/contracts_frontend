@@ -1,8 +1,9 @@
 'use client';
+import {ThemeProvider} from '@/providers/scopedThemeProvider';
 
 import type {ReactNode, Ref} from 'react';
 import Styles from './primaryAnchorButton.module.sass';
-import {Button, ThemeProvider} from '@mui/material';
+import {Button} from '@mui/material';
 import Link from 'next/link';
 import type {UrlObject} from 'url';
 import {getDefaultTheme} from '@/utils/themes';
