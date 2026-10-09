@@ -1776,7 +1776,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
                     onBlur={formik.handleBlur('description_travaux')}
                     multiline
                     rows={3}
-                    fullWidth={false}
+                    fullWidth
                     size="small"
                     theme={inputTheme}
                     startIcon={<NotesIcon fontSize="small"/>}
