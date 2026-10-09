@@ -190,7 +190,7 @@ const EnabledAiAssistantControl: FC<AiAssistantControlProps> = ({
 				</>
 			) : (
 				<Box>
-					<Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+					<Stack direction="row" spacing={1.5} useFlexGap sx={{ flexWrap: 'wrap', rowGap: 0.5 }}>
 						<Button
 							size="small"
 							variant="text"
