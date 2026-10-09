@@ -886,7 +886,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
         const errMsg = prestationCellErrors[errKey] ?? '';
         return (
           <Tooltip title={hasError ? errMsg : ''} arrow>
-            <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
+            <Box sx={{width: '100%', display: 'flex', alignItems: 'center'}}>
               <CustomDropDownSelect
                 id={`prestations.${realIdx}.nom`}
                 label=""
@@ -915,7 +915,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
         const p = (formik.values.prestations ?? [])[realIdx];
         if (!p) return null;
         return (
-          <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
+          <Box sx={{width: '100%', display: 'flex', alignItems: 'center'}}>
             <CustomTextInput
               id={`prestations.${realIdx}.description`}
               fullWidth
@@ -944,7 +944,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
         const errMsg = prestationCellErrors[errKey] ?? '';
         return (
           <Tooltip title={hasError ? errMsg : ''} arrow>
-            <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
+            <Box sx={{width: '100%', display: 'flex', alignItems: 'center'}}>
               <CustomTextInput
                 id={`prestations.${realIdx}.quantite`}
                 type="text"
@@ -972,7 +972,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
         const p = (formik.values.prestations ?? [])[realIdx];
         if (!p) return null;
         return (
-          <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
+          <Box sx={{width: '100%', display: 'flex', alignItems: 'center'}}>
             <CustomDropDownSelect
               id={`prestations.${realIdx}.unite`}
               label=""
@@ -1003,7 +1003,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
         const errMsg = prestationCellErrors[errKey] ?? '';
         return (
           <Tooltip title={hasError ? errMsg : ''} arrow>
-            <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
+            <Box sx={{width: '100%', display: 'flex', alignItems: 'center'}}>
               <CustomTextInput
                 id={`prestations.${realIdx}.prix_unitaire`}
                 type="text"
@@ -1034,7 +1034,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
         const p = (formik.values.prestations ?? [])[realIdx];
         if (!p) return null;
         return (
-          <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
+          <Box sx={{width: '100%', height: 40, display: 'flex', alignItems: 'center'}}>
             <Typography variant="body2" sx={{
               fontFamily: "Poppins"
             }}>
@@ -1055,7 +1055,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
         const realIdx = Number(params.id);
         const total = (formik.values.prestations ?? []).length;
         return (
-          <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
+          <Box sx={{width: '100%', height: 40, display: 'flex', alignItems: 'center'}}>
             <Tooltip title={total > 1 ? t.common.delete : ''}>
               <span>
                 <IconButton size="small" color="error" onClick={() => removePrestation(realIdx)} disabled={total <= 1}>
@@ -1087,7 +1087,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
         const errMsg = trancheCellErrors[errKey] ?? '';
         return (
           <Tooltip title={hasError ? errMsg : ''} arrow>
-            <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
+            <Box sx={{width: '100%', display: 'flex', alignItems: 'center'}}>
               <CustomTextInput
                 id={`tranches.${realIdx}.label`}
                 fullWidth
@@ -1120,7 +1120,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
         const errMsg = hasFieldError ? (trancheCellErrors[errKey] ?? '') : t.contracts.echeancierTotalError;
         return (
           <Tooltip title={hasError ? errMsg : ''} arrow>
-            <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
+            <Box sx={{width: '100%', display: 'flex', alignItems: 'center'}}>
               <CustomTextInput
                 id={`tranches.${realIdx}.pourcentage`}
                 type="text"
@@ -1152,7 +1152,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
         const realIdx = Number(params.id);
         const total = (formik.values.tranches ?? []).length;
         return (
-          <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
+          <Box sx={{width: '100%', height: 40, display: 'flex', alignItems: 'center'}}>
             <Tooltip title={total > 1 ? t.common.delete : ''}>
               <span>
                 <IconButton size="small" color="error" onClick={() => removeTranche(realIdx)} disabled={total <= 1}>
@@ -1184,7 +1184,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
         const errMsg = stTrancheCellErrors[errKey] ?? '';
         return (
           <Tooltip title={hasError ? errMsg : ''} arrow>
-            <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
+            <Box sx={{width: '100%', display: 'flex', alignItems: 'center'}}>
               <CustomTextInput
                 id={`st_tranches.${realIdx}.label`}
                 fullWidth
@@ -1217,7 +1217,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
         const errMsg = hasFieldError ? (stTrancheCellErrors[errKey] ?? '') : t.contracts.echeancierTotalError;
         return (
           <Tooltip title={hasError ? errMsg : ''} arrow>
-            <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
+            <Box sx={{width: '100%', display: 'flex', alignItems: 'center'}}>
               <CustomTextInput
                 id={`st_tranches.${realIdx}.pourcentage`}
                 type="text"
@@ -1250,7 +1250,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
         const tr = (formik.values.st_tranches ?? [])[realIdx];
         if (!tr) return null;
         return (
-          <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
+          <Box sx={{width: '100%', display: 'flex', alignItems: 'center'}}>
             <CustomTextInput
               id={`st_tranches.${realIdx}.delai_jours`}
               type="text"
@@ -1280,7 +1280,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
         const realIdx = Number(params.id);
         const total = (formik.values.st_tranches ?? []).length;
         return (
-          <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
+          <Box sx={{width: '100%', height: 40, display: 'flex', alignItems: 'center'}}>
             <Tooltip title={total > 1 ? t.common.delete : ''}>
               <span>
                 <IconButton size="small" color="error" onClick={() => removeStTranche(realIdx)} disabled={total <= 1}>
@@ -2168,7 +2168,8 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
                         border: 1,
                         borderColor: 'divider',
                         borderRadius: 2,
-                        '& .MuiDataGrid-cell': {display: 'flex', alignItems: 'center', py: 1},
+                        '& .MuiDataGrid-cell': {display: 'flex', alignItems: 'flex-start', py: 1},
+                        '& .MuiInputBase-root': {height: 40},
                         '& .MuiDataGrid-columnHeaders': {fontFamily: 'Poppins', fontWeight: 700},
                       }}
                     />
@@ -2856,7 +2857,8 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
                         border: 1,
                         borderColor: 'divider',
                         borderRadius: 2,
-                        '& .MuiDataGrid-cell': {display: 'flex', alignItems: 'center', py: 1},
+                        '& .MuiDataGrid-cell': {display: 'flex', alignItems: 'flex-start', py: 1},
+                        '& .MuiInputBase-root': {height: 40},
                         '& .MuiDataGrid-columnHeaders': {fontFamily: 'Poppins', fontWeight: 700},
                       }}
                     />
@@ -3109,7 +3111,8 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
                         border: 1,
                         borderColor: 'divider',
                         borderRadius: 2,
-                        '& .MuiDataGrid-cell': {display: 'flex', alignItems: 'center', py: 1},
+                        '& .MuiDataGrid-cell': {display: 'flex', alignItems: 'flex-start', py: 1},
+                        '& .MuiInputBase-root': {height: 40},
                         '& .MuiDataGrid-columnHeaders': {fontFamily: 'Poppins', fontWeight: 700},
                       }}
                     />
@@ -3160,7 +3163,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
                       onBlur={formik.handleBlur('materiaux_detail')}
                       multiline
                       rows={2}
-                      fullWidth={false}
+                      fullWidth
                       size="small"
                       theme={inputTheme}
                       startIcon={<NotesIcon fontSize="small"/>}
@@ -3258,7 +3261,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
                       onBlur={formik.handleBlur('exclusions_garantie')}
                       multiline
                       rows={2}
-                      fullWidth={false}
+                      fullWidth
                       size="small"
                       theme={inputTheme}
                       startIcon={<NotesIcon fontSize="small"/>}
@@ -3365,7 +3368,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
                       onBlur={formik.handleBlur('notes')}
                       multiline
                       rows={3}
-                      fullWidth={false}
+                      fullWidth
                       size="small"
                       theme={inputTheme}
                       startIcon={<NotesIcon fontSize="small"/>}
