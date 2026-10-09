@@ -1,6 +1,7 @@
 'use client';
 
 import {useState} from 'react';
+import {useColorMode} from '@/providers/themeProvider';
 import Styles from './authLayout.module.sass';
 import {Box, Stack} from '@mui/material';
 import Image from 'next/image';
@@ -11,6 +12,7 @@ import type {AuthIllustration, AuthLayoutProps} from '@/types/authTypes';
 
 const AuthLayout = ({ref, children}: AuthLayoutProps) => {
   const {t} = useLanguage();
+  const {mode} = useColorMode();
   const [authIlluRandom] = useState<AuthIllustration>(() =>
     authIllustrations[Math.floor(Math.random() * authIllustrations.length)],
   );
@@ -23,7 +25,7 @@ const AuthLayout = ({ref, children}: AuthLayoutProps) => {
           className={Styles.leftBox}
           sx={{
             background: `url(${authIlluRandom ? authIlluRandom.image : ''}) bottom left no-repeat scroll ${
-              authIlluRandom && authIlluRandom.color
+              mode === 'dark' ? '#222c3d' : authIlluRandom?.color
             }`,
             msFilter: `progid:DXImageTransform.Microsoft.AlphaImageLoader(src='${
               authIlluRandom ? authIlluRandom.image : ''
