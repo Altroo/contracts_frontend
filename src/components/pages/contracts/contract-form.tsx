@@ -119,6 +119,7 @@ import {useDataGridPagination} from '@/components/shared/paginatedDataGrid/useDa
 const inputTheme = textInputTheme();
 const gridCellInputTheme = gridInputTheme();
 const gridCellDropdownTheme = customGridDropdownTheme();
+const getFormRowHeight = () => 'auto' as const;
 
 const getTrancheTotal = (tranches?: Array<{ pourcentage: number }>) =>
   (tranches ?? []).reduce((sum, tranche) => sum + Number(tranche.pourcentage || 0), 0);
@@ -917,6 +918,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
           <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
             <CustomTextInput
               id={`prestations.${realIdx}.description`}
+              fullWidth
               type="text"
               label=""
               value={p.description}
@@ -1088,6 +1090,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
             <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
               <CustomTextInput
                 id={`tranches.${realIdx}.label`}
+                fullWidth
                 type="text"
                 label=""
                 value={tr.label}
@@ -1184,6 +1187,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
             <Box sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center'}}>
               <CustomTextInput
                 id={`st_tranches.${realIdx}.label`}
+                fullWidth
                 type="text"
                 label=""
                 value={tr.label}
@@ -2155,7 +2159,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
                       paginationModel={tranchePaginationModel}
                       onPaginationModelChange={setTranchePaginationModel}
                       localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
-                      rowHeight={52}
+                      getRowHeight={getFormRowHeight}
                       disableColumnMenu
                       disableRowSelectionOnClick
                       hideFooter={(formik.values.tranches ?? []).length <= 5}
@@ -2164,7 +2168,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
                         border: 1,
                         borderColor: 'divider',
                         borderRadius: 2,
-                        '& .MuiDataGrid-cell': {display: 'flex', alignItems: 'center'},
+                        '& .MuiDataGrid-cell': {display: 'flex', alignItems: 'center', py: 1},
                         '& .MuiDataGrid-columnHeaders': {fontFamily: 'Poppins', fontWeight: 700},
                       }}
                     />
@@ -2843,7 +2847,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
                       paginationModel={stTranchePaginationModel}
                       onPaginationModelChange={setStTranchePaginationModel}
                       localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
-                      rowHeight={52}
+                      getRowHeight={getFormRowHeight}
                       disableColumnMenu
                       disableRowSelectionOnClick
                       hideFooter={(formik.values.st_tranches ?? []).length <= 5}
@@ -2852,7 +2856,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
                         border: 1,
                         borderColor: 'divider',
                         borderRadius: 2,
-                        '& .MuiDataGrid-cell': {display: 'flex', alignItems: 'center'},
+                        '& .MuiDataGrid-cell': {display: 'flex', alignItems: 'center', py: 1},
                         '& .MuiDataGrid-columnHeaders': {fontFamily: 'Poppins', fontWeight: 700},
                       }}
                     />
@@ -3096,7 +3100,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
                       paginationModel={prestationPaginationModel}
                       onPaginationModelChange={setPrestationPaginationModel}
                       localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
-                      rowHeight={52}
+                      getRowHeight={getFormRowHeight}
                       disableColumnMenu
                       disableRowSelectionOnClick
                       hideFooter={(formik.values.prestations ?? []).length <= 5}
@@ -3105,7 +3109,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
                         border: 1,
                         borderColor: 'divider',
                         borderRadius: 2,
-                        '& .MuiDataGrid-cell': {display: 'flex', alignItems: 'center'},
+                        '& .MuiDataGrid-cell': {display: 'flex', alignItems: 'center', py: 1},
                         '& .MuiDataGrid-columnHeaders': {fontFamily: 'Poppins', fontWeight: 700},
                       }}
                     />
