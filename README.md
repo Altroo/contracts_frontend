@@ -20,6 +20,12 @@ This frontend is built around real staff workflows: authenticated navigation, de
 - Formik/Zod validation around contract forms and user/settings flows.
 - Jest and Testing Library tests for auth, contracts, validation, store, helpers, and route behavior.
 
+## Chat AI Assistant
+
+The authenticated root includes the shared MUI assistant interface: a robot launcher, responsive panel, company selection, English/French suggestions, slash-command help, structured results and conversation history. Actions follow backend permissions and supported changes require confirmation.
+
+The interface remains hidden while the backend feature flag is disabled. No second design framework or separate model is required. The adapter is locally tested; model acceptance and production activation remain separate gates.
+
 ## Stack
 
 - Next.js 16, React 19, TypeScript

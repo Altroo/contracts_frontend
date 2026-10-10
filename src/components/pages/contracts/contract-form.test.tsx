@@ -18,7 +18,9 @@ const mockStore = configureStore({
 
 // Mock next/navigation
 const mockPush = jest.fn();
+let mockCompanyHint = '';
 jest.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(mockCompanyHint),
   __esModule: true,
   useRouter: () => ({
     push: mockPush,
@@ -295,6 +297,7 @@ const renderWithProviders = (ui: ReactElement) => {
 describe('ContractFormClient', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockCompanyHint = "";
     mockUseGetContractQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
@@ -307,6 +310,19 @@ describe('ContractFormClient', () => {
   });
 
   describe('Add Mode (no id)', () => {
+    it('initializes the company selected by assistant navigation', () => {
+      mockCompanyHint = 'company=blueline_works';
+      renderWithProviders(<ContractFormClient session={mockSession}/>);
+      expect(screen.queryByText('Catégorie de contrat')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', {name:'Blueline Works'})).toHaveAttribute('aria-pressed','true');
+    });
+
+    it('ignores an unsupported company hint', () => {
+      mockCompanyHint = 'company=untrusted';
+      renderWithProviders(<ContractFormClient session={mockSession}/>);
+      expect(screen.getByRole('button', {name:'Casa di Lusso'})).toHaveAttribute('aria-pressed','true');
+    });
+
     it('uses can_create permission for the form wrapper', () => {
       renderWithProviders(<ContractFormClient session={mockSession}/>);
       expect(screen.getByTestId('protected')).toHaveAttribute('data-permission', 'can_create');

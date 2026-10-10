@@ -84,7 +84,7 @@ import {
   tribunalItemsList,
 } from '@/utils/rawData';
 import {CONTRACTS_LIST, CONTRACTS_VIEW} from '@/utils/routes';
-import {useRouter} from 'next/navigation';
+import {useRouter, useSearchParams} from 'next/navigation';
 import {useLanguage, useToast} from '@/utils/hooks';
 import {
   useAddContractMutation,
@@ -172,6 +172,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
   const isEditMode = id !== undefined;
   const theme = useTheme();
   const router = useRouter();
+  const requestedCompany = useSearchParams().get('company');
   const [tranchePaginationModel, setTranchePaginationModel] = useDataGridPagination(5, 'tranches');
   const [stTranchePaginationModel, setStTranchePaginationModel] = useDataGridPagination(5, 'st_tranches');
   const [prestationPaginationModel, setPrestationPaginationModel] = useDataGridPagination(5, 'prestations');
@@ -202,7 +203,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
   const today = formatLocalDate(new Date());
-  const initialCompany = (rawData?.company as ContractCompanyType) ?? 'casa_di_lusso';
+  const initialCompany = (rawData?.company as ContractCompanyType) ?? (!isEditMode && requestedCompany === 'blueline_works' ? 'blueline_works' : 'casa_di_lusso');
   const initialContractCategory = (rawData?.contract_category as ContractCategoryType) ?? 'standard';
   const initialIsBlueline = initialCompany === 'blueline_works';
   const initialIsST = initialCompany === 'casa_di_lusso' && initialContractCategory === 'sous_traitance';
