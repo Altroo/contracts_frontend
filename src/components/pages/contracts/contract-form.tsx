@@ -83,7 +83,7 @@ import {
   getTranslatedRawData,
   tribunalItemsList,
 } from '@/utils/rawData';
-import {CONTRACTS_VIEW} from '@/utils/routes';
+import {CONTRACTS_LIST, CONTRACTS_VIEW} from '@/utils/routes';
 import {useRouter} from 'next/navigation';
 import {useLanguage, useToast} from '@/utils/hooks';
 import {
@@ -1308,7 +1308,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
         <Button
           variant="outlined"
           startIcon={<ArrowBackIcon/>}
-          onClick={() => router.back()}
+          onClick={() => router.push(CONTRACTS_LIST)}
           sx={{
             whiteSpace: 'nowrap',
             px: {xs: 1.5, sm: 2, md: 3},

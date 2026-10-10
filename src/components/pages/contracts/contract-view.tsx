@@ -292,7 +292,7 @@ const ContractViewClient: FC<Props> = ({session, id}) => {
                 variant="outlined"
                 size="large"
                 startIcon={<ArrowBackIcon/>}
-                onClick={() => router.back()}
+                onClick={() => router.push(CONTRACTS_LIST)}
                 sx={{width: isMobile ? '100%' : 'auto'}}
               >
                 {t.navigation.contractsList}
