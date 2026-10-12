@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import {runWithCleanup} from '@/utils/runWithCleanup';
 import {isValidElement, useState, type FC, type ReactNode} from 'react';
 import {useRouter} from 'next/navigation';
@@ -222,7 +223,7 @@ const ContractViewClient: FC<Props> = ({session, id}) => {
         try {
           await deleteRecord({id}).unwrap();
           onSuccess(t.contracts.contractDeletedSuccess);
-          router.push(CONTRACTS_LIST);
+          router.push(listReturnUrl(CONTRACTS_LIST));
         } catch (err) {
           onError(extractApiErrorMessage(err, t.errors.deletionError));
         }
@@ -292,7 +293,7 @@ const ContractViewClient: FC<Props> = ({session, id}) => {
                 variant="outlined"
                 size="large"
                 startIcon={<ArrowBackIcon/>}
-                onClick={() => router.push(CONTRACTS_LIST)}
+                onClick={() => router.push(listReturnUrl(CONTRACTS_LIST))}
                 sx={{width: isMobile ? '100%' : 'auto'}}
               >
                 {t.navigation.contractsList}

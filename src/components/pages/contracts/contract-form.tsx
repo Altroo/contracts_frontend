@@ -1,5 +1,6 @@
 'use client';
 
+import { listReturnUrl } from '@/utils/listReturn';
 import {runWithCleanup} from '@/utils/runWithCleanup';
 import { useEffect, useEffectEvent, useState, type ChangeEvent, type FC, type KeyboardEvent, type MouseEvent} from 'react';
 import type {ApiErrorResponseType, ResponseDataInterface, SessionProps} from '@/types/_initTypes';
@@ -1309,7 +1310,7 @@ const FormikContent: FC<FormikContentProps> = (props: FormikContentProps) => {
         <Button
           variant="outlined"
           startIcon={<ArrowBackIcon/>}
-          onClick={() => router.push(CONTRACTS_LIST)}
+          onClick={() => router.push(listReturnUrl(CONTRACTS_LIST))}
           sx={{
             whiteSpace: 'nowrap',
             px: {xs: 1.5, sm: 2, md: 3},
