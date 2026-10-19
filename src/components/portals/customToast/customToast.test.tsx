@@ -1,5 +1,5 @@
 import {type SVGProps} from 'react';
-import {cleanup, fireEvent, render, screen, within} from '@testing-library/react';
+import {act, cleanup, fireEvent, render, screen, within} from '@testing-library/react';
 import CustomToast from './customToast';
 import '@testing-library/jest-dom';
 
@@ -39,9 +39,19 @@ describe('CustomToast', () => {
   const setShowMock = jest.fn();
 
   afterEach(() => {
+    jest.useRealTimers();
     jest.clearAllMocks();
     cleanup();
     document.body.innerHTML = '';
+  });
+
+  it('closes after the six-second timeout, which can supply a null event', () => {
+    jest.useFakeTimers();
+    render(<CustomToast type="info" show setShow={setShowMock} message="Notification"/>);
+    act(() => { jest.advanceTimersByTime(5999); });
+    expect(setShowMock).not.toHaveBeenCalled();
+    act(() => { jest.advanceTimersByTime(1); });
+    expect(setShowMock).toHaveBeenCalledWith(false);
   });
 
   it('renders the message and has a working close control', () => {

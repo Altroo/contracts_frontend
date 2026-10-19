@@ -1,13 +1,13 @@
 // Site root
-export const SITE_ROOT = `${process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX}/`;
+export const SITE_ROOT = `${(process.env.NEXT_PUBLIC_DOMAIN_URL_PREFIX ?? '').replace(/\/+$/, '')}/`;
 export const BACKEND_SITE_ADMIN = `${process.env.NEXT_PUBLIC_API_URL}/gestion-interne-gf62`;
 // Auth
-export const AUTH_LOGIN = `${SITE_ROOT}/login`;
+export const AUTH_LOGIN = `${SITE_ROOT}login`;
 // Auth forgot password
-export const AUTH_RESET_PASSWORD = `${SITE_ROOT}/reset-password`;
-export const AUTH_RESET_PASSWORD_ENTER_CODE = `${SITE_ROOT}/reset-password/enter-code`;
-export const AUTH_RESET_PASSWORD_SET_PASSWORD = `${SITE_ROOT}/reset-password/set-password`;
-export const AUTH_RESET_PASSWORD_COMPLETE = `${SITE_ROOT}/reset-password/set-password-complete`;
+export const AUTH_RESET_PASSWORD = `${SITE_ROOT}reset-password`;
+export const AUTH_RESET_PASSWORD_ENTER_CODE = `${SITE_ROOT}reset-password/enter-code`;
+export const AUTH_RESET_PASSWORD_SET_PASSWORD = `${SITE_ROOT}reset-password/set-password`;
+export const AUTH_RESET_PASSWORD_COMPLETE = `${SITE_ROOT}reset-password/set-password-complete`;
 // Dashboard
 export const DASHBOARD = `${SITE_ROOT}dashboard`;
 export const DASHBOARD_CHANGELOG = `${SITE_ROOT}dashboard/changelog`;

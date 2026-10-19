@@ -11,7 +11,7 @@ import {toFormikValidationSchema} from 'zod-formik-adapter';
 import type {AccountPostLoginResponseType} from '@/types/accountTypes';
 import {postApi} from '@/utils/apiHelpers';
 import {AUTH_RESET_PASSWORD, DASHBOARD} from '@/utils/routes';
-import {signIn, useSession} from 'next-auth/react';
+import {getSession, signIn, useSession} from 'next-auth/react';
 import {useRouter, useSearchParams} from 'next/navigation';
 import {useAppDispatch, useLanguage} from '@/utils/hooks';
 import AuthLayout from '@/components/layouts/auth/authLayout';
@@ -154,30 +154,42 @@ const LoginPageContent = () => {
 };
 
 const LoginClient: FC = () => {
-  const {data: session, status} = useSession();
+  const { data: session, status } = useSession();
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const {t} = useLanguage();
+  const { t } = useLanguage();
 
   // Use ref instead of state to track session update
   const sessionUpdatedRef = useRef(false);
+  const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
-    if (session && !sessionUpdatedRef.current) {
-      dispatch(refreshAppTokenStatesAction(session));
-      sessionUpdatedRef.current = true;
-      router.replace(DASHBOARD);
-    }
-  }, [dispatch, router, session]);
+    if (status === 'loading' || sessionUpdatedRef.current) return;
+    let active = true;
+    // A server redirect to login can leave an expired session in the provider.
+    void getSession({ broadcast: false })
+      .then((currentSession) => {
+        if (!active) return;
+        if (currentSession) {
+          setCheckingSession(true);
+          dispatch(refreshAppTokenStatesAction(currentSession));
+          sessionUpdatedRef.current = true;
+          router.replace(DASHBOARD);
+        } else {
+          setCheckingSession(false);
+        }
+      })
+      .catch(() => {
+        if (active) setCheckingSession(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [dispatch, router, session, status]);
 
   // Always render the same structure on initial render
-  if (status === 'loading') {
-    return <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B"/>;
-  }
-
-  // If redirecting to dashboard, keep showing loader
-  if (session) {
-    return <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B"/>;
+  if (status === 'loading' || checkingSession) {
+    return <ApiProgress backdropColor="#FFFFFF" circularColor="#0D070B" />;
   }
 
   return (
