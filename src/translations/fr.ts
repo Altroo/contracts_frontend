@@ -547,6 +547,7 @@ export const fr: TranslationDictionary = {
 		homeBtn: 'Accueil',
 	},
 	pdf: {
+		translationPending: 'La traduction de ce document est en attente. Elle se poursuit en arrière-plan. Veuillez réessayer plus tard.',
 		generatePdf: 'Génération du PDF',
 		chooseLanguage: 'Choisissez la langue dans laquelle vous souhaitez générer le document PDF.',
 		french: 'Français',

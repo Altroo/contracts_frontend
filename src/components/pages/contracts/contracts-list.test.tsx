@@ -87,6 +87,7 @@ jest.mock('@/utils/routes', () => ({
 
 jest.mock('@/utils/apiHelpers', () => ({
   fetchFileBlob: jest.fn(),
+  fetchPdfBlob: jest.fn(),
 }));
 
 jest.mock('@/components/shared/pdfLanguageModal/pdfLanguageModal', () => {

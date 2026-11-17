@@ -1,5 +1,7 @@
 'use client';
 
+import {showPdfError} from '@/utils/pdfErrors';
+
 import {runWithCleanup} from '@/utils/runWithCleanup';
 import { useState, type FC, type MouseEvent} from 'react';
 import {useRouter} from 'next/navigation';
@@ -32,7 +34,7 @@ import type {ContractClass} from '@/models/classes';
 import {extractApiErrorMessage, formatDate} from '@/utils/helpers';
 import {companyItemsList, createContractStatutFilterOptions, getContractStatusColor, getTranslatedRawData} from '@/utils/rawData';
 import {useLanguage, useToast} from '@/utils/hooks';
-import {fetchFileBlob} from '@/utils/apiHelpers';
+import {fetchFileBlob, fetchPdfBlob} from '@/utils/apiHelpers';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import {Protected} from '@/components/layouts/protected/protected';
@@ -46,7 +48,7 @@ import ChipSelectFilterBar from '@/components/shared/chipSelectFilter/chipSelect
 
 const ContractsListClient: FC<SessionProps> = ({session}: SessionProps) => {
   const router = useRouter();
-  const {onSuccess, onError} = useToast();
+  const {onSuccess, onError, onInfo} = useToast();
   const {t} = useLanguage();
   const {contractCategoryItemsList} = getTranslatedRawData(t);
   const token = useInitAccessToken(session);
@@ -188,12 +190,12 @@ const ContractsListClient: FC<SessionProps> = ({session}: SessionProps) => {
             let url: string;
             if (pendingDocFormat === 'pdf') url = CONTRACT_PDF(printMenuItemId, language);
             else url = CONTRACT_DOC(printMenuItemId, language);
-            const blob = await fetchFileBlob(url, token!);
+            const blob = pendingDocFormat === 'pdf' ? await fetchPdfBlob(url, token!) : await fetchFileBlob(url, token!);
             const blobUrl = window.URL.createObjectURL(blob);
             window.open(blobUrl, '_blank');
             setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
-          } catch {
-            onError(t.errors.documentOpenError);
+          } catch (error) {
+            showPdfError(error, onError, onInfo, t.pdf.translationPending, t.errors.documentOpenError);
           }
         },
         () => {

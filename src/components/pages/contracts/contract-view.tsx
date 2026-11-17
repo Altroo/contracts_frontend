@@ -1,5 +1,7 @@
 'use client';
 
+import {showPdfError} from '@/utils/pdfErrors';
+
 import { listReturnUrl } from '@/utils/listReturn';
 import {runWithCleanup} from '@/utils/runWithCleanup';
 import {isValidElement, useState, type FC, type ReactNode} from 'react';
@@ -72,7 +74,7 @@ import {CONTRACT_DOC, CONTRACT_PDF, CONTRACTS_EDIT, CONTRACTS_LIST} from '@/util
 import ApiProgress from '@/components/formikElements/apiLoading/apiProgress/apiProgress';
 import {extractApiErrorMessage, formatDate, formatDateShort} from '@/utils/helpers';
 import {useLanguage, useToast} from '@/utils/hooks';
-import {fetchFileBlob} from '@/utils/apiHelpers';
+import {fetchFileBlob, fetchPdfBlob} from '@/utils/apiHelpers';
 import PdfLanguageModal from '@/components/shared/pdfLanguageModal/pdfLanguageModal';
 import ActionModals from '@/components/htmlElements/modals/actionModal/actionModals';
 import {Protected} from '@/components/layouts/protected/protected';
@@ -159,7 +161,7 @@ const ContractViewClient: FC<Props> = ({session, id}) => {
 
   const [deleteRecord] = useDeleteContractMutation();
   const [patchStatut] = usePatchContractStatutMutation();
-  const {onSuccess, onError} = useToast();
+  const {onSuccess, onError, onInfo} = useToast();
   const {t} = useLanguage();
   const {
     clauseResiliationItemsList,
@@ -202,12 +204,12 @@ const ContractViewClient: FC<Props> = ({session, id}) => {
           let url: string;
           if (pendingDocFormat === 'pdf') url = CONTRACT_PDF(id, language);
           else url = CONTRACT_DOC(id, language);
-          const blob = await fetchFileBlob(url, token);
+          const blob = pendingDocFormat === 'pdf' ? await fetchPdfBlob(url, token) : await fetchFileBlob(url, token);
           const blobUrl = window.URL.createObjectURL(blob);
           window.open(blobUrl, '_blank');
           setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
-        } catch {
-          onError(t.errors.documentOpenError);
+        } catch (error) {
+          showPdfError(error, onError, onInfo, t.pdf.translationPending, t.errors.documentOpenError);
         }
       },
       () => {

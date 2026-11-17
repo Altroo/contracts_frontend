@@ -552,6 +552,7 @@ export type TranslationDictionary = {
 		homeBtn: string;
 	};
 	pdf: {
+		translationPending: string;
 		generatePdf: string;
 		chooseLanguage: string;
 		french: string;

@@ -547,6 +547,7 @@ export const en: TranslationDictionary = {
 		homeBtn: 'Home',
 	},
 	pdf: {
+		translationPending: 'This document is awaiting translation. Processing continues in the background. Please try again later.',
 		generatePdf: 'PDF Generation',
 		chooseLanguage: 'Choose the language in which you want to generate the PDF document.',
 		french: 'Français',
